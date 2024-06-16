@@ -8,11 +8,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func Setup(logger *utility.Logger, validator *validator.Validate, db postgresql.Database, appConfiguration *config.App) *gin.Engine {
+func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Database, appConfiguration *config.App) *gin.Engine {
 	if appConfiguration.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}

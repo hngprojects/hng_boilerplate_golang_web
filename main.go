@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -19,7 +20,8 @@ func main() {
 
 	postgresql.ConnectToDatabase(logger, configuration.Database)
 	validatorRef := validator.New()
-	db := postgresql.Connection()
+
+	db := storage.Connection()
 
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)

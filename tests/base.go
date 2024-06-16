@@ -7,6 +7,7 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -14,7 +15,9 @@ import (
 func Setup() *utility.Logger {
 	logger := utility.NewLogger()
 	config := config.Setup(logger, "../../app")
-	db := postgresql.ConnectToDatabase(logger, config.TestDatabase)
+
+	postgresql.ConnectToDatabase(logger, config.TestDatabase)
+	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
 	}

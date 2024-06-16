@@ -9,32 +9,23 @@ import (
 	"log"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	lg "gorm.io/gorm/logger"
 )
 
-type Database struct {
-	DB *gorm.DB
-}
-
-var DB Database
-
-// Connection gets connection of mysqlDB database
-func Connection() Database {
-	return DB
-}
-
-func ConnectToDatabase(logger *utility.Logger, configDatabases config.Database) Database {
+func ConnectToDatabase(logger *utility.Logger, configDatabases config.Database) *gorm.DB {
 	dbsCV := configDatabases
 	utility.LogAndPrint(logger, "connecting to database")
 	connectedDB := connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.DB_NAME, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
 
 	utility.LogAndPrint(logger, "connected to database")
 
-	DB = Database{DB: connectedDB}
-	return DB
+	storage.DB.Postgresql = connectedDB
+
+	return connectedDB
 }
 
 func connectToDb(host, user, password, dbname, port, sslmode, timezone string, logger *utility.Logger) *gorm.DB {

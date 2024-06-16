@@ -3,14 +3,14 @@ package migrations
 import (
 	"fmt"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"gorm.io/gorm"
 )
 
-func RunAllMigrations(db postgresql.Database) {
+func RunAllMigrations(db *storage.Database) {
 
 	// verification migration
-	MigrateModels(db.DB, AuthMigrationModels(), AlterColumnModels())
+	MigrateModels(db.Postgresql, AuthMigrationModels(), AlterColumnModels())
 
 }
 
