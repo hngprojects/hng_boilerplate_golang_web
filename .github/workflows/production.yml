@@ -1,11 +1,11 @@
-name: Boiler Plate 
+name: Build & Deploy for Production 
 on: workflow_dispatch
 
 jobs:
   build:
     env:
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: db_name
     runs-on: ubuntu-latest
     services:
