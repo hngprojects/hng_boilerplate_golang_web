@@ -1,0 +1,49 @@
+name: Boiler Plate 
+on: workflow_dispatch
+
+jobs:
+  build:
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: db_name
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    - name: Set Golang
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.1'
+    - name: Run The Project
+      run: nohup go run main.go > /dev/null 2>&1 &
+    - name: Wait for application to start
+      run: sleep 30s
+    - name: Reachability
+      run: curl http://localhost:8019
+    - name: Run All Tests
+      run: go test ./... -timeout 99999s
+
+  # deployment:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: SSH Into server
+  #     uses: appleboy/ssh-action@v0.1.10
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       username: ${{ secrets.USERNAME }}
+  #       key: ${{ secrets.KEY }}
+  #       port: ${{ secrets.PORT }}
+  #       script: |
+  #         cd ~
+  #         git clone <github-url>
+  #         cd <github-directory>
