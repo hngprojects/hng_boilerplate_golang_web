@@ -13,7 +13,7 @@ import (
 
 type Response struct {
 	Status     string      `json:"status,omitempty"`
-	Code       int         `json:"code,omitempty"`
+	StatusCode int         `json:"status_code,omitempty"`
 	Name       string      `json:"name,omitempty"` //name of the error
 	Message    string      `json:"message,omitempty"`
 	Error      interface{} `json:"error,omitempty"` //for errors that occur even if request is successful
@@ -25,6 +25,12 @@ type Response struct {
 // BuildResponse method is to inject data value to dynamic success response
 func BuildSuccessResponse(code int, message string, data interface{}, pagination ...interface{}) Response {
 	res := ResponseMessage(code, "success", "", message, nil, data, pagination, nil)
+	return res
+}
+
+// BuildResponse method is to inject data value to dynamic success response
+func BuildSuccessResponse2(code int, message string) Response {
+	res := ResponseMessage(code, "success", "", message, nil, nil, nil, nil)
 	return res
 }
 
@@ -47,7 +53,7 @@ func ResponseMessage(code int, status string, name string, message string, err i
 	}
 
 	res := Response{
-		Code:       code,
+		StatusCode: code,
 		Name:       name,
 		Status:     status,
 		Message:    message,

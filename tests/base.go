@@ -5,8 +5,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -14,7 +18,7 @@ import (
 
 func Setup() *utility.Logger {
 	logger := utility.NewLogger()
-	config := config.Setup(logger, "../../app")
+	config := config.Setup(logger, "../app")
 
 	postgresql.ConnectToDatabase(logger, config.TestDatabase)
 	db := storage.Connection()
@@ -45,4 +49,24 @@ func AssertBool(t *testing.T, got, expected bool) {
 	if got != expected {
 		t.Errorf("handler returned wrong boolean: got %v expected %v", got, expected)
 	}
+}
+
+func setupTestRouter() (*gin.Engine, *newsletter.NewsController) {
+	gin.SetMode(gin.TestMode)
+
+	logger := Setup()
+	db := storage.Connection()
+	validator := validator.New()
+	extReq := request.ExternalRequest{}
+
+	newsController := &newsletter.NewsController{
+		Db:        db,
+		Validator: validator,
+		Logger:    logger,
+		ExtReq:    extReq,
+	}
+
+	router := gin.Default()
+	router.POST("/newsletter", newsController.Post)
+	return router, newsController
 }

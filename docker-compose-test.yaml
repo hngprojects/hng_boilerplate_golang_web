@@ -1,0 +1,15 @@
+
+services:
+  postgres-test:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: hng_test_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-test-data:
