@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: "1.22.1"
       - name: Build the application
-        run: go build -o learnai_prod
+        run: go build -o learnai_dev
 
   test:
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      PROCESS_NAME: run_learnai_prod
+      PROCESS_NAME: run_learnai_dev
 
     steps:
       - name: SSH into server and deploy
@@ -84,7 +84,7 @@ jobs:
             fi
 
             cp app-sample.env app.env
-            go build -o ~/deployments/development/learnai_prod
+            go build -o ~/deployments/development/learnai_dev
 
             # Check if pm2 is already running
             if pm2 list | grep -q "${{ env.PROCESS_NAME }}"; then
@@ -94,3 +94,6 @@ jobs:
               echo "Process ${{ env.PROCESS_NAME }} is not running. Starting..."
               pm2 start "${{ env.PROCESS_NAME }}".sh
             fi
+
+
+
