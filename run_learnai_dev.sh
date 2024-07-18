@@ -1,3 +1,3 @@
 #!/bin/bash
 
-~/deployments/production/learnai_dev
+~/deployments/development/learnai_dev
