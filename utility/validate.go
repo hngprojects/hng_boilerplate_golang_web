@@ -1,9 +1,11 @@
 package utility
 
 import (
+	"fmt"
 	"net/mail"
 	"os"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nyaruka/phonenumbers"
 )
 
@@ -32,4 +34,17 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func JWTValid(tokenString string, secretKey []byte) error {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
+	})
+	if err != nil {
+		return err
+	}
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+	return nil
 }
