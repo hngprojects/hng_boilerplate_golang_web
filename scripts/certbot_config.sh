@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # Variables
-DOMAIN_OR_IP="91.229.239.238"
+DOMAINS=(
+  "api-golang.boilerplate.hng.tech"  # prod
+  "deployment.api-golang.boilerplate.hng.tech"  # dev
+  "staging.api-golang.boilerplate.hng.tech"  # staging
+)
 EMAIL="osinachi.chukwujama@gmail.com"  # Used for certbot notifications and recovery
 
 # Update package lists
@@ -23,11 +27,16 @@ sudo snap install --classic certbot
 # Create a symbolic link to make Certbot command globally available
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 
-# Obtain an SSL certificate from Let's Encrypt using Certbot
-sudo certbot --nginx -d $DOMAIN_OR_IP --non-interactive --agree-tos --email $EMAIL
+# Obtain SSL certificates for each domain
+for DOMAIN in "${DOMAINS[@]}"; do
+  echo "Configuring SSL for domain: $DOMAIN"
+  sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$EMAIL"
+done
 
-# # Set up automatic renewal of the certificate
-# echo "0 0,12 * * * root certbot renew --quiet" | sudo tee -a /etc/crontab > /dev/null
+# Set up automatic renewal of the certificates
+sudo crontab -l | { cat; echo "0 0,12 * * * root certbot renew --quiet"; } | sudo crontab -
 
-# Display the final server URL
-echo "SSL certificate configured for: https://$DOMAIN_OR_IP"
+# Display the configured domains
+for DOMAIN in "${DOMAINS[@]}"; do
+  echo "SSL certificate configured for: https://$DOMAIN"
+done
