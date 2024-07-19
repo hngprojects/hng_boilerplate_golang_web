@@ -1,34 +1,37 @@
 module.exports = {
   apps: [
     {
-      name: 'run_learnai_prod',
-      script: '/home/vicradon/deployments/production/learnai_prod',
+      name: "run_production_app",
+      script: "/home/vicradon/deployments/production/production_app",
       env: {
         SERVER_PORT: 9000,
-        DB_NAME: 'db_name',
-        APP_NAME: 'production',
-        APP_URL: 'http://localhost:9000'
-      }
+        DB_NAME: "production_db",
+        USERNAME: "production_user",
+        APP_NAME: "production",
+        APP_URL: "http://localhost:9000",
+      },
     },
     {
-      name: 'run_learnai_staging',
-      script: '/home/vicradon/deployments/staging/learnai_staging',
+      name: "run_staging_app",
+      script: "/home/vicradon/deployments/staging/staging_app",
       env: {
         SERVER_PORT: 8000,
-        DB_NAME: 'db_name',
-        APP_NAME: 'staging',
-        APP_URL: 'http://localhost:8000'
-      }
+        DB_NAME: "staging_db",
+        USERNAME: "staging_user",
+        APP_NAME: "staging",
+        APP_URL: "http://localhost:8000",
+      },
     },
     {
-      name: 'run_learnai_dev',
-      script: '/home/vicradon/deployments/development/learnai_dev',
+      name: "run_development_app",
+      script: "/home/vicradon/deployments/development/development_app",
       env: {
         SERVER_PORT: 7000,
-        DB_NAME: 'db_name',
-        APP_NAME: 'development',
-        APP_URL: 'http://localhost:7000'
-      }
-    }
-  ]
+        DB_NAME: "development_db",
+        USERNAME: "development_user",
+        APP_NAME: "development",
+        APP_URL: "http://localhost:7000",
+      },
+    },
+  ],
 };
