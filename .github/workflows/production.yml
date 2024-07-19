@@ -21,7 +21,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build
-    env
+    env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
       TEST_DB_NAME: db_name
