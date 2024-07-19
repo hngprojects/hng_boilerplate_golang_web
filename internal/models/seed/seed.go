@@ -5,54 +5,54 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/gofrs/uuid"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func SeedDatabase(db *gorm.DB) {
-	// Check and seed users
+	// instantiate uuid
 
-	Userid1, _ := uuid.NewV7()
+	Userid1 := utility.GenerateUUID()
 	user1 := models.User{
-		Userid: Userid1.String(),
+		Userid: Userid1,
 		Name:   "John Doe",
 		Email:  "john@example.com",
 		Profile: models.Profile{
-			ID:        uuid.New().String(),
+			ID:        utility.GenerateUUID(),
 			FirstName: "John",
 			LastName:  "Doe",
 			Phone:     "1234567890",
 			AvatarURL: "http://example.com/avatar.jpg",
 		},
 		Products: []models.Product{
-			{ID: uuid.New().String(), Name: "Product1", Description: "Description1", Userid: Userid1},
-			{ID: uuid.New().String(), Name: "Product2", Description: "Description2", Userid: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Userid: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", Userid: Userid1},
 		},
 	}
 
-	Userid2, _ := uuid.NewV7()
+	Userid2 := utility.GenerateUUID()
 	user2 := models.User{
 		Userid: Userid2,
 		Name:   "Jane Doe",
 		Email:  "jane@example.com",
 		Profile: models.Profile{
-			ID:        uuid.New().String(),
+			ID:        utility.GenerateUUID(),
 			FirstName: "Jane",
 			LastName:  "Doe",
 			Phone:     "0987654321",
 			AvatarURL: "http://example.com/avatar2.jpg",
 		},
 		Products: []models.Product{
-			{ID: uuid.New().String(), Name: "Product3", Description: "Description3", Userid: Userid2},
-			{ID: uuid.New().String(), Name: "Product4", Description: "Description4", Userid: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", Userid: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", Userid: Userid2},
 		},
 	}
 
 	organisations := []models.Organisation{
-		{Orgid: uuid.New().String(), Name: "Org1", Description: "Description1"},
-		{Orgid: uuid.New().String(), Name: "Org2", Description: "Description2"},
-		{Orgid: uuid.New().String(), Name: "Org3", Description: "Description3"},
+		{Orgid: utility.GenerateUUID(), Name: "Org1", Description: "Description1"},
+		{Orgid: utility.GenerateUUID(), Name: "Org2", Description: "Description2"},
+		{Orgid: utility.GenerateUUID(), Name: "Org3", Description: "Description3"},
 	}
 
 	var existingUser models.User
