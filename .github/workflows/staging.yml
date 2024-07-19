@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: "1.22.1"
       - name: Build the application
-        run: go build -o learnai_staging
+        run: go build -o staging_app
 
   test:
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      PROCESS_NAME: run_learnai_staging
+      PROCESS_NAME: run_staging_app
 
     steps:
       - name: SSH into server and deploy
@@ -84,7 +84,7 @@ jobs:
             fi
 
             cp app-sample.env app.env
-            go build -o ~/deployments/staging/learnai_staging
+            go build -o ~/deployments/staging/staging_app
 
             # Check if pm2 is already running
             if pm2 list | grep -q "${{ env.PROCESS_NAME }}"; then
