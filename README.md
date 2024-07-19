@@ -15,8 +15,6 @@
 $ go run main.go
 ```
 
-Okay...
-
 ### Testing
 
 1. Automated unit and integration tests done with golang's builtin [`testing`](https://pkg.go.dev/testing) package.
