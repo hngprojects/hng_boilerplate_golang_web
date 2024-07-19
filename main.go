@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
@@ -26,6 +27,9 @@ func main() {
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)
 	}
+
+	// call the seed function
+	seed.SeedDatabase(db.Postgresql)
 
 	r := router.Setup(logger, validatorRef, db, &configuration.App)
 
