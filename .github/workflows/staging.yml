@@ -1,9 +1,9 @@
-name: Build, Test, and Deploy for Development
+name: Build, Test, and Deploy for Staging
 
 on:
   push:
     branches:
-      - dev
+      - staging
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: "1.22.1"
       - name: Build the application
-        run: go build -o development_app
+        run: go build -o staging_app
 
   test:
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      PROCESS_NAME: run_development_app
+      PROCESS_NAME: run_staging_app
 
     steps:
       - name: SSH into server and deploy
@@ -67,7 +67,7 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            export APPROOT=~/deployments/development
+            export APPROOT=~/deployments/staging
             export PATH=$PATH:~/.nvm/versions/node/v20.15.1/bin
             export PATH=$PATH:/usr/local/go/bin
 
@@ -80,11 +80,11 @@ jobs:
                 git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
                 git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
             else
-                git clone -b dev http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
+                git clone -b staging http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
             cp app-sample.env app.env
-            go build -o ~/deployments/development/development_app
+            go build -o ~/deployments/staging/staging_app
 
             # Check if pm2 is already running
             if pm2 list | grep -q "${{ env.PROCESS_NAME }}"; then
