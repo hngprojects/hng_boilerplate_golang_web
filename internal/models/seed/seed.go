@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 func SeedDatabase(db *gorm.DB) {
@@ -56,23 +57,23 @@ func SeedDatabase(db *gorm.DB) {
 	var existingUser models.User
 	if err := db.Preload("Profile").Preload("Products").Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			db.Create(&user1)
-			db.Create(&user2)
+			postgresql.CreateOneRecord(db, &user1)
+			postgresql.CreateOneRecord(db, &user2)
 			for _, org := range organisations {
-				db.Create(&org)
+				postgresql.CreateOneRecord(db, &org)
 			}
 			fmt.Println("Users and organisations seeded.")
 
 			// Add users to organisations
 
 			// add user1 to two organization
-			models.AddUserToOrganisation(db, organisations[0].OrgID, user1.UserID)
-			models.AddUserToOrganisation(db, organisations[1].OrgID, user1.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[0].OrgID, user1.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[1].OrgID, user1.UserID)
 
 			// Add user2 to the three organization
-			models.AddUserToOrganisation(db, organisations[0].OrgID, user2.UserID)
-			models.AddUserToOrganisation(db, organisations[1].OrgID, user2.UserID)
-			models.AddUserToOrganisation(db, organisations[2].OrgID, user2.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[0].OrgID, user2.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[1].OrgID, user2.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[2].OrgID, user2.UserID)
 			fmt.Println("Users added to organisations.")
 
 		} else {
@@ -81,4 +82,6 @@ func SeedDatabase(db *gorm.DB) {
 	} else {
 		fmt.Println("Users already exist, skipping seeding.")
 	}
+
+	fmt.Println(existingUser)
 }
