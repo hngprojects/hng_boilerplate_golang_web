@@ -14,7 +14,7 @@ func SeedDatabase(db *gorm.DB) {
 	// Check and seed users
 	userId1 := uuid.New().String()
 	user1 := models.User{
-		UserID: userId1,
+		Userid:userId1,
 		Name:   "John Doe",
 		Email:  "john@example.com",
 		Profile: models.Profile{
@@ -32,7 +32,7 @@ func SeedDatabase(db *gorm.DB) {
 
 	userId2 := uuid.New().String()
 	user2 := models.User{
-		UserID: userId2,
+		Userid: userId2,
 		Name:   "Jane Doe",
 		Email:  "jane@example.com",
 		Profile: models.Profile{
@@ -49,9 +49,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	organisations := []models.Organisation{
-		{OrgID: uuid.New().String(), Name: "Org1", Description: "Description1"},
-		{OrgID: uuid.New().String(), Name: "Org2", Description: "Description2"},
-		{OrgID: uuid.New().String(), Name: "Org3", Description: "Description3"},
+		{Orgid: uuid.New().String(), Name: "Org1", Description: "Description1"},
+		{Orgid: uuid.New().String(), Name: "Org2", Description: "Description2"},
+		{Orgid: uuid.New().String(), Name: "Org3", Description: "Description3"},
 	}
 
 	var existingUser models.User
@@ -67,13 +67,13 @@ func SeedDatabase(db *gorm.DB) {
 			// Add users to organisations
 
 			// add user1 to two organization
-			postgresql.AddUserToOrganisation(db, organisations[0].OrgID, user1.UserID)
-			postgresql.AddUserToOrganisation(db, organisations[1].OrgID, user1.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[0].Orgid, user1.Userid)
+			postgresql.AddUserToOrganisation(db, organisations[1].Orgid, user1.Userid)
 
 			// Add user2 to the three organization
-			postgresql.AddUserToOrganisation(db, organisations[0].OrgID, user2.UserID)
-			postgresql.AddUserToOrganisation(db, organisations[1].OrgID, user2.UserID)
-			postgresql.AddUserToOrganisation(db, organisations[2].OrgID, user2.UserID)
+			postgresql.AddUserToOrganisation(db, organisations[0].Orgid, user2.Userid)
+			postgresql.AddUserToOrganisation(db, organisations[1].Orgid, user2.Userid)
+			postgresql.AddUserToOrganisation(db, organisations[2].Orgid, user2.Userid)
 			fmt.Println("Users added to organisations.")
 
 		} else {
