@@ -82,4 +82,5 @@ func SeedDatabase(db *gorm.DB) {
 	} else {
 		fmt.Println("Users already exist, skipping seeding.")
 	}
+
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
-	// "github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/ping"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -21,16 +21,40 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-
-func (base *Controller) Get(c *gin.Context) {
+func (base *Controller) Get1(c *gin.Context) {
 	if !ping.ReturnTrue() {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "ping failed", fmt.Errorf("ping failed"), nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	base.Logger.Info("ping successfull")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "ping successful", gin.H{"transactions": "transactions object"})
+
+	var user models.User
+	if err := base.Db.Postgresql.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", "john@example.com").First(&user).Error; err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	base.Logger.Info("user1 fetched successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "", user)
 
 	c.JSON(http.StatusOK, rd)
+}
 
+func (base *Controller) Get2(c *gin.Context) {
+	if !ping.ReturnTrue() {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "ping failed", fmt.Errorf("ping failed"), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	var user models.User
+	if err := base.Db.Postgresql.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", "jane@example.com").First(&user).Error; err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	base.Logger.Info("user2 fetched successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "", user)
+
+	c.JSON(http.StatusOK, rd)
 }

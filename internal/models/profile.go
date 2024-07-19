@@ -1,6 +1,5 @@
 package models
 
-
 type Profile struct {
 	ID        string `gorm:"type:uuid;primary_key" json:"profile_id"`
 	FirstName string `gorm:"column:first_name; type:text; not null" json:"first_name"`
