@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/go-playground/validator/v10"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"

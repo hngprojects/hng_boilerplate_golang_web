@@ -12,9 +12,9 @@ import (
 
 func SeedDatabase(db *gorm.DB) {
 	// Check and seed users
-	userId1 := uuid.New().String()
+	Userid1 := uuid.New().String()
 	user1 := models.User{
-		Userid:userId1,
+		Userid: Userid1,
 		Name:   "John Doe",
 		Email:  "john@example.com",
 		Profile: models.Profile{
@@ -25,14 +25,14 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar.jpg",
 		},
 		Products: []models.Product{
-			{ID: uuid.New().String(), Name: "Product1", Description: "Description1", UserID: userId1},
-			{ID: uuid.New().String(), Name: "Product2", Description: "Description2", UserID: userId1},
+			{ID: uuid.New().String(), Name: "Product1", Description: "Description1", Userid: Userid1},
+			{ID: uuid.New().String(), Name: "Product2", Description: "Description2", Userid: Userid1},
 		},
 	}
 
-	userId2 := uuid.New().String()
+	Userid2 := uuid.New().String()
 	user2 := models.User{
-		Userid: userId2,
+		Userid: Userid2,
 		Name:   "Jane Doe",
 		Email:  "jane@example.com",
 		Profile: models.Profile{
@@ -43,8 +43,8 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar2.jpg",
 		},
 		Products: []models.Product{
-			{ID: uuid.New().String(), Name: "Product3", Description: "Description3", UserID: userId2},
-			{ID: uuid.New().String(), Name: "Product4", Description: "Description4", UserID: userId2},
+			{ID: uuid.New().String(), Name: "Product3", Description: "Description3", Userid: Userid2},
+			{ID: uuid.New().String(), Name: "Product4", Description: "Description4", Userid: Userid2},
 		},
 	}
 

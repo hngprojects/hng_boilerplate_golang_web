@@ -5,11 +5,11 @@ import (
 )
 
 type User struct {
-	Userid        string         `gorm:"type:uuid;primaryKey" json:"user_id"`
+	Userid            string         `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
 	Name          string         `gorm:"column:name; type:varchar(255)" json:"name"`
 	Email         string         `gorm:"column:email; type:varchar(255)" json:"email"`
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
-	Organisations []Organisation `gorm:"many2many:user_organisations;" json:"organisations" ` // many to many relationship
+	Organisations []Organisation `gorm:"many2many:user_organisations;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product      `gorm:"foreignKey:Userid" json:"products"`
 	CreatedAt     time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`

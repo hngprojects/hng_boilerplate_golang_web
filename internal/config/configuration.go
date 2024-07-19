@@ -3,8 +3,9 @@ package config
 import (
 	"log"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"github.com/spf13/viper"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 // Setup initialize configuration
@@ -25,7 +26,7 @@ func Setup(logger *utility.Logger, name string) *Configuration {
 		log.Fatalf("Error reading config file, %s", err)
 	}
 
-	// viper.AutomaticEnv()
+	viper.AutomaticEnv()
 
 	err := viper.Unmarshal(&baseConfiguration)
 	if err != nil {
