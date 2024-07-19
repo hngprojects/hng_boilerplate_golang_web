@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Check if the script is run as root
+# Ensure the script is run as root
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script must be run as root. Use sudo."
     exit 1
 fi
 
-# Define the script directory
-SCRIPT_DIR="$HOME/scripts"
+# Ensure the script is run from the scripts directory directly
+SCRIPT_DIR_NAME="scripts"
+CURRENT_DIR_NAME=$(basename "$PWD")
 
-# Ensure script directory exists
-if [ ! -d "$SCRIPT_DIR" ]; then
-    echo "Script directory $SCRIPT_DIR does not exist."
+if [ "$CURRENT_DIR_NAME" != "$SCRIPT_DIR_NAME" ]; then
+    echo "This script must be run from the $SCRIPT_DIR_NAME directory."
     exit 1
 fi
 
@@ -24,15 +24,13 @@ SCRIPTS=(
 )
 
 # Make all scripts executable and execute them
-for script in "${SCRIPTS[@]}"; then
-    SCRIPT_PATH="$SCRIPT_DIR/$script"
-    
-    if [ -f "$SCRIPT_PATH" ]; then
-        chmod +x "$SCRIPT_PATH"
-        echo "Executing $SCRIPT_PATH..."
-        "$SCRIPT_PATH"
+for script in "${SCRIPTS[@]}"; do
+    if [ -f "$script" ]; then
+        chmod +x "$script"
+        echo "Executing $script..."
+        ./"$script"
     else
-        echo "Script $SCRIPT_PATH does not exist."
+        echo "Script $script does not exist."
         exit 1
     fi
 done
