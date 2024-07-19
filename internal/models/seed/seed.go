@@ -3,18 +3,19 @@ package seed
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/gofrs/uuid"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 func SeedDatabase(db *gorm.DB) {
 	// Check and seed users
-	Userid1 := uuid.New().String()
+
+	Userid1, _ := uuid.NewV7()
 	user1 := models.User{
-		Userid: Userid1,
+		Userid: Userid1.String(),
 		Name:   "John Doe",
 		Email:  "john@example.com",
 		Profile: models.Profile{
@@ -30,7 +31,7 @@ func SeedDatabase(db *gorm.DB) {
 		},
 	}
 
-	Userid2 := uuid.New().String()
+	Userid2, _ := uuid.NewV7()
 	user2 := models.User{
 		Userid: Userid2,
 		Name:   "Jane Doe",
