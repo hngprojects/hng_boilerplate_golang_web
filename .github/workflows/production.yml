@@ -39,7 +39,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.TEST_PASSWORD }}
           POSTGRES_DB: ${{ env.TEST_DB_NAME }}
         ports:
-          - ${{ env.TEST_DB_PORT }}:5432
+          - 5432:5432
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
