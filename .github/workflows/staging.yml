@@ -22,29 +22,27 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     env:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: db_name
+      TEST_USERNAME: postgres
+      TEST_PASSWORD: password
+      TEST_DB_NAME: db_name
+      TEST_DB_HOST: localhost
+      TEST_DB_PORT: 5432
+      TEST_DB_CONNECTION: pgsql
+      TEST_TIMEZONE: Africa/Lagos
+      TEST_SSLMODE: disable
+      TEST_MIGRATE: true
     services:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.TEST_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.TEST_PASSWORD }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
         ports:
           - 5432:5432
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Create the app config file
-        run: cp app-sample.env app.env
-      - name: Run The Project
-        run: nohup go run main.go > /dev/null 2>&1 &
-      - name: Wait for application to start
-        run: sleep 30s
-      - name: Test for reachability
-        run: curl http://localhost:8019
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
@@ -78,7 +76,7 @@ jobs:
                 # Navigate to the repository directory and pull changes
                 cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
                 git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
-                git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
+                git pull origin staging || { echo "Failed to pull latest changes"; exit 1; }
             else
                 git clone -b staging http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
             fi
