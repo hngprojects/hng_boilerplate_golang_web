@@ -21,16 +21,17 @@ func main() {
 	configuration := config.Setup(logger, "./app")
 
 	postgresql.ConnectToDatabase(logger, configuration.Database)
+
 	validatorRef := validator.New()
 
 	db := storage.Connection()
 
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)
-	}
 
-	// call the seed function
-	seed.SeedDatabase(db.Postgresql)
+		// call the seed function
+		seed.SeedDatabase(db.Postgresql)
+	}
 
 	r := router.Setup(logger, validatorRef, db, &configuration.App)
 

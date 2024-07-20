@@ -15,7 +15,7 @@ func SeedDatabase(db *gorm.DB) {
 
 	Userid1 := utility.GenerateUUID()
 	user1 := models.User{
-		Userid: Userid1,
+		ID: Userid1,
 		Name:   "John Doe",
 		Email:  "john@example.com",
 		Profile: models.Profile{
@@ -26,14 +26,14 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar.jpg",
 		},
 		Products: []models.Product{
-			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Userid: Userid1},
-			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", Userid: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", OwnerID: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", OwnerID: Userid1},
 		},
 	}
 
 	Userid2 := utility.GenerateUUID()
 	user2 := models.User{
-		Userid: Userid2,
+		ID: Userid2,
 		Name:   "Jane Doe",
 		Email:  "jane@example.com",
 		Profile: models.Profile{
@@ -44,15 +44,15 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar2.jpg",
 		},
 		Products: []models.Product{
-			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", Userid: Userid2},
-			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", Userid: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", OwnerID: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", OwnerID: Userid2},
 		},
 	}
 
 	organisations := []models.Organisation{
-		{Orgid: utility.GenerateUUID(), Name: "Org1", Description: "Description1"},
-		{Orgid: utility.GenerateUUID(), Name: "Org2", Description: "Description2"},
-		{Orgid: utility.GenerateUUID(), Name: "Org3", Description: "Description3"},
+		{ID: utility.GenerateUUID(), Name: "Org1", Description: "Description1"},
+		{ID: utility.GenerateUUID(), Name: "Org2", Description: "Description2"},
+		{ID: utility.GenerateUUID(), Name: "Org3", Description: "Description3"},
 	}
 
 	var existingUser models.User
@@ -66,15 +66,8 @@ func SeedDatabase(db *gorm.DB) {
 			fmt.Println("Users and organisations seeded.")
 
 			// Add users to organisations
-
-			// add user1 to two organization
-			postgresql.AddUserToOrganisation(db, organisations[0].Orgid, user1.Userid)
-			postgresql.AddUserToOrganisation(db, organisations[1].Orgid, user1.Userid)
-
-			// Add user2 to the three organization
-			postgresql.AddUserToOrganisation(db, organisations[0].Orgid, user2.Userid)
-			postgresql.AddUserToOrganisation(db, organisations[1].Orgid, user2.Userid)
-			postgresql.AddUserToOrganisation(db, organisations[2].Orgid, user2.Userid)
+			models.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
+			models.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
 			fmt.Println("Users added to organisations.")
 
 		} else {

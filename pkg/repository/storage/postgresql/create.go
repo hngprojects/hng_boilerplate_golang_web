@@ -28,12 +28,3 @@ func CreateMultipleRecords(db *gorm.DB, model interface{}, length int) error {
 	}
 	return nil
 }
-
-func AddUserToOrganisation(db *gorm.DB, orgID, userID string) error {
-	// Add user to organisation
-	err := db.Exec("INSERT INTO user_organisations (organisation_orgid, user_userid) VALUES (?, ?)", orgID, userID).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
