@@ -21,6 +21,7 @@ SCRIPTS=(
     "install_postgres_and_go.sh"
     "install_pm2.sh"
     "setup_postgres.sh"
+    "install_rabbitmq.sh"
 )
 
 # Make all scripts executable and execute them
