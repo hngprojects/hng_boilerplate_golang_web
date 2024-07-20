@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -31,14 +32,16 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 
 	// routers
 	ApiVersion := "api/v1"
-	Health(r, ApiVersion, validator, db, logger)
-	Newsletter(r, ApiVersion, validator, db, logger)
 
-	r.GET("api/v1/", func(c *gin.Context) {
+	Health(r, ApiVersion, validator, db, logger)
+	Seed(r, ApiVersion, validator, db, logger)
+	Invite(r, ApiVersion, validator, db, logger)
+
+	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status_code": 200,
-			"message":     "HNGi Golang Boilerplate",
-			"status":      http.StatusOK,
+			"code":    200,
+			"message": "HNGi Golang Boilerplate",
+			"status":  http.StatusOK,
 		})
 	})
 
