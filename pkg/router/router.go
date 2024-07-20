@@ -30,8 +30,9 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	r.MaxMultipartMemory = 1 << 20 // 1MB
 
 	// routers
-	ApiVersion := "v2"
+	ApiVersion := "/api/v1"
 	Health(r, ApiVersion, validator, db, logger)
+	Blog(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
