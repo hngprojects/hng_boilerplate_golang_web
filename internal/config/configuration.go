@@ -3,8 +3,9 @@ package config
 import (
 	"log"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"github.com/spf13/viper"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 // Setup initialize configuration

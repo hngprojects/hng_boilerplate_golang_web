@@ -4,7 +4,7 @@
 DB_PASSWORD="password"
 
 # Define the databases and users
-DATABASES=("development" "staging" "production")
+DATABASES=("development_db" "staging_db" "production_db")
 USERS=("development_user" "staging_user" "production_user")
 
 # Check if the script is running as root (necessary for changing PostgreSQL settings)
