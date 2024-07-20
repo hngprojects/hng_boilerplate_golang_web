@@ -1,4 +1,4 @@
-## hng_boilerplace_golang_web
+## hng_boilerplate_golang_web
 
 ### Prerequisites
 
