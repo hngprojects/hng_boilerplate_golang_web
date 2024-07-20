@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,9 +23,10 @@ var (
 func init() {
 	// Initialize Google OAuth2 configuration
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "https://127.0.0.1:8080/api/v1/auth/callback/google", // URL to handle Google's response
-		ClientID:     Client_ID,                                            // Your Google client ID
-		ClientSecret: Client_Secret,                                        // Your Google client secret
+		//Redirect Must match Redirect URI in API Credentials
+		RedirectURL:  "http://127.0.0.1:8000/api/v1/auth/callback/google", // "http" used instead of "https" to resolve SSL certificate errors
+		ClientID:     Client_ID,                                           // Your Google client ID
+		ClientSecret: Client_Secret,                                       // Your Google client secret
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
@@ -59,7 +61,7 @@ func Handle_Google_Callback(c *gin.Context) {
 
 	client := googleOauthConfig.Client(context.Background(), token)
 	response, err := client.Get("https://www.googleapis.com/oauth2/v1/userinfo?alt=json")
-
+	fmt.Println(response)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user info"})
 		return
@@ -99,6 +101,7 @@ func Handle_Token_Refresh(c *gin.Context) {
 
 }
 
+// ----------------------------Token Generation--------------------------------------------
 // Define your secret key for signing the tokens
 var jwtKey = []byte("your_secret_key")
 

@@ -4,26 +4,21 @@ import (
 	"github.com/gin-gonic/gin"
 	// "github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/auth"
-	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
-	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func main() {
-	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
+	// logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
 
-	configuration := config.Setup(logger, "./app")
+	// configuration := config.Setup(logger, "./app")
 
-	postgresql.ConnectToDatabase(logger, configuration.Database)
-	// validatorRef := validator.New()
+	// postgresql.ConnectToDatabase(logger, configuration.Database)
+	// // validatorRef := validator.New()
 
-	db := storage.Connection()
+	// db := storage.Connection()
 
-	if configuration.Database.Migrate {
-		migrations.RunAllMigrations(db)
-	}
+	// if configuration.Database.Migrate {
+	// 	migrations.RunAllMigrations(db)
+	// }
 
 	// r := router.Setup(logger, validatorRef, db, &configuration.App)
 
@@ -35,6 +30,7 @@ func main() {
 	router.GET("/api/v1/auth/login/google", auth.Handle_Google_Login)
 	router.GET("/api/v1/auth/callback/google", auth.Handle_Google_Callback)
 	router.POST("/api/v1/auth/token/refresh", auth.Handle_Token_Refresh)
+	router.SetTrustedProxies([]string{"127.0.0.1"})
+	router.Run(":8000")
 
-	router.Run(":8080")
 }
