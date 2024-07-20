@@ -76,7 +76,7 @@ jobs:
                 # Navigate to the repository directory and pull changes
                 cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
                 git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
-                git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
+                git pull origin dev || { echo "Failed to pull latest changes"; exit 1; }
             else
                 git clone -b dev http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
             fi
