@@ -66,8 +66,8 @@ func SeedDatabase(db *gorm.DB) {
 			fmt.Println("Users and organisations seeded.")
 
 			// Add users to organisations
-			models.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
-			models.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
+			existingUser.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
+			existingUser.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
 			fmt.Println("Users added to organisations.")
 
 		} else {

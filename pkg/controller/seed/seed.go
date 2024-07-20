@@ -20,8 +20,10 @@ type Controller struct {
 }
 
 func (base *Controller) GetUser(c *gin.Context) {
+	//get the user_id from the URL
+	userIDStr := c.Param("user_id")
 
-	user, err := seed.GetUser(c, base.Db.Postgresql)
+	user, err := seed.GetUser(userIDStr, base.Db.Postgresql)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)
