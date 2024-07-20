@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"gorm.io/gorm"
@@ -11,17 +13,26 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func ValidateCreateOrgRequest(req models.CreateOrgRequestModel, db *gorm.DB) (models.CreateOrgRequestModel, error) {
+func ValidateCreateOrgRequest(req models.CreateOrgRequestModel, db *gorm.DB) (models.CreateOrgRequestModel, int, error) {
 
 	org := models.Organisation{}
 
 	// Check if the organization already exists
-	exists := postgresql.CheckExists(db, &org, "email = ?", req.Email)
-	if exists {
-		return req, errors.New("organization already exists with the given email")
+
+	if req.Email != "" {
+		req.Email = strings.ToLower(req.Email)
+		formattedMail, checkBool := utility.EmailValid(req.Email)
+		if !checkBool {
+			return req, http.StatusUnprocessableEntity, fmt.Errorf("email address is invalid")
+		}
+		req.Email = formattedMail
+		exists := postgresql.CheckExists(db, &org, "email = ?", req.Email)
+		if exists {
+			return req, http.StatusBadRequest, errors.New("organization already exists with the given email")
+		}
 	}
 
-	return req, nil
+	return req, 0,  nil
 }
 
 func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId string) (*models.Organisation, error) {
@@ -45,13 +56,15 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 		return nil, err
 	}
 
-	user, err := models.GetUserByID(db, userId)
+	var user models.User
+
+	user, err = user.GetUserByID(db, userId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = models.AddUserToOrganisation(db, &user, []interface{}{&org})
+	err = user.AddUserToOrganisation(db, &user, []interface{}{&org})
 
 	if err != nil {
 		return nil, err

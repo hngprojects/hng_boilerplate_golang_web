@@ -18,7 +18,6 @@ type Organisation struct {
 	Type        string    `gorm:"type:varchar(255)" json:"type"`
 	Address     string    `gorm:"type:varchar(255)" json:"address"`
 	Country     string    `gorm:"type:varchar(255)" json:"country"`
-	Slug        string    `gorm:"type:varchar(255)" json:"slug"`
 	OwnerID     string    `gorm:"type:uuid;" json:"owner_id"`
 	Users       []User    `gorm:"many2many:user_organisations;foreignKey:ID;joinForeignKey:org_id;References:ID;joinReferences:user_id"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
@@ -28,24 +27,12 @@ type Organisation struct {
 type CreateOrgRequestModel struct {
 	Name        string `json:"name" validate:"required,min=2,max=255"`
 	Description string `json:"description" `
-	Email       string `json:"email" validate:"required,email"`
+	Email       string `json:"email" validate:"required"`
 	State       string `json:"state" validate:"required"`
 	Industry    string `json:"industry" validate:"required"`
 	Type        string `json:"type" validate:"required"`
 	Address     string `json:"address" validate:"required"`
 	Country     string `json:"country" validate:"required"`
-}
-
-func AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
-
-	// Add user to organisation
-
-	err := db.Model(user).Association("Organisations").Append(orgs...)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {

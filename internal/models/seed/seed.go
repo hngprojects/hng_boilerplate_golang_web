@@ -18,6 +18,7 @@ func SeedDatabase(db *gorm.DB) {
 		ID: Userid1,
 		Name:   "John Doe",
 		Email:  "john@example.com",
+		Password: utility.RandomString(20),
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "John",
@@ -35,6 +36,7 @@ func SeedDatabase(db *gorm.DB) {
 	user2 := models.User{
 		ID: Userid2,
 		Name:   "Jane Doe",
+		Password: utility.RandomString(20),
 		Email:  "jane@example.com",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
@@ -50,9 +52,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4)+"@gmail.com"),Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4)+"@gmail.com"),Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4)+"@gmail.com"),Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User
@@ -66,8 +68,8 @@ func SeedDatabase(db *gorm.DB) {
 			fmt.Println("Users and organisations seeded.")
 
 			// Add users to organisations
-			models.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
-			models.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
+			existingUser.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
+			existingUser.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
 			fmt.Println("Users added to organisations.")
 
 		} else {
