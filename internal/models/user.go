@@ -38,3 +38,13 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 
 	return user, nil
 }
+
+func (u *User) GetUserByEmail(db *gorm.DB, email string) (User, error) {
+	var user User
+
+	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", email).First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
