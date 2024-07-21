@@ -44,7 +44,7 @@ func connectToDb(host, user, password, dbname, port, sslmode, timezone string, l
 		port = detectedPort
 	}
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v prefer_simple_protocol=true", host, user, password, dbname, port, sslmode, timezone)
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v", host, user, password, dbname, port, sslmode, timezone)
 
 	newLogger := lg.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
