@@ -22,6 +22,8 @@ require (
 
 require github.com/dgrijalva/jwt-go v3.2.0+incompatible
 
+require github.com/joho/godotenv v1.5.1 // indirect
+
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect

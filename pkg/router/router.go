@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/hngprojects/hng_boilerplate_golang_web/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -40,6 +41,11 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 			"status":  http.StatusOK,
 		})
 	})
+
+	//OAuth implementation by BlacAc3
+	r.GET("/api/v1/auth/login/google", auth.Handle_Google_Login)
+	r.GET("/api/v1/auth/callback/google", auth.Handle_Google_Callback)
+	r.POST("/api/v1/auth/token/refresh", auth.Handle_Token_Refresh)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
