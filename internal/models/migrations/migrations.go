@@ -11,6 +11,7 @@ func AuthMigrationModels() []interface{} {
 		models.Profile{},
 		models.Product{},
 		models.User{},
+		models.NewsLetter{},
 	} // an array of db models, example: User{}
 }
 
