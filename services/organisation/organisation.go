@@ -1,4 +1,4 @@
-package service
+package organisation
 
 import (
 	"errors"
@@ -72,3 +72,39 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 
 	return &org, nil
 }
+
+
+func CheckOrgExists(orgId string, db *gorm.DB) (models.Organisation, error) {
+	var org models.Organisation
+
+	org, err := org.GetOrgByID(db, orgId)
+	if err != nil {
+		return org, err
+	}
+
+	return org, nil
+}
+
+func CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {
+	var org models.Organisation
+	var user models.User
+
+	org, err := org.GetOrgByID(db, orgId)
+	if err != nil {
+		return false, err
+	}
+
+	user, err = user.GetUserByID(db, userId)
+	if err != nil {
+		return false, err
+	}
+
+	for _, org := range user.Organisations {
+		if org.ID == orgId {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+

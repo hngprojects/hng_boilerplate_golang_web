@@ -54,7 +54,6 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 }
 
 // check if token is valid
-
 func TokenValid(bearerToken string) (*jwt.Token, error) {
 	token, err := verifyToken(bearerToken)
 	if err != nil {

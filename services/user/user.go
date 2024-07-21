@@ -155,3 +155,13 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 	return responseData, http.StatusCreated, nil
 }
+
+func GetUserByEmail(email string, db *gorm.DB)(models.User, error){
+	var user models.User
+
+	user, err := user.GetUserByEmail(db, email);
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}

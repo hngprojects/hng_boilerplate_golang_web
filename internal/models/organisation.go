@@ -45,3 +45,12 @@ func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 
 	return nil
 }
+
+func (o *Organisation) GetOrgByID(db *gorm.DB, orgID string) (Organisation, error) {
+	var org Organisation
+
+	if err := db.Where("id = ?", orgID).First(&org).Error; err != nil {
+		return org, err
+	}
+	return org, nil
+}

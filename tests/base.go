@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 
@@ -14,6 +15,8 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -101,4 +104,39 @@ func GetLoginToken(t *testing.T, r *gin.Engine, user user.Controller, loginData 
 	token := dataM["access_token"].(string)
 
 	return token
+}
+
+
+// helper to create an organisation
+func CreateOrganisation(t *testing.T, r *gin.Engine, org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
+	var (
+		orgPath = "/api/v1/organisations"
+		orgURI  = url.URL{Path: orgPath}
+	)
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+	{
+		orgUrl.POST("/organisations", org.CreateOrganisation)
+	}
+	var b bytes.Buffer
+	json.NewEncoder(&b).Encode(orgData)
+	req, err := http.NewRequest(http.MethodPost, orgURI.String(), &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	// Assuming the response body includes the OrgID, decode it
+    var respBody struct {
+        OrgID string `json:"orgId"`
+    }
+    err = json.NewDecoder(rr.Body).Decode(&respBody)
+    if err != nil {
+        t.Fatal("Failed to decode response body:", err)
+    }
+
+    return respBody.OrgID // Return the OrgID
 }
