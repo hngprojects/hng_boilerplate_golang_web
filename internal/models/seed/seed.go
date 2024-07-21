@@ -15,11 +15,11 @@ func SeedDatabase(db *gorm.DB) {
 
 	Userid1 := utility.GenerateUUID()
 	user1 := models.User{
-		ID:       Userid1,
-		Name:     "John Doe",
-		Email:    "john@example.com",
+		ID: Userid1,
+		Name:   "John Doe",
+		Email:  "john@example.com",
 		Password: utility.RandomString(20),
-		Role:     "user",
+		Role: "user",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "John",
@@ -33,17 +33,17 @@ func SeedDatabase(db *gorm.DB) {
 		},
 		Blogs: []models.Blog{
 			{ID: utility.GenerateUUID(), Title: "Blog post 1", Content: "Content of blog post 1", AuthorID: Userid1},
-			{ID: utility.GenerateUUID(), Title: "Blog post 2", Content: "Content of blog post 3", AuthorID: Userid1},
+			{ID: utility.GenerateUUID(), Title: "Blog post 2", Content: "Content of blog post 2", AuthorID: Userid1},
 		},
 	}
 
 	Userid2 := utility.GenerateUUID()
 	user2 := models.User{
-		ID:       Userid2,
-		Name:     "Jane Doe",
-		Email:    "jane@example.com",
+		ID: Userid2,
+		Name:   "Jane Doe",
+		Email:  "jane@example.com",
 		Password: utility.RandomString(20),
-		Role:     "superadmin",
+		Role: "superadmin",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "Jane",
@@ -58,9 +58,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User

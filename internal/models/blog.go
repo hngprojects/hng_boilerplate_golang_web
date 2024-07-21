@@ -8,29 +8,15 @@ import (
 )
 
 type Blog struct {
-	ID        string      `gorm:"type:uuid;primary_key" json:"id"`
-	Title     string      `gorm:"not null" json:"title"`
-	Content   string      `gorm:"type:text" json:"content"`
-	AuthorID  string      `gorm:"type:uuid;not null" json:"author_id"`
-	Author    User        `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
-	Tags      []BlogTag   `gorm:"many2many:blog_tags;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tags,omitempty"`
-	Images    []BlogImage `gorm:"foreignKey:BlogID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"images,omitempty"`
-	CreatedAt time.Time   `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time   `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
-}
-
-type BlogTag struct {
-	ID    string `gorm:"type:uuid;primary_key" json:"id"`
-	Name  string `gorm:"not null;unique" json:"name"`
-	Blogs []Blog `gorm:"many2many:blog_tags" json:"blogs,omitempty"`
-}
-
-type BlogImage struct {
 	ID        string    `gorm:"type:uuid;primary_key" json:"id"`
-	URL       string    `gorm:"not null" json:"url"`
-	BlogID    string    `gorm:"type:uuid;not null" json:"blog_id"`
-	Blog      Blog      `gorm:"foreignKey:BlogID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+	Title     string    `gorm:"not null" json:"title"`
+	Content   string    `gorm:"type:text" json:"content"`
+	AuthorID  string    `gorm:"type:uuid;not null" json:"author_id"`
+	Author    User      `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
+	Tags      []string  `gorm:"type:text[]" json:"tags,omitempty"`
+	Images    []string  `gorm:"type:text[]" json:"images,omitempty"`
 	CreatedAt time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
 }
 
 type CreateBlogRequest struct {
@@ -41,7 +27,7 @@ type CreateBlogRequest struct {
 }
 
 func (blog *Blog) Create(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &blog)
+	err := postgresql.CreateOneRecord(db, blog)
 
 	if err != nil {
 		return err
@@ -51,7 +37,7 @@ func (blog *Blog) Create(db *gorm.DB) error {
 }
 
 func (blog *Blog) Delete(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, &blog)
+	err := postgresql.DeleteRecordFromDb(db, blog)
 
 	if err != nil {
 		return err
