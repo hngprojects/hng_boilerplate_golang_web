@@ -29,7 +29,6 @@ func ConnectToDatabase(logger *utility.Logger, configDatabases config.Database) 
 }
 
 func connectToDb(host, user, password, dbname, port, sslmode, timezone string, logger *utility.Logger) *gorm.DB {
-	fmt.Printf("%v, %T",port,port)
 	if _, err := strconv.Atoi(port); err != nil {
 		u, err := url.Parse(port)
 		if err != nil {
