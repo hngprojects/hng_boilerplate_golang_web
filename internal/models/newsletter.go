@@ -22,7 +22,3 @@ func (n *NewsLetter) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 	return
 }
-
-func (NewsLetter) TableName() string {
-	return "subscribers_table"
-}

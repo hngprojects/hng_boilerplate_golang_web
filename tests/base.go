@@ -19,10 +19,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func SetupRoutes(router *gin.Engine, newsController *newsletter.Controller) {
-	router.POST("/newsletter", newsController.SubscribeNewsLetter)
-}
-
 func Setup() *utility.Logger {
 	logger := utility.NewLogger()
 	config := config.Setup(logger, "../app")

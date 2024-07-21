@@ -7,22 +7,48 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 )
 
+func setupNewsLetterTestRouter() (*gin.Engine, *newsletter.Controller) {
+	gin.SetMode(gin.TestMode)
+
+	logger := Setup()
+	db := storage.Connection()
+	validator := validator.New()
+
+	newsController := &newsletter.Controller{
+		Db:        db,
+		Validator: validator,
+		Logger:    logger,
+	}
+
+	r := gin.Default()
+	SetupNewsLetterRoutes(r, newsController)
+	return r, newsController
+}
+
+func SetupNewsLetterRoutes(r *gin.Engine, newsController *newsletter.Controller) {
+	r.POST("/api/v1/newsletter", newsController.SubscribeNewsLetter)
+}
+
 func TestE2ENewsletterSubscription(t *testing.T) {
-	router, _ := setupTestRouter()
+	router, _ := setupNewsLetterTestRouter()
 
 	// Test POST /newsletter
-	body := map[string]interface{}{
-		"Email": "e2e_test@example.com",
+	body := models.NewsLetter{
+		Email: "e2e_test@example.com",
 	}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		t.Fatalf("Failed to marshal request body: %v", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
@@ -38,14 +64,14 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 }
 
 func TestPostNewsletter_ValidateEmail(t *testing.T) {
-	router, _ := setupTestRouter()
+	router, _ := setupNewsLetterTestRouter()
 
-	body := map[string]interface{}{
-		"Email": "invalid-email",
+	body := models.NewsLetter{
+		Email: "invalid-email",
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -57,17 +83,17 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 }
 
 func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
-	router, newsController := setupTestRouter()
+	router, newsController := setupNewsLetterTestRouter()
 
 	db := newsController.Db.Postgresql
 	db.Create(&models.NewsLetter{Email: "test@example.com"})
 
-	body := map[string]interface{}{
-		"Email": "test@example.com",
+	body := models.NewsLetter{
+		Email: "test@example.com",
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -79,14 +105,14 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 }
 
 func TestPostNewsletter_SaveData(t *testing.T) {
-	router, newsController := setupTestRouter()
+	router, newsController := setupNewsLetterTestRouter()
 
-	body := map[string]interface{}{
-		"Email": "test2@example.com",
+	body := models.NewsLetter{
+		Email: "test2@example.com",
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -104,14 +130,14 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 }
 
 func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
-	router, _ := setupTestRouter()
+	router, _ := setupNewsLetterTestRouter()
 
-	body := map[string]interface{}{
-		"Email": "test3@example.com",
+	body := models.NewsLetter{
+		Email: "test3@example.com",
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 

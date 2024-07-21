@@ -8,7 +8,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/newsletter"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -39,15 +39,15 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 		return
 	}
 
-	if postgresql.CheckExists(base.Db.Postgresql, &req, "email = ?", req.Email) {
-		rd := utility.BuildErrorResponse(http.StatusConflict, "error", "Email already subscribed", nil, nil)
-		c.JSON(http.StatusConflict, rd)
-		return
-	}
-
-	if err := postgresql.CreateOneRecord(base.Db.Postgresql, &req); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to subscribe", err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
+	err = service.NewsLetterSubscribe(&req, base.Db.Postgresql)
+	if err != nil {
+		if err == service.ErrEmailAlreadySubscribed {
+			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "Email already subscribed", nil, nil)
+			c.JSON(http.StatusConflict, rd)
+		} else {
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to subscribe", err, nil)
+			c.JSON(http.StatusInternalServerError, rd)
+		}
 		return
 	}
 
