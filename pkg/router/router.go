@@ -43,18 +43,18 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"code":    200,
-			"message": "HNGi Golang Boilerplate",
-			"status":  http.StatusOK,
+			"status_code": 200,
+			"message":     "HNGi Golang Boilerplate",
+			"status":      http.StatusOK,
 		})
 	})
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
-			"name":    "Not Found",
-			"message": "Page not found.",
-			"code":    404,
-			"status":  http.StatusNotFound,
+			"name":        "Not Found",
+			"message":     "Page not found.",
+			"status_code": 404,
+			"status":      http.StatusNotFound,
 		})
 	})
 
