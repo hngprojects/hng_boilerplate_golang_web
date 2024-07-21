@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
@@ -21,4 +22,15 @@ func (n *NewsLetter) BeforeCreate(tx *gorm.DB) (err error) {
 		n.ID = utility.GenerateUUID()
 	}
 	return
+}
+
+func (c *NewsLetter) CreateNewsLetter(db *gorm.DB) error {
+
+	err := postgresql.CreateOneRecord(db, &c)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

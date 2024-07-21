@@ -53,7 +53,7 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 
 	base.Logger.Info("subscribed successfully")
 
-	rd := utility.BuildSuccessResponse2(http.StatusCreated, "subscribed successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "subscribed successfully", nil)
 	c.JSON(http.StatusCreated, rd)
 
 }

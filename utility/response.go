@@ -28,12 +28,6 @@ func BuildSuccessResponse(code int, message string, data interface{}, pagination
 	return res
 }
 
-// BuildResponse method is to inject data value to dynamic success response
-func BuildSuccessResponse2(code int, message string) Response {
-	res := ResponseMessage(code, "success", "", message, nil, nil, nil, nil)
-	return res
-}
-
 // BuildErrorResponse method is to inject data value to dynamic failed response
 func BuildErrorResponse(code int, status string, message string, err interface{}, data interface{}, logger ...bool) Response {
 	res := ResponseMessage(code, status, "", message, err, data, nil, nil)

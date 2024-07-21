@@ -16,7 +16,7 @@ func NewsLetterSubscribe(newsletter *models.NewsLetter, db *gorm.DB) error {
 		return ErrEmailAlreadySubscribed
 	}
 
-	if err := postgresql.CreateOneRecord(db, newsletter); err != nil {
+	if err := newsletter.CreateNewsLetter(db); err != nil {
 		return err
 	}
 
