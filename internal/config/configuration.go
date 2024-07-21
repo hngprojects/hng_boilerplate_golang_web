@@ -3,6 +3,9 @@ package config
 import (
 	"log"
 
+
+	"github.com/mitchellh/mapstructure"
+
 	"github.com/spf13/viper"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -23,10 +26,20 @@ func Setup(logger *utility.Logger, name string) *Configuration {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file, %s", err)
-	}
+		// remove from fatal to Printf to check env
+		log.Printf("Error reading config file, %s", err)
+		log.Printf("Reading from environment variable")
 
-	viper.AutomaticEnv()
+		viper.AutomaticEnv()
+
+		var config BaseConfig
+		
+		// bind config keys to viper
+		err := BindKeys(viper.GetViper(), config)
+		if err != nil {
+			log.Fatalf("Unable to bindkeys in struct, %v", err)
+		}
+	}
 
 	err := viper.Unmarshal(&baseConfiguration)
 	if err != nil {
@@ -44,4 +57,19 @@ func Setup(logger *utility.Logger, name string) *Configuration {
 // GetConfig helps you to get configuration data
 func GetConfig() *Configuration {
 	return Config
+}
+
+func BindKeys(v *viper.Viper, input interface{}) error {
+
+	envKeysMap := &map[string]interface{}{}
+	if err := mapstructure.Decode(input, &envKeysMap); err != nil {
+		return err
+	}
+	for k := range *envKeysMap {
+		if bindErr := viper.BindEnv(k); bindErr != nil {
+			return bindErr
+		}
+	}
+
+	return nil
 }
