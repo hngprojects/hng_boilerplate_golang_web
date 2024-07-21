@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -71,6 +73,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		username     = strings.ToLower(req.UserName)
 		phoneNumber  = req.PhoneNumber
 		password     = req.Password
+		role         = req.Role
 		responseData gin.H
 	)
 
@@ -84,6 +87,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		Name:     username,
 		Email:    email,
 		Password: password,
+		Role:     role,
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: firstName,
@@ -110,6 +114,8 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		"phone":        user.Profile.Phone,
 		"expires_in":   expiry,
 		"access_token": token,
+		"userId":       user.ID,
+		"role":         user.Role,
 	}
 
 	return responseData, http.StatusCreated, nil
@@ -154,4 +160,46 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 	}
 
 	return responseData, http.StatusCreated, nil
+}
+
+// update user function
+func UpdateUser(req models.UpdateUserRequestModel, userID string, db *gorm.DB) (gin.H, int, error) {
+	var (
+		user         = models.User{}
+		responseData gin.H
+	)
+
+	// convert userID to UUID
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		return responseData, http.StatusNotFound, fmt.Errorf("invalid user ID format")
+	}
+	// Check if the user exists
+	if err := db.Where("id = ?", id).First(&user).Error; err != nil {
+		return responseData, http.StatusNotFound, fmt.Errorf("user not found")
+	}
+
+	// Check if the current user has admin privileges
+	if user.Role != "admin" {
+		return responseData, http.StatusForbidden, fmt.Errorf("forbidden")
+	}
+
+	// Update the user data
+	user.Name = req.Name
+	user.PhoneNumber = req.PhoneNumber
+
+	// Save the updated user data
+	if err := db.Save(&user).Error; err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("failed to update user: %v", err)
+	}
+
+	responseData = gin.H{
+		"user": gin.H{
+			"id":           user.ID,
+			"name":         user.Name,
+			"phone_number": user.PhoneNumber,
+		},
+	}
+
+	return responseData, http.StatusOK, nil
 }

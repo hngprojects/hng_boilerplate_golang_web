@@ -13,6 +13,8 @@ type User struct {
 	Name          string         `gorm:"column:name; type:varchar(255)" json:"name"`
 	Email         string         `gorm:"column:email; type:varchar(255)" json:"email"`
 	Password      string         `gorm:"column:password; type:text; not null" json:"-"`
+	PhoneNumber   string         `gorm:"column:phone_number; type:varchar(15); not null" json: "phone_number"`
+	Role          string         `gorm:"column:role; type:varchar(255)" json:"role"`
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	Organisations []Organisation `gorm:"many2many:user_organisations;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
@@ -27,11 +29,18 @@ type CreateUserRequestModel struct {
 	LastName    string `json:"last_name" validate:"required"`
 	UserName    string `json:"username" validate:"required"`
 	PhoneNumber string `json:"phone_number"`
+	Role        string `json:"role"`
 }
 
 type LoginRequestModel struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
+}
+
+// update user model
+type UpdateUserRequestModel struct {
+	Name        string `json:"name" binding:"required"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {

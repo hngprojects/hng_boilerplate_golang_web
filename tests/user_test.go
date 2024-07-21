@@ -11,6 +11,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
@@ -229,4 +231,100 @@ func TestLogin(t *testing.T) {
 
 	}
 
+}
+
+// update user details test
+func TestUpdateUser(t *testing.T) {
+	logger := Setup()
+	gin.SetMode(gin.TestMode)
+	validatorRef := validator.New()
+	db := storage.Connection()
+	var (
+		updateUserPath = "/api/v1/users/%s"
+		updateUserURI  = url.URL{}
+		currUUID       = uuid.New().String()
+		userData       = models.User{
+			ID:          uuid.New(),
+			Name:        "John Doe",
+			PhoneNumber: "123456789",
+			Role:        "admin",
+		}
+	)
+
+	db.Create(&userData)
+
+	tests := []struct {
+		Name         string
+		UserID       string
+		RequestBody  models.UpdateUserRequestModel
+		ExpectedCode int
+		Message      string
+	}{
+		{
+			Name:   "Successful response with valid ID",
+			UserID: userData.ID.String(),
+			RequestBody: models.UpdateUserRequestModel{
+				Name:        "Updated Name",
+				PhoneNumber: "987654321",
+			},
+			ExpectedCode: http.StatusOK,
+			Message:      "User updated successfully",
+		}, {
+			Name:   "Invalid userId",
+			UserID: "invalid-uuid",
+			RequestBody: models.UpdateUserRequestModel{
+				Name:        "Updated Name",
+				PhoneNumber: "987654321",
+			},
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "invalid user ID format",
+		}, {
+			Name:         "Missing userId",
+			UserID:       "",
+			RequestBody:  models.UpdateUserRequestModel{Name: "Updated Name", PhoneNumber: "987654321"},
+			ExpectedCode: http.StatusNotFound,
+		}, {
+			Name:   "Invalid request body",
+			UserID: userData.ID.String(),
+			RequestBody: models.UpdateUserRequestModel{
+				Name:        "Updated Name",
+				PhoneNumber: "",
+			},
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "Failed to parse request body",
+		},
+	}
+
+	userController := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	r.PATCH("/api/v1/users/:userId", userController.UpdateUser)
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			var b bytes.Buffer
+			json.NewEncoder(&b).Encode(test.RequestBody)
+
+			updateUserURI.Path = fmt.Sprintf(updateUserPath, test.UserID)
+			req, err := http.NewRequest(http.MethodPatch, updateUserURI.String(), &b)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, test.ExpectedCode, rr.Code)
+			if test.Message != "" {
+				var response map[string]interface{}
+				err = json.Unmarshal(rr.Body.Bytes(), &response)
+				if err != nil {
+					t.Fatal(err)
+				}
+				message := response["message"].(string)
+				assert.Equal(t, test.Message, message)
+			}
+		})
+	}
 }
