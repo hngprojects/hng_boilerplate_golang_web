@@ -15,11 +15,10 @@ func SeedDatabase(db *gorm.DB) {
 
 	Userid1 := utility.GenerateUUID()
 	user1 := models.User{
-		ID:       Userid1,
-		Name:     "John Doe",
-		Email:    "john@example.com",
+		ID: Userid1,
+		Name:   "John Doe",
+		Email:  "john@example.com",
 		Password: utility.RandomString(20),
-		Role:     "customer",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "John",
@@ -35,11 +34,10 @@ func SeedDatabase(db *gorm.DB) {
 
 	Userid2 := utility.GenerateUUID()
 	user2 := models.User{
-		ID:       Userid2,
-		Name:     "Jane Doe",
+		ID: Userid2,
+		Name:   "Jane Doe",
 		Password: utility.RandomString(20),
-		Email:    "jane@example.com",
-		Role:     "customer",
+		Email:  "jane@example.com",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "Jane",
@@ -54,9 +52,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User

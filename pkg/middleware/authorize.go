@@ -10,7 +10,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func Authorize(requiredRoles ...string) gin.HandlerFunc {
+func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var tokenStr string
 		bearerToken := c.GetHeader("Authorization")
@@ -46,27 +46,6 @@ func Authorize(requiredRoles ...string) gin.HandlerFunc {
 		authoriseStatus, ok := claims["authorised"].(bool) //check if token is authorised for middleware
 		if !ok && !authoriseStatus {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
-			return
-		}
-
-		// Check user role
-		userRole, ok := claims["user_role"].(string)
-		if !ok {
-			c.AbortWithStatusJSON(http.StatusForbidden, utility.BuildErrorResponse(http.StatusForbidden, "error", "Forbidden", "Unauthorized", nil))
-			return
-		}
-
-		// Check if user role is in the list of required roles
-		roleAuthorized := false
-		for _, role := range requiredRoles {
-			if userRole == role {
-				roleAuthorized = true
-				break
-			}
-		}
-
-		if !roleAuthorized {
-			c.AbortWithStatusJSON(http.StatusForbidden, utility.BuildErrorResponse(http.StatusForbidden, "error", "Forbidden", "Unauthorized", nil))
 			return
 		}
 
