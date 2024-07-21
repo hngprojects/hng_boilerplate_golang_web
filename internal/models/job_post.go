@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
@@ -11,57 +12,57 @@ type JobPost struct {
 	Title 			string 		`gorm:"column:title; type:text; not null" json:"title"`
 	Description     string 		`gorm:"column:description; type:varchar(255); not null" json:"description"`
 	Location        string 		`gorm:"column:location; type:varchar(255); not null" json:"location"`// need review
-	Salary 			string 		`gorm:"column:salary; type:number; not null" json:"salary"`
-	JobType 		string 		`gorm:"column:job_title; type:varchar(255); not null" json:"job_title"`
+	Salary 			float64 	`gorm:"column:salary; type:int; not null" json:"salary"`
+	JobType 		string 		`gorm:"column:job_type; type:varchar(255); not null" json:"job_type"`
 	CompanyName 	string 		`gorm:"column:company_name; type:varchar(255); not null" json:"company_name"`
 	CreatedAt       time.Time   `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time   `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
 }
 
 
-func (u *JobPost) CreateJobPost(db *gorm.DB, error{
-	err := db.Model().Association("User").Append(user.user_id)
+func (j *JobPost) AddJobPost(db *gorm.DB, jobPost JobPost) (JobPost, error) {
+	jobPost.ID = utility.GenerateUUID()
+	jobPost.CreatedAt = time.Now()
+
+	result := db.Create(&jobPost)
+	if result.Error != nil {
+		return JobPost{}, result.Error
+	}
+	return jobPost, nil
+}
+
+func (j *JobPost) GetAllJobPosts(db *gorm.DB) ([]JobPost, error) {
+	var jobposts []JobPost
+
+	err := db.Find(&jobposts).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
-})
-func (u *JobPost) FetchAllJobPost(db *storage.Database, error){
-		err := db.Postgresql.Find(&JobPost).Error; err != nil {
-		return models.JobPost{}, errors.New("No job post found!")
-	}
+
+	return jobposts, nil
 }
 
-func (u *JobPost) FetchJobPostById(db *storage.Database, error){
-		err := db.Postgresql.First(&JobPost, id).Error; err != nil {
-		return models.JobPost{}, errors.New("Job post not found!")
+func (j *JobPost) GetJobPostById(db *gorm.DB, id string) (JobPost, error) {
+	var jobpost JobPost
+
+	if err := db.Where("id = ?", id).First(&jobpost).Error; err != nil {
+		return jobpost, err
 	}
+
+	return jobpost, nil
 }
 
-func (u *JobPost) UpdateJobPostById(db *storage.Database, error{
-		err := db.Postgresql(&JobPost).Updates(JobPost{Name: "hello", Age: 18, Active: false})
-})
-
-
-
-
-// func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
-	// 	var user User
-	
-	// 	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("id = ?", userID).First(&user).Error; err != nil {
-		// 		return user, err
-		// 	}
-		
-		// 	return user, nil
-		// }
-
-		// func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
-		
-		// 	// Add user to organisation
-		// 	err := db.Model(user).Association("Organisations").Append(orgs...)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		
-		// 	return nil
-		// }
+func (j *JobPost) EditJobPostById(db *gorm.DB, id string, updates map[string]interface{}) (JobPost, error) {
+	var jobPost JobPost
+	if err := db.First(&jobPost, "id = ?", id).Error; err != nil {
+		return JobPost{}, err
+	}
+	if err := db.Model(&jobPost).Updates(updates).Error; err != nil {
+		return JobPost{}, err
+	}
+	jobPost.UpdatedAt = time.Now()
+	if err := db.Save(&jobPost).Error; err != nil {
+		return JobPost{}, err
+	}
+	return jobPost, nil
+}
