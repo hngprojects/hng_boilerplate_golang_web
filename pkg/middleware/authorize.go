@@ -59,3 +59,27 @@ func Authorize() gin.HandlerFunc {
 
 	}
 }
+
+func RequireSuperAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, exists := c.Get("userClaims")
+		if !exists {
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", "Bad Request", nil)
+			c.JSON(http.StatusBadRequest, rd)
+			return
+		}
+
+		userClaims := claims.(jwt.MapClaims)
+
+		userRole := userClaims["user_role"].(string)
+
+		if userRole != "superadmin" {
+			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", "You are not authorized to perform this action", "Forbidden", nil)
+			c.JSON(http.StatusForbidden, rd)
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
