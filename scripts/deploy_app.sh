@@ -51,11 +51,20 @@ fi
 
 # Replace environment variables in app.env
 cp app-sample.env app.env
-for VAR in "$@"
+for var in "$@"
 do
-  KEY=$(echo $VAR | cut -d '=' -f 1)
-  VALUE=$(echo $VAR | cut -d '=' -f 2)
-  sed -i "s|\${env.$KEY}|$VALUE|g" app.env
+    # Split the variable into key and value
+    KEY=${var%%=*}
+    VALUE=${var#*=}
+
+    # Check if the key already exists in the file
+    if grep -q "^$KEY=" app.env; then
+        # Update the existing key with the new value
+        sed -i "s|^$KEY=.*|$KEY=$VALUE|" app.env
+    else
+        # Add the new key-value pair
+        echo "$KEY=$VALUE" >> app.env
+    fi
 done
 
 go build -o $APPROOT/$APP_NAME

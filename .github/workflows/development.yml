@@ -6,7 +6,7 @@ on:
       - dev
   pull_request:
     branches:
-    - dev
+      - dev
 
 jobs:
   build:
@@ -75,4 +75,4 @@ jobs:
           port: ${{ env.SSH_PORT }}
           script: |
             cd ~/deployments/development
-            bash ./scripts/deploy_app.sh development SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
+            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
