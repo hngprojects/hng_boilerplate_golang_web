@@ -11,13 +11,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
 func TestWailistSignup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger, db := tests.Setup()
+	logger := tests.Setup()
 	validate := validator.New()
+	db := storage.Connection()
 
 	ttests := []struct {
 		Name            string
