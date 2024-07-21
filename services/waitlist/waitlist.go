@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
@@ -20,11 +19,11 @@ func SignupWaitlistUserService(db *gorm.DB, req models.CreateWaitlistUserRequest
 
 	if req.Email != "" {
 		req.Email = strings.ToLower(req.Email)
-		
-		existingUser := models.WaitlistUser{}
-		_, err := postgresql.SelectOneFromDb(db, &existingUser, "email = ?", req.Email)
+
+		existingUser := &models.WaitlistUser{Email: req.Email}
+		code, err := existingUser.GetWaitlistUserByEmail(db)
 		if err != nil {
-			return nil, http.StatusBadRequest, models.ErrWaitlistUserExist
+			return nil, code, models.ErrWaitlistUserExist
 		}
 	}
 

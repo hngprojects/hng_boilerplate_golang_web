@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -32,4 +33,17 @@ func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
 	}
 
 	return err
+}
+
+func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
+	err, nerr := postgresql.SelectOneFromDb(db, &w, "email = ?", w.Email)
+	if nerr != nil {
+		return http.StatusBadRequest, nerr 
+	}
+
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
 }
