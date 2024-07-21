@@ -16,6 +16,10 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+func SetupRoutes(router *gin.Engine, newsController *newsletter.Controller) {
+	router.POST("/newsletter", newsController.SubscribeNewsLetter)
+}
+
 func Setup() *utility.Logger {
 	logger := utility.NewLogger()
 	config := config.Setup(logger, "../app")
@@ -51,7 +55,7 @@ func AssertBool(t *testing.T, got, expected bool) {
 	}
 }
 
-func setupTestRouter() (*gin.Engine, *newsletter.NewsController) {
+func setupTestRouter() (*gin.Engine, *newsletter.Controller) {
 	gin.SetMode(gin.TestMode)
 
 	logger := Setup()
@@ -59,14 +63,14 @@ func setupTestRouter() (*gin.Engine, *newsletter.NewsController) {
 	validator := validator.New()
 	extReq := request.ExternalRequest{}
 
-	newsController := &newsletter.NewsController{
+	newsController := &newsletter.Controller{
 		Db:        db,
 		Validator: validator,
 		Logger:    logger,
 		ExtReq:    extReq,
 	}
 
-	router := gin.Default()
-	router.POST("/newsletter", newsController.Post)
-	return router, newsController
+	r := gin.Default()
+	SetupRoutes(r, newsController)
+	return r, newsController
 }

@@ -10,6 +10,33 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
 
+func TestE2ENewsletterSubscription(t *testing.T) {
+	router, _ := setupTestRouter()
+
+	// Test POST /newsletter
+	body := map[string]interface{}{
+		"Email": "e2e_test@example.com",
+	}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		t.Fatalf("Failed to marshal request body: %v", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/newsletter", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	router.ServeHTTP(resp, req)
+
+	AssertStatusCode(t, resp.Code, http.StatusCreated)
+
+	response := ParseResponse(resp)
+	AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
+}
+
 func TestPostNewsletter_ValidateEmail(t *testing.T) {
 	router, _ := setupTestRouter()
 

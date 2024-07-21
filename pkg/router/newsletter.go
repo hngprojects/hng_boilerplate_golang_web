@@ -13,11 +13,11 @@ import (
 
 func Newsletter(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
-	newsLetter := newsletter.NewsController{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+	newsLetter := newsletter.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
 	newsLetterUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		newsLetterUrl.POST("/newsletter", newsLetter.Post)
+		newsLetterUrl.POST("/newsletter", newsLetter.SubscribeNewsLetter)
 	}
 	return r
 }

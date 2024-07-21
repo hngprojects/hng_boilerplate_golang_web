@@ -12,14 +12,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-type NewsController struct {
+type Controller struct {
 	Db        *storage.Database
 	Validator *validator.Validate
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
 }
 
-func (base NewsController) Post(c *gin.Context) {
+func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 	var (
 		req = models.NewsLetter{}
 	)

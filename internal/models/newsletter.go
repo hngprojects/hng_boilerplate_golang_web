@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ type NewsLetter struct {
 func (n *NewsLetter) BeforeCreate(tx *gorm.DB) (err error) {
 
 	if n.ID == "" {
-		n.ID = uuid.New().String()
+		n.ID = utility.GenerateUUID()
 	}
 	return
 }
