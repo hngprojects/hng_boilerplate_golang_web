@@ -7,9 +7,13 @@ import (
 	"github.com/nyaruka/phonenumbers"
 )
 
-func EmailValid(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
+func EmailValid(email string) (string, bool) {
+	// made some change to parse the formated email
+	e, err := mail.ParseAddress(email)
+	if err != nil {
+		return "", false
+	}
+	return e.Address, err == nil
 }
 
 func PhoneValid(phone string) (string, bool) {
