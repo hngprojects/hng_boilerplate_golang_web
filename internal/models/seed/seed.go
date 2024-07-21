@@ -14,10 +14,11 @@ func SeedDatabase(db *gorm.DB) {
 	// instantiate uuid
 
 	Userid1 := utility.GenerateUUID()
+	accountSettingsId1 := utility.GenerateUUID()
 	user1 := models.User{
-		ID: Userid1,
-		Name:   "John Doe",
-		Email:  "john@example.com",
+		ID:       Userid1,
+		Name:     "John Doe",
+		Email:    "john@example.com",
 		Password: utility.RandomString(20),
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
@@ -30,14 +31,31 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", OwnerID: Userid1},
 			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", OwnerID: Userid1},
 		},
+		AccountSettings: models.AccountSettings{
+			ID:     accountSettingsId1,
+			UserID: Userid1,
+			RecoveryOptions: models.AccountRecoveryOptions{
+				ID:            utility.GenerateUUID(),
+				AccountID:     accountSettingsId1,
+				RecoveryEmail: "john_recovery@example.com",
+				RecoveryPhone: "08123456789",
+				QuestionOne:   "What is your mother's maiden name?",
+				AnswerOne:     "Quinn",
+				QuestionTwo:   "In what city were you born?",
+				AnswerTwo:     "Gotham",
+				QuestionThree: "What is the name of your first pet?",
+				AnswerThree:   "Ace",
+			},
+		},
 	}
 
 	Userid2 := utility.GenerateUUID()
+	accountSettingsId2 := utility.GenerateUUID()
 	user2 := models.User{
-		ID: Userid2,
-		Name:   "Jane Doe",
+		ID:       Userid2,
+		Name:     "Jane Doe",
 		Password: utility.RandomString(20),
-		Email:  "jane@example.com",
+		Email:    "jane@example.com",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "Jane",
@@ -49,12 +67,28 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", OwnerID: Userid2},
 			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", OwnerID: Userid2},
 		},
+		AccountSettings: models.AccountSettings{
+			ID:     accountSettingsId2,
+			UserID: Userid1,
+			RecoveryOptions: models.AccountRecoveryOptions{
+				ID:            utility.GenerateUUID(),
+				AccountID:     accountSettingsId1,
+				RecoveryEmail: "john_recovery@example.com",
+				RecoveryPhone: "08123456789",
+				QuestionOne:   "What is your mother's maiden name?",
+				AnswerOne:     "Quinn",
+				QuestionTwo:   "In what city were you born?",
+				AnswerTwo:     "Gotham",
+				QuestionThree: "What is the name of your first pet?",
+				AnswerThree:   "Ace",
+			},
+		},
 	}
 
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4)+"@email.com"),Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User
