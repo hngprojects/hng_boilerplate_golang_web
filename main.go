@@ -16,7 +16,7 @@ import (
 func main() {
 	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
 
-	configuration := config.Setup(logger, "./app")
+	configuration := config.Setup(logger, "./app-sample.env")
 
 	postgresql.ConnectToDatabase(logger, configuration.Database)
 	validatorRef := validator.New()

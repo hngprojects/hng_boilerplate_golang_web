@@ -28,3 +28,4 @@ _ignore/
 app.env
 tmp/
 .idea/
+app-sample.env

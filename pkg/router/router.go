@@ -9,6 +9,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -39,6 +40,11 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 			"message": "HNGi Golang Boilerplate",
 			"status":  http.StatusOK,
 		})
+	})
+
+	// Add Contact Us route
+	r.POST("/api/v1/contact", func(c *gin.Context) {
+		services.ContactUsHandler(c, validator)
 	})
 
 	r.NoRoute(func(c *gin.Context) {
