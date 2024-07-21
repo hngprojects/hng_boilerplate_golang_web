@@ -92,3 +92,17 @@ func (base *Controller) LoginUser(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user login successfully", respData)
 	c.JSON(http.StatusOK, rd)
 }
+
+func (base *Controller) GetAllCustomers(c *gin.Context) {
+	respData, err := user.GetAllCustomers(base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(400, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("All Customers fetched successfully")
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "All Customers fetched successfully", respData)
+	c.JSON(http.StatusOK, rd)
+}
