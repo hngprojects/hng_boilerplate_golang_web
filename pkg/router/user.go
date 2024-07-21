@@ -8,6 +8,7 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -20,6 +21,7 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	{
 		userUrl.POST("/users/signup", user.CreateUser)
 		userUrl.POST("/users/login", user.LoginUser)
+		userUrl.GET("/customers", middleware.Authorize("admin"), user.GetAllCustomers)
 	}
 	return r
 }

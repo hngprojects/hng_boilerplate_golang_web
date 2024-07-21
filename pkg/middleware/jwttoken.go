@@ -20,10 +20,12 @@ func CreateToken(user models.User) (string, time.Time, error) {
 
 	//create token
 	userid := user.ID
+	userRole := user.Role
 	userClaims := jwt.MapClaims{}
 
 	// specify user claims
 	userClaims["user_id"] = userid
+	userClaims["user_role"] = userRole
 	userClaims["exp"] = UnixExp
 	userClaims["authorised"] = true
 
