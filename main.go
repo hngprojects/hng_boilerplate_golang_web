@@ -1,34 +1,43 @@
 package main
 
 import (
-	"fmt"
-	"log"
+    "log"
+    "os"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
-	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+    "github.com/gin-gonic/gin"
+    "github.com/joshua468/hng_boilerplate_golang_web/internal/routes"
+    "github.com/joshua468/hng_boilerplate_golang_web/utility"
 )
 
 func main() {
-	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
+    // Load environment variables
+    if err := utility.LoadEnv(); err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
 
-	configuration := config.Setup(logger, "./app")
+    // Initialize Gin router
+    router := gin.Default()
 
-	postgresql.ConnectToDatabase(logger, configuration.Database)
-	validatorRef := validator.New()
+    // Set up routes
+    dbURL := os.Getenv("DATABASE_URL")
+    if dbURL == "" {
+        log.Fatal("DATABASE_URL environment variable not set")
+    }
+    db, err := utility.ConnectDatabase(dbURL)
+    if err != nil {
+        log.Fatalf("Error connecting to database: %v", err)
+    }
 
-	db := storage.Connection()
+    // Set up routes and middleware
+    routes.SetupRoutes(router, db)
 
-	if configuration.Database.Migrate {
-		migrations.RunAllMigrations(db)
-	}
-
-	r := router.Setup(logger, validatorRef, db, &configuration.App)
-
-	utility.LogAndPrint(logger, fmt.Sprintf("Server is starting at 127.0.0.1:%s", configuration.Server.Port))
-	log.Fatal(r.Run(":" + configuration.Server.Port))
+    // Start the server
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080" // Default to port 8080 if not set
+    }
+    log.Printf("Starting server on port %s...", port)
+    if err := router.Run(":" + port); err != nil {
+        log.Fatalf("Error starting server: %v", err)
+    }
 }
