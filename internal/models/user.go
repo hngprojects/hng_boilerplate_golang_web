@@ -15,9 +15,18 @@ type User struct {
 	Password      string         `gorm:"column:password; type:text; not null" json:"-"`
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	Organisations []Organisation `gorm:"many2many:user_organisations;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
+	GoogleAuth    *GoogleAuth    `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"google_auth"`                // optional field for Google auth
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
 	CreatedAt     time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
+}
+
+type GoogleAuth struct {
+	ID        string    `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
+	UserID    string    `gorm:"type:uuid;not null" json:"user_id"`
+	GoogleID  string    `gorm:"type:varchar(255);unique;not null" json:"google_id"`
+	Token     string    `gorm:"type:text;not null" json:"token"`
+	ExpiresAt time.Time `gorm:"column:expires_at;not null" json:"expires_at"`
 }
 
 type CreateUserRequestModel struct {
@@ -63,5 +72,19 @@ func (u *User) CreateUser(db *gorm.DB) error {
 		return err
 	}
 
+	return nil
+}
+
+func (u *User) CreateGoogleAuthUser(db *gorm.DB, googleID, token string, expiresAt time.Time) error {
+	googleAuth := &GoogleAuth{
+		UserID:    u.ID,
+		GoogleID:  googleID,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	}
+	err := db.Create(googleAuth).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }

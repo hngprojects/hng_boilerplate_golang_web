@@ -11,9 +11,12 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"gorm.io/gorm"
 )
 
 type AuthPayload struct {
@@ -37,7 +40,7 @@ var (
 	Client_Secret     string
 	googleOauthConfig *oauth2.Config
 	oauthStateString  = "random"
-	RedirectURL       = "http://127.0.0.1:8000/api/v1/auth/callback/google"
+	RedirectURL       = "http://127.0.0.1:8080/api/v1/auth/callback/google"
 )
 
 func init() {
@@ -122,29 +125,51 @@ func Handle_Google_Callback(c *gin.Context) {
 		"refresh_token": refreshToken,
 		"user":          user,
 	})
+	return
 
 }
 
 // Update user information in database
 func updateUserInfo(userInfo map[string]interface{}) (map[string]interface{}, error) {
-	// Implement database update logic
-	// This is a mock function; replace with actual database operations
+	// Implement actual database logic
 
-	// Example: Check if user exists, if not, create new user
-	// Update user details and sstore tokens
+	//Initialize your DB connection here
+	db := storage.Connection().Postgresql
 
-	// Mock user object
-	user := map[string]interface{}{
-		"id":          userInfo["id"],
-		"email":       userInfo["email"],
-		"name":        userInfo["name"],
-		"given_name":  userInfo["given_name"],
-		"family_name": userInfo["family_name"],
-		"picture":     userInfo["picture"],
+	// Example of checking if user exists
+	var user models.User
+	err := db.Where("email = ?", userInfo["email"]).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
 	}
 
-	// Simulate saving to database
-	return user, nil
+	// If user does not exist, create a new user
+	if err == gorm.ErrRecordNotFound {
+		user = models.User{
+			ID:        userInfo["id"].(string),
+			Email:     userInfo["email"].(string),
+			Name:      userInfo["name"].(string),
+			Password:  "securepassword",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+
+		if err := user.CreateUser(db); err != nil {
+			return nil, err
+		}
+
+		user.CreateGoogleAuthUser(db,
+			"google-id", "token", time.Now().Add(time.Hour*24))
+
+	}
+
+	return map[string]interface{}{
+		"id":    user.ID,
+		"email": user.Email,
+		"name":  user.Name,
+		// Return other fields as needed
+	}, nil
+
 }
 
 func Handle_Token_Refresh(c *gin.Context) {
