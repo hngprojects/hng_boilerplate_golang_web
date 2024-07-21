@@ -12,7 +12,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func Setup() *utility.Logger {
+func Setup() (*utility.Logger, *storage.Database) {
 	logger := utility.NewLogger()
 	config := config.Setup(logger, "../../app")
 
@@ -21,7 +21,7 @@ func Setup() *utility.Logger {
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
 	}
-	return logger
+	return logger, db
 }
 
 func ParseResponse(w *httptest.ResponseRecorder) map[string]interface{} {

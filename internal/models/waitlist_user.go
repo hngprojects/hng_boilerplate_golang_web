@@ -13,20 +13,20 @@ var ErrWaitlistUserExist = errors.New("waitlist user exists")
 type WaitlistUser struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
-	Email     string    `json:"email"`
+	Email     string    `gorm:"uniqueIndex" json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CreateWaitlistUserRequest struct {
 	Name  string `json:"name" validate:"required"`
-	Email string `json:"email" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, w)
 	if err != nil {
-		if err == gorm.ErrDuplicatedKey {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return ErrWaitlistUserExist
 		}
 	}

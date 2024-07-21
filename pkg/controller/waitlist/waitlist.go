@@ -36,9 +36,9 @@ func (base *Controller) Create(c *gin.Context) {
 		return
 	}
 
-	data, code, err := waitlist.SignupWaitlistUserService(req)
+	data, code, err := waitlist.SignupWaitlistUserService(base.DB.Postgresql, req)
 	if err != nil {
-		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
 		return
 	}
