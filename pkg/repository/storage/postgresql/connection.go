@@ -19,7 +19,7 @@ import (
 func ConnectToDatabase(logger *utility.Logger, configDatabases config.Database) *gorm.DB {
 	dbsCV := configDatabases
 	utility.LogAndPrint(logger, "connecting to database")
-	connectedDB := connectToDb(dbsCV.DB_HOST, "postgres.rzqihqnmmzdmqecjukkn", dbsCV.PASSWORD, dbsCV.DB_NAME, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
+	connectedDB := connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.PASSWORD, dbsCV.DB_NAME, dbsCV.DB_PORT, dbsCV.SSLMODE, dbsCV.TIMEZONE, logger)
 
 	utility.LogAndPrint(logger, "connected to database")
 
