@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -94,7 +95,33 @@ func (base *Controller) LoginUser(c *gin.Context) {
 }
 
 func (base *Controller) GetAllCustomers(c *gin.Context) {
-	respData, err := user.GetAllCustomers(base.Db.Postgresql)
+
+	limitStr := c.Query("limit")
+	pageStr := c.Query("page")
+
+	if limitStr == "" {
+		c.JSON(http.StatusBadRequest, utility.BuildErrorResponse(400, "error", "Missing limit parameter", "Missing limit parameter", nil))
+		return
+	}
+	if pageStr == "" {
+		c.JSON(http.StatusBadRequest, utility.BuildErrorResponse(400, "error", "Missing page parameter", "Missing page parameter", nil))
+			return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		c.JSON(http.StatusBadRequest, utility.BuildErrorResponse(400, "error", "Invalid or missing limit parameter", err, nil))
+		return
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		c.JSON(http.StatusBadRequest, utility.BuildErrorResponse(400, "error", "Invalid or missing page parameter", err, nil))
+		return
+	}
+	
+	
+	respData, totalPages, totalItems, err := user.GetAllCustomers(base.Db.Postgresql, page, limit)
 	if err != nil {
 		rd := utility.BuildErrorResponse(400, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -103,6 +130,14 @@ func (base *Controller) GetAllCustomers(c *gin.Context) {
 
 	base.Logger.Info("All Customers fetched successfully")
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "All Customers fetched successfully", respData)
-	c.JSON(http.StatusOK, rd)
+	response := gin.H {
+		"status_code": 200,
+		"current_page": page,
+		"total_pages": totalPages,
+		"limit": limit,
+		"total_items": totalItems,
+		"data": respData,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

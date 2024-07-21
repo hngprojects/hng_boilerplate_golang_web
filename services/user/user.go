@@ -164,13 +164,13 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 	return responseData, http.StatusCreated, nil
 }
 
-func GetAllCustomers(db *gorm.DB) ([]models.User, error) {
+func GetAllCustomers(db *gorm.DB, page int, limit int) ([]models.User, any, any, error) {
 	var users models.User
 
-	userResp, err := users.GetAllCustomers(db)
+	userResp, totalPages, totalItems, err := users.GetAllCustomers(db, page, limit)
 	if err != nil {
-		return userResp, err
+		return userResp, nil, nil, err
 	}
 
-	return userResp, err
+	return userResp, totalPages, totalItems, err
 }

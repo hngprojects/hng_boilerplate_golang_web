@@ -14,7 +14,7 @@ type User struct {
 	Email         string         `gorm:"column:email; type:varchar(255)" json:"email"`
 	Password      string         `gorm:"column:password; type:text; not null" json:"-"`
 	Role          string         `gorm:"column:role; type:varchar(255)" json:"role"`
-	IsActive         bool           `gorm:"column:is_active; type:boolean" json:"is_active"`
+	IsActive      bool           `gorm:"column:is_active; type:boolean" json:"is_active"`
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	Organisations []Organisation `gorm:"many2many:user_organisations;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
@@ -69,11 +69,18 @@ func (u *User) CreateUser(db *gorm.DB) error {
 	return nil
 }
 
-func (u *User) GetAllCustomers(db *gorm.DB) ([]User, error) {
-	var users []User
-	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("role = ?", "customer").Find(&users).Error; err != nil {
-		return users, err
+func (u *User) GetAllCustomers(db *gorm.DB, page int, limit int) ([]User, any, any, error) {
+	var totalItems int64
+	if err := db.Model(&User{}).Preload("Profile").Preload("Products").Preload("Organisations").Where("role = ?", "customer").Count(&totalItems).Error; err != nil {
+		return nil, nil, nil, err
 	}
 
-	return users, nil
+	totalPages := (totalItems + int64(limit) - 1) / int64(limit)
+
+	var users []User
+	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("role = ?", "customer").Limit(limit).Offset(page).Find(&users).Error; err != nil {
+		return users, nil, nil, err
+	}
+
+	return users, totalPages, totalItems, nil
 }
