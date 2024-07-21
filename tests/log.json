@@ -7,7 +7,7 @@
     {
       "enable": true,
       "level": "FINE",
-      "filename": "../logs/app.log",
+      "filename": "./logs/app.log",
       "category": "fileLogs",
       "pattern": "[%D %T] [%C] [%L] (%S) %M",
       "rotate": true,
