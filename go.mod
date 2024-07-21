@@ -8,7 +8,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/elliotchance/phpserialize v1.4.0
-	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
@@ -26,6 +25,10 @@ require (
 )
 
 require github.com/dgrijalva/jwt-go v3.2.0+incompatible
+
+require github.com/joho/godotenv v1.5.1
+
+require github.com/gin-contrib/gzip v1.0.1 // indirect
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
