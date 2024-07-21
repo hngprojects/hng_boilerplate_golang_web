@@ -3,7 +3,9 @@ package config
 import (
 	"log"
 
+
 	"github.com/mitchellh/mapstructure"
+
 	"github.com/spf13/viper"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
