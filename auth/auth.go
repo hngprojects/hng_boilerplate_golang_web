@@ -66,24 +66,6 @@ func init() {
 }
 
 func Handle_Google_Login(c *gin.Context) {
-
-	if err := c.ShouldBindJSON(&auth_payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
-		return
-	}
-
-	// params := url.Values{}
-	// params.Add("response_type", "code")
-	// params.Add("client_id", auth_payload.ClientID)
-	// params.Add("redirect_uri", auth_payload.RedirectURI)
-	// params.Add("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile")
-	// params.Add("state", "random")
-	// var new_url string = "https://accounts.google.com/o/oauth2/auth?" + params.Encode()
-
-	//-------------------------------------------------------------------------------------
-	// var new_url string = "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=" + auth_payload.ClientID + "&redirect_uri=" + auth_payload.RedirectURI + "&scope=https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile&state=random"
-	//----------------------------------------------------------------------------
-
 	// Generate the Google OAuth2 login URL with a state string for security
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	// Redirect the user to the Google login page
