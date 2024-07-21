@@ -13,8 +13,8 @@ type Blog struct {
 	Content   string      `gorm:"type:text" json:"content"`
 	AuthorID  string      `gorm:"type:uuid;not null" json:"author_id"`
 	Author    User        `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
-	Tags      []BlogTag   `gorm:"many2many:blog_tags" json:"tags,omitempty"`
-	Images    []BlogImage `gorm:"foreignKey:BlogID" json:"images,omitempty"`
+	Tags      []BlogTag   `gorm:"many2many:blog_tags;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tags,omitempty"`
+	Images    []BlogImage `gorm:"foreignKey:BlogID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"images,omitempty"`
 	CreatedAt time.Time   `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time   `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
 }
@@ -29,6 +29,7 @@ type BlogImage struct {
 	ID        string    `gorm:"type:uuid;primary_key" json:"id"`
 	URL       string    `gorm:"not null" json:"url"`
 	BlogID    string    `gorm:"type:uuid;not null" json:"blog_id"`
+	Blog      Blog      `gorm:"foreignKey:BlogID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 	CreatedAt time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 }
 
