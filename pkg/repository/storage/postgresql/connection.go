@@ -2,18 +2,18 @@ package postgresql
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"strconv"
 
-	"log"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	lg "gorm.io/gorm/logger"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	lg "gorm.io/gorm/logger"
 )
 
 func ConnectToDatabase(logger *utility.Logger, configDatabases config.Database) *gorm.DB {
@@ -43,6 +43,7 @@ func connectToDb(host, user, password, dbname, port, sslmode, timezone string, l
 		}
 		port = detectedPort
 	}
+
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v", host, user, password, dbname, port, sslmode, timezone)
 
 	newLogger := lg.New(
