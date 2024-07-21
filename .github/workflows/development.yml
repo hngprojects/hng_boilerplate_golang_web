@@ -6,7 +6,7 @@ on:
       - dev
   pull_request:
     branches:
-    - dev
+      - dev
 
 jobs:
   build:
@@ -74,5 +74,17 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            cd ~/deployments/development
-            bash ./scripts/deploy_app.sh development SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
+            export APPROOT=~/deployments/development
+            mkdir -p $APPROOT
+            cd $APPROOT
+
+            if [ -d "$APPROOT/.git" ]; then
+              # Navigate to the repository directory and pull changes
+              cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
+              git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
+              git pull origin dev || { echo "Failed to pull latest changes"; exit 1; }
+            else
+              git clone -b dev https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
+            fi
+
+            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
