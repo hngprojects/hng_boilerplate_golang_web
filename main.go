@@ -1,11 +1,20 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"github.com/gin-gonic/gin"
 	// "github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/auth"
+=======
+	"fmt"
+	"log"
+
+	"github.com/go-playground/validator/v10"
+
+>>>>>>> c42f8ea65a2d0b943e9c08a5a2b5c20c9f1f1ad6
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -17,12 +26,20 @@ func main() {
 	configuration := config.Setup(logger, "./app")
 
 	postgresql.ConnectToDatabase(logger, configuration.Database)
+<<<<<<< HEAD
 	// validatorRef := validator.New()
+=======
+
+	validatorRef := validator.New()
+>>>>>>> c42f8ea65a2d0b943e9c08a5a2b5c20c9f1f1ad6
 
 	db := storage.Connection()
 
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)
+
+		// call the seed function
+		seed.SeedDatabase(db.Postgresql)
 	}
 
 	// r := router.Setup(logger, validatorRef, db, &configuration.App)

@@ -54,6 +54,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 	exemptFromThrottle := []string{}
 	json.Unmarshal([]byte(config.TRUSTED_PROXIES), &trustedProxies)
 	json.Unmarshal([]byte(config.EXEMPT_FROM_THROTTLE), &exemptFromThrottle)
+	
 	if config.SERVER_PORT == "" {
 		config.SERVER_PORT = os.Getenv("PORT")
 	}
