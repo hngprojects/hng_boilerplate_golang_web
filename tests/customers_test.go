@@ -1,7 +1,6 @@
 package tests
 
 import (
-  "bytes"
   "encoding/json"
   "fmt"
   "net/http"
@@ -18,10 +17,6 @@ import (
   "github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
   "github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
-
-func Setup() *utility.Logger {
-  return &utility.Logger{}
-}
 
 func GenerateMockToken(userID, role string) string {
   token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -140,19 +135,4 @@ func TestGetAllCustomers(t *testing.T) {
       }
     })
   }
-}
-
-func AssertStatusCode(t *testing.T, got, expected int) {
-  if got != expected {
-    t.Errorf("Expected status code %d, but got %d", expected, got)
-  }
-}
-
-func ParseResponse(rr *httptest.ResponseRecorder) map[string]interface{} {
-  var response map[string]interface{}
-  err := json.Unmarshal(rr.Body.Bytes(), &response)
-  if err != nil {
-    panic(err)
-  }
-  return response
 }
