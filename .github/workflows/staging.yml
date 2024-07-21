@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - staging
+  pull_request:
+    branches:
+    - staging
 
 jobs:
   build:
@@ -43,6 +46,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Create app config file
+        run: cp app-sample.env app.env
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
@@ -54,7 +59,11 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      PROCESS_NAME: run_staging_app
+      SERVER_PORT: 8000
+      DB_NAME: "staging_db"
+      USERNAME: "staging_user"
+      APP_NAME: "staging"
+      APP_URL: "http://localhost:8000"
 
     steps:
       - name: SSH into server and deploy
@@ -65,30 +74,5 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            export APPROOT=~/deployments/staging
-            export PATH=$PATH:~/.nvm/versions/node/v20.15.1/bin
-            export PATH=$PATH:/usr/local/go/bin
-
-            mkdir -p $APPROOT
-            cd $APPROOT
-
-            if [ -d "$APPROOT/.git" ]; then
-                # Navigate to the repository directory and pull changes
-                cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
-                git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
-                git pull origin staging || { echo "Failed to pull latest changes"; exit 1; }
-            else
-                git clone -b staging http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
-            fi
-
-            cp app-sample.env app.env
-            go build -o ~/deployments/staging/staging_app
-
-            # Check if pm2 is already running
-            if pm2 list | grep -q "${{ env.PROCESS_NAME }}"; then
-              echo "Process ${{ env.PROCESS_NAME }} is running. Restarting..."
-              pm2 restart "${{ env.PROCESS_NAME }}"
-            else
-              echo "Process ${{ env.PROCESS_NAME }} is not running. Starting..."
-              pm2 start "${{ env.PROCESS_NAME }}".sh
-            fi
+            cd ~/deployments/staging
+            bash ./scripts/deploy_app.sh staging SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
