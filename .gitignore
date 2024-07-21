@@ -28,3 +28,5 @@ _ignore/
 app.env
 tmp/
 .idea/
+docker-compose-test.yaml
+run_tests.sh
