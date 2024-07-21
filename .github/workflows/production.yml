@@ -46,6 +46,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Create app config file
+        run: cp app-sample.env app.env
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
