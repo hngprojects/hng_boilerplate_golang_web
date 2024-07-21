@@ -2,9 +2,15 @@ package postgresql
 
 import (
 	"fmt"
-
+    "github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"gorm.io/gorm"
 )
+
+
+func CreateUserSubmission(db *gorm.DB, submission *models.UserSubmission) error {
+    return db.Create(submission).Error
+}
+
 
 func CreateOneRecord(db *gorm.DB, model interface{}) error {
 	result := db.Create(model)
