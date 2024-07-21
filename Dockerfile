@@ -11,7 +11,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o learnai_app main.go
+RUN go build -o production_app main.go
 
 FROM alpine:latest
 
@@ -21,7 +21,7 @@ RUN addgroup -S nonroot && adduser -S nonroot -G nonroot
 WORKDIR /
 
 
-COPY --from=build-stage learnai_app .
+COPY --from=build-stage production_app .
 
 
 EXPOSE 8080
@@ -30,4 +30,4 @@ EXPOSE 8080
 USER nonroot:nonroot
 
 
-ENTRYPOINT ["./learnai_app"]
+ENTRYPOINT ["./production_app"]
