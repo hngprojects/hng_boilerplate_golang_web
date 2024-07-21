@@ -10,6 +10,7 @@ import (
 
 type User struct {
 	ID            string         `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
+
 	Name          string         `gorm:"column:name;type:varchar(255)" json:"name"`
 	Email         string         `gorm:"column:email;type:varchar(255)" json:"email"`
 	Password      string         `gorm:"column:password;type:text;not null" json:"-"`
@@ -18,6 +19,8 @@ type User struct {
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at;null;autoUpdateTime" json:"updated_at"`
+
+
 }
 
 type CreateUserRequestModel struct {
