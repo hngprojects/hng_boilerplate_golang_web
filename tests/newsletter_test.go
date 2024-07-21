@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func setupNewsLetterTestRouter() (*gin.Engine, *newsletter.Controller) {
@@ -40,8 +42,9 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 	router, _ := setupNewsLetterTestRouter()
 
 	// Test POST /newsletter
+	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		Email: "e2e_test@example.com",
+		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
 	}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
@@ -66,8 +69,9 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 func TestPostNewsletter_ValidateEmail(t *testing.T) {
 	router, _ := setupNewsLetterTestRouter()
 
+	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		Email: "invalid-email",
+		Email: fmt.Sprintf("testuser%v@qa", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
 
@@ -85,11 +89,13 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 	router, newsController := setupNewsLetterTestRouter()
 
+	currUUID := utility.GenerateUUID()
+
 	db := newsController.Db.Postgresql
-	db.Create(&models.NewsLetter{Email: "test@example.com"})
+	db.Create(&models.NewsLetter{Email: fmt.Sprintf("testuser%v@qa.team", currUUID)})
 
 	body := models.NewsLetter{
-		Email: "test@example.com",
+		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
 
@@ -107,8 +113,9 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 func TestPostNewsletter_SaveData(t *testing.T) {
 	router, newsController := setupNewsLetterTestRouter()
 
+	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		Email: "test2@example.com",
+		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
 
@@ -123,17 +130,18 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 	AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
 
 	var newsletter models.NewsLetter
-	newsController.Db.Postgresql.First(&newsletter, "email = ?", "test2@example.com")
-	if newsletter.Email != "test2@example.com" {
-		t.Errorf("data not saved correctly to the database: expected email %s, got %s", "test2@example.com", newsletter.Email)
+	newsController.Db.Postgresql.First(&newsletter, "email = ?", fmt.Sprintf("testuser%v@qa.team", currUUID))
+	if newsletter.Email != fmt.Sprintf("testuser%v@qa.team", currUUID) {
+		t.Errorf("data not saved correctly to the database: expected email %s, got %s", fmt.Sprintf("testuser%v@qa.team", currUUID), newsletter.Email)
 	}
 }
 
 func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
 	router, _ := setupNewsLetterTestRouter()
 
+	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		Email: "test3@example.com",
+		Email: fmt.Sprintf("testuser%v@gmail.com", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
 
