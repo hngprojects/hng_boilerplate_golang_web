@@ -72,4 +72,5 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            bash ~/scripts/deploy_app.sh staging SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
+            cd ~/deployments/staging
+            bash ./scripts/deploy_app.sh staging SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
