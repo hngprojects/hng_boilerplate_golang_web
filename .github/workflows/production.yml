@@ -74,5 +74,17 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            cd ~/deployments/production
+            export APPROOT=~/deployments/production
+            mkdir -p $APPROOT
+            cd $APPROOT
+
+            if [ -d "$APPROOT/.git" ]; then
+              # Navigate to the repository directory and pull changes
+              cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
+              git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
+              git pull origin production || { echo "Failed to pull latest changes"; exit 1; }
+            else
+              git clone -b production https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
+            fi
+
             bash ./scripts/deploy_app.sh production https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
