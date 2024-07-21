@@ -1,9 +1,9 @@
-name: Build, Test, and Deploy for Production
+name: Build, Test, and Deploy for Development
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: "1.22.1"
       - name: Build the application
-        run: go build -o production_app
+        run: go build -o development_app
 
   test:
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      PROCESS_NAME: run_production_app
+      PROCESS_NAME: run_development_app
 
     steps:
       - name: SSH into server and deploy
@@ -65,7 +65,7 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            export APPROOT=~/deployments/production
+            export APPROOT=~/deployments/development
             export PATH=$PATH:~/.nvm/versions/node/v20.15.1/bin
             export PATH=$PATH:/usr/local/go/bin
 
@@ -76,13 +76,13 @@ jobs:
                 # Navigate to the repository directory and pull changes
                 cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
                 git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
-                git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
+                git pull origin dev || { echo "Failed to pull latest changes"; exit 1; }
             else
-                git clone -b main http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
+                git clone -b dev http://github.com/${{ github.repository }} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
             cp app-sample.env app.env
-            go build -o ~/deployments/production/production_app
+            go build -o ~/deployments/development/development_app
 
             # Check if pm2 is already running
             if pm2 list | grep -q "${{ env.PROCESS_NAME }}"; then
