@@ -2,7 +2,7 @@ module github.com/hngprojects/hng_boilerplate_golang_web
 
 go 1.19
 
-toolchain go1.22.2
+//toolchain go1.22.2
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
