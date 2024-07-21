@@ -37,12 +37,13 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Seed(r, ApiVersion, validator, db, logger)
 	User(r, ApiVersion, validator, db, logger)
 	Organisation(r, ApiVersion, validator, db, logger)
+	Newsletter(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"code":    200,
-			"message": "HNGi Golang Boilerplate",
-			"status":  http.StatusOK,
+			"status_code": 200,
+			"message":     "HNGi Golang Boilerplate",
+			"status":      http.StatusOK,
 		})
 	})
 
@@ -53,10 +54,10 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
-			"name":    "Not Found",
-			"message": "Page not found.",
-			"code":    404,
-			"status":  http.StatusNotFound,
+			"name":        "Not Found",
+			"message":     "Page not found.",
+			"status_code": 404,
+			"status":      http.StatusNotFound,
 		})
 	})
 

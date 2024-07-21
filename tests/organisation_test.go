@@ -173,7 +173,7 @@ func TestOrganizationCreate(t *testing.T) {
 
 			data := ParseResponse(rr)
 
-			code := int(data["code"].(float64))
+			code := int(data["status_code"].(float64))
 			AssertStatusCode(t, code, test.ExpectedCode)
 
 			if test.Message != "" {
