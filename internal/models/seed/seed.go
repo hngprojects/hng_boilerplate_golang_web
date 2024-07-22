@@ -35,8 +35,6 @@ func SeedDatabase(db *gorm.DB) {
 			ID:     accountSettingsId1,
 			UserID: Userid1,
 			RecoveryOptions: models.AccountRecoveryOptions{
-				ID:            utility.GenerateUUID(),
-				AccountID:     accountSettingsId1,
 				RecoveryEmail: "john_recovery@example.com",
 				RecoveryPhone: "08123456789",
 				QuestionOne:   "What is your mother's maiden name?",
@@ -71,8 +69,6 @@ func SeedDatabase(db *gorm.DB) {
 			ID:     accountSettingsId2,
 			UserID: Userid1,
 			RecoveryOptions: models.AccountRecoveryOptions{
-				ID:            utility.GenerateUUID(),
-				AccountID:     accountSettingsId1,
 				RecoveryEmail: "john_recovery@example.com",
 				RecoveryPhone: "08123456789",
 				QuestionOne:   "What is your mother's maiden name?",

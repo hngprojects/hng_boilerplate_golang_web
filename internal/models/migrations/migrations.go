@@ -11,7 +11,6 @@ func AuthMigrationModels() []interface{} {
 		models.WaitlistUser{},
 		models.NewsLetter{},
 		models.AccountSettings{},
-		models.AccountRecoveryOptions{},
 	} // an array of db models, example: User{}
 }
 
