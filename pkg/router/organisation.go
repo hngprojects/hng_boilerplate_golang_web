@@ -20,7 +20,8 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize())
 	{
 		organisationUrl.POST("/organisations", organisation.CreateOrganisation)
-
+		organisationUrl.POST("organisations/:orgId/users", organisation.AddUserToOrganisation)
 	}
+	
 	return r
 }

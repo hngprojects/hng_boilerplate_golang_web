@@ -71,3 +71,42 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, rd)
 }
+
+
+func (base *Controller) AddUserToOrganisation(c *gin.Context) {
+	var  member models.Member
+	var user models.User
+	var org models.Organisation
+	
+	orgID := c.Param("orgId")
+
+	var input struct {
+		UserID string `json:"userId"`
+		
+	}
+
+	
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"errors": utility.ValidationResponse(err, base.Validator)})
+		return
+	}
+	member.MemberID = input.UserID
+    member.TeamID = org.ID
+    member.Role = "user"
+    member.Teams = []models.Organisation{}
+
+	if err := base.Db.Postgresql.First(&user, "id = ?", input.UserID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "Bad request", "message": "User not found", "statusCode": 404})
+		return
+	}
+
+	var organisation models.Organisation
+	if err :=  base.Db.Postgresql.First(&organisation, "id = ?", orgID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "Bad request", "message": "Organisation not found", "statusCode": 404})
+		return
+	}
+
+	base.Db.Postgresql.Model(&organisation).Association("Users").Append(&user)
+	base.Logger.Info("user added to organisatin successfully")
+	c.JSON(http.StatusOK, gin.H{"status": "success", "message": "User added to organisation successfully"})
+}
