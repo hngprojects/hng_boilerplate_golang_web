@@ -8,8 +8,8 @@ import (
 
 type Organisation struct {
 	ID          string    `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
-	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
 	Description string    `gorm:"type:text" json:"description"`
+	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
 	Email       string    `gorm:"type:varchar(255);unique" json:"email"`
 	State       string    `gorm:"type:varchar(255)" json:"state"`
 	Industry    string    `gorm:"type:varchar(255)" json:"industry"`
