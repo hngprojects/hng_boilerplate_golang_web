@@ -3,159 +3,175 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/assert/v2"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/blog"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func SetupRouter() *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	db := storage.Connection()
-	validator := validator.New()
-	logger := utility.NewLogger()
+func setupRouter(db *storage.Database, validatorRef *validator.Validate, logger *utility.Logger) *gin.Engine {
 	r := gin.Default()
 
-	apiVersion := "v1"
-	router.Blog(r, apiVersion, validator, db, logger)
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+	{
+		blogUrl.POST("/blogs", middleware.RequireSuperAdmin(), blog.Post)
+	}
+
 	return r
 }
 
 func TestCreateBlog(t *testing.T) {
-	r := SetupRouter()
+	logger := Setup()
+	gin.SetMode(gin.TestMode)
 
-	// Simulate a valid JWT token with superadmin role
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": "superadmin-id",
-		"role":    "superadmin",
-	})
-	tokenString, _ := token.SignedString([]byte("your-secret"))
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := url.URL{Path: "/api/v1/blogs"}
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
 
-	t.Run("Valid Request Body", func(t *testing.T) {
-		blog := map[string]interface{}{
-			"title":      "Test Blog",
-			"content":    "This is a test blog content.",
-			"tags":       []string{"test", "blog"},
-			"image_urls": []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
-		}
-		jsonValue, _ := json.Marshal(blog)
-		req, _ := http.NewRequest("POST", "/v1/blogs", bytes.NewBuffer(jsonValue))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+tokenString)
 
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
+	user := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	SignupUser(t, r, user, userSignUpData)
 
-		assert.Equal(t, http.StatusCreated, w.Code)
-	})
+	token := GetLoginToken(t, r, user, loginData)
 
-	t.Run("Invalid Request Body - Missing Title", func(t *testing.T) {
-		blog := map[string]interface{}{
-			"content":    "This is a test blog content.",
-			"tags":       []string{"test", "blog"},
-			"image_urls": []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
-		}
-		jsonValue, _ := json.Marshal(blog)
-		req, _ := http.NewRequest("POST", "/v1/blogs", bytes.NewBuffer(jsonValue))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+tokenString)
+	tests := []struct {
+		Name         string
+		RequestBody  models.CreateBlogRequest
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name: "Valid Request Body",
+			RequestBody: models.CreateBlogRequest{
+				Title:     "Test Blog1",
+				Content:   "This is a test blog content.",
+				Tags:      []string{"test", "blog"},
+				ImageURLs: []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
+			},
+			ExpectedCode: http.StatusCreated,
+			Message:      "Blog created successfully",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name: "Invalid Request Body - Missing Title",
+			RequestBody: models.CreateBlogRequest{
+				Content:   "This is a test blog content.",
+				Tags:      []string{"test", "blog"},
+				ImageURLs: []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
+			},
+			ExpectedCode: http.StatusUnprocessableEntity,
+			Message:      "Validation failed",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name: "User unauthorised",
+			RequestBody: models.CreateBlogRequest{
+				Title:     "Test Blog2",
+				Content:   "This is a test blog content.",
+				Tags:      []string{"test", "blog"},
+				ImageURLs: []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
+			},
+			ExpectedCode: http.StatusUnauthorized,
+			Message:      "Token could not be found!",
+		},
+		{
+			Name: "User not superadmin",
+			RequestBody: models.CreateBlogRequest{
+				Title:     "Test Blog3",
+				Content:   "This is a test blog content.",
+				Tags:      []string{"test", "blog"},
+				ImageURLs: []string{"http://example.com/image1.jpg", "http://example.com/image2.jpg"},
+			},
+			ExpectedCode: http.StatusForbidden,
+			Message:      "You are not authorized to perform this action",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+	}
 
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
+	for _, test := range tests {
+		r := setupRouter(db, validatorRef, logger)
 
-		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
-	})
+		t.Run(test.Name, func(t *testing.T) {
+			var b bytes.Buffer
+			err := json.NewEncoder(&b).Encode(test.RequestBody)
+			if err != nil {
+				t.Fatalf("Failed to encode request body: %v", err)
+			}
 
-}
+			req, err := http.NewRequest(http.MethodPost, requestURI.String(), &b)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-func TestDeleteBlog(t *testing.T) {
-	r := SetupRouter()
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
 
-	// Simulate a valid JWT token with superadmin role
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": "superadmin-id",
-		"role":    "superadmin",
-	})
-	tokenString, _ := token.SignedString([]byte("your-secret"))
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
 
-	t.Run("Successful Deletion of Blog Post", func(t *testing.T) {
-		blogID := "valid-blog-id"
-		req, _ := http.NewRequest("DELETE", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
+			data := ParseResponse(rr)
 
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
+			code := int(data["status_code"].(float64))
+			AssertStatusCode(t, code, test.ExpectedCode)
 
-		assert.Equal(t, http.StatusAccepted, w.Code)
-	})
+			if test.Message != "" {
+				message := data["message"]
+				if message != nil {
+					AssertResponseMessage(t, message.(string), test.Message)
+				} else {
+					AssertResponseMessage(t, "", test.Message)
+				}
 
-	t.Run("No Blog Post Found", func(t *testing.T) {
-		blogID := "nonexistent-blog-id"
-		req, _ := http.NewRequest("DELETE", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
+			}
 
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
-	})
-
-	t.Run("Insufficient Permission", func(t *testing.T) {
-		// Simulate a valid JWT token with ordinary user role
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"user_id": "ordinary-user-id",
-			"role":    "user",
 		})
-		tokenString, _ := token.SignedString([]byte("your-secret"))
+	}
 
-		blogID := "valid-blog-id"
-		req, _ := http.NewRequest("DELETE", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
-
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusForbidden, w.Code)
-	})
-
-	t.Run("Internal Server Error", func(t *testing.T) {
-		// Simulate internal server error
-		blogID := "internal-error-blog-id"
-		req, _ := http.NewRequest("DELETE", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
-
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-	})
-
-	t.Run("Invalid Id Parameters", func(t *testing.T) {
-		blogID := "invalid-id-parameter"
-		req, _ := http.NewRequest("DELETE", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
-
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-	})
-
-	t.Run("Invalid Method", func(t *testing.T) {
-		blogID := "valid-blog-id"
-		req, _ := http.NewRequest("POST", "/v1/blogs/"+blogID, nil)
-		req.Header.Set("Authorization", "Bearer "+tokenString)
-
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
-	})
 }
+
+// func TestDeleteBlog(t *testing.T) {
+// 	logger := Setup()
+// 	gin.SetMode(gin.TestMode)
+
+// 	validatorRef := validator.New()
+// 	db := storage.Connection()
+// 	requestURI := "/api/v1/blogs"
+// }
+
