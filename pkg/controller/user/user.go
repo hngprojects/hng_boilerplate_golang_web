@@ -97,6 +97,9 @@ func (base *Controller) LoginUser(c *gin.Context) {
 func (base *Controller) UpdateUser(c *gin.Context) {
 	var req models.UpdateUserRequestModel
 
+	// Extract user ID from the URL parameter
+	userID := c.Param("userId")
+
 	// Bind the request body to the UpdateUserRequestModel
 	if err := c.ShouldBindJSON(&req); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
@@ -110,9 +113,6 @@ func (base *Controller) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
-
-	// Extract user ID from the URL parameter
-	userID := c.Param("userId")
 
 	responseData, code, err := user.UpdateUser(req, userID, base.Db.Postgresql)
 	if err != nil {
