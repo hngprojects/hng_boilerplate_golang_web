@@ -86,4 +86,4 @@ jobs:
               git clone -b staging https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }} MIGTRATE=true
+            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }} MIGRATE=true
