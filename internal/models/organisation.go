@@ -10,8 +10,8 @@ import (
 
 type Organisation struct {
 	ID          string    `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
-	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
 	Description string    `gorm:"type:text" json:"description"`
+	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
 	Email       string    `gorm:"type:varchar(255);unique" json:"email"`
 	State       string    `gorm:"type:varchar(255)" json:"state"`
 	Industry    string    `gorm:"type:varchar(255)" json:"industry"`
@@ -19,14 +19,15 @@ type Organisation struct {
 	Address     string    `gorm:"type:varchar(255)" json:"address"`
 	Country     string    `gorm:"type:varchar(255)" json:"country"`
 	OwnerID     string    `gorm:"type:uuid;" json:"owner_id"`
-	Users       []User    `gorm:"many2many:user_organisations;foreignKey:ID;joinForeignKey:org_id;References:ID;joinReferences:user_id"`
+	Users       []User    `gorm:"many2many:user_organisations;"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
+	Roles       []Role    `gorm:"foreignKey:OrganizationID" json:"roles"`
 }
 
 type CreateOrgRequestModel struct {
 	Name        string `json:"name" validate:"required,min=2,max=255"`
-	Description string `json:"description" `
+	Description string `json:"description"`
 	Email       string `json:"email" validate:"required"`
 	State       string `json:"state" validate:"required"`
 	Industry    string `json:"industry" validate:"required"`
