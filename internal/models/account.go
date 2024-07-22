@@ -1,8 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +17,7 @@ type AccountSettings struct {
 }
 
 type AccountRecoveryOptions struct {
-	ID            string    `gorm:"type:uuid;primaryKey;autoincrement" json:"id"`
+	ID            string    `gorm:"type:uuid;primaryKey" json:"id"`
 	AccountID     string    `gorm:"type:uuid;" json:"account_setting_id"`
 	RecoveryEmail string    `gorm:"column:recovery_email; type:varchar(255)" json:"email"`
 	RecoveryPhone string    `gorm:"column:recovery_phone; type:varchar(255)" json:"phone_number"`
@@ -37,12 +39,35 @@ type AddRecoveryPhoneNumberRequestModel struct {
 	PhoneNumber string `json:"phone_number" validate:"required"`
 }
 
+type AddSecurityQuesionsRequestModel struct {
+	QuestionOne   string `json:"question_1"`
+	QuestionTwo   string `json:"question_2"`
+	QuestionThree string `json:"question_3"`
+
+	AnswerOne   string `json:"answer_1"`
+	AnswerTwo   string `json:"answer_2"`
+	AnswerThree string `json:"answer_3"`
+}
+
+type UpdateRecoveryOptionsRequestModel struct {
+	Email       string              `json:"email"`
+	PhoneNumber string              `json:"phone_number"`
+	Questions   []map[string]string `json:"security_questions"`
+
+	QuestionOne   string
+	QuestionTwo   string
+	QuestionThree string
+	AnswerOne     string
+	AnswerTwo     string
+	AnswerThree   string
+}
+
 // Get account settings gets the user's account settings (obviously).
 // I didn't want to modify the already existing GetUserByID method so
 // I don't break any existing api
 func (u *User) GetUserAccountSettings(db *gorm.DB, userID string) (AccountSettings, error) {
 	var accountSettings AccountSettings
-	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).First(&accountSettings).Error
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&accountSettings).Error
 	if err != nil {
 		return AccountSettings{}, err
 	}
@@ -52,10 +77,25 @@ func (u *User) GetUserAccountSettings(db *gorm.DB, userID string) (AccountSettin
 
 // Add Recovery Email as the name implies adds a recovery email to the user's account.
 // It returns an error if something absolutely catastrophic happens but finger's crossed
-func (a *AccountSettings) AddRecoveryEmail(db *gorm.DB, userID string, email string) error {
-	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).First(&a).Error
+func (a *AccountSettings) SetRecoveryEmail(db *gorm.DB, userID string, email string) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
 	if err != nil {
+		fmt.Printf("%v", err)
 		return err
+	}
+
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:            utility.GenerateUUID(),
+			AccountID:     a.ID,
+			RecoveryEmail: email,
+		}
+
+		err := db.Create(&options).Error
+		if err != nil {
+			fmt.Printf("%v", err)
+			return err
+		}
 	}
 
 	a.RecoveryOptions.RecoveryEmail = email
@@ -69,10 +109,25 @@ func (a *AccountSettings) AddRecoveryEmail(db *gorm.DB, userID string, email str
 
 // Add Recovery Phone Number is exactly like adding recovery email but with phone number instead of emails.
 // It returns an error if something abyssmal happens, let's hope nothing does
-func (a *AccountSettings) AddRecoveryPhoneNumber(db *gorm.DB, userID string, phoneNumber string) error {
-	err := db.Joins("RecoveryOptions").Where("user_id = ?", userID).First(&a).Error
+func (a *AccountSettings) SetRecoveryPhoneNumber(db *gorm.DB, userID string, phoneNumber string) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
 	if err != nil {
+		fmt.Printf("%v", err)
 		return err
+	}
+
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:            utility.GenerateUUID(),
+			AccountID:     a.ID,
+			RecoveryPhone: phoneNumber,
+		}
+
+		err := db.Create(&options).Error
+		if err != nil {
+			fmt.Printf("%v", err)
+			return err
+		}
 	}
 
 	a.RecoveryOptions.RecoveryPhone = phoneNumber
@@ -84,33 +139,127 @@ func (a *AccountSettings) AddRecoveryPhoneNumber(db *gorm.DB, userID string, pho
 	return nil
 }
 
-type AddSecurityQuesionsParam struct {
-	question_one string
-	answer_one   string
-
-	question_two string
-	answer_two   string
-
-	question_three string
-	answer_three   string
-}
-
 // Add security questions adds (you guessed it) security questions to the User's account.
 // returns an error if something pretty bad happens, but by Carmack's grace it doesn't.
-func (a *AccountSettings) AddSecurityQuestions(db *gorm.DB, userID string, questions AddSecurityQuesionsParam) error {
-	err := db.Joins("RecoveryOptions").Where("user_id = ?", userID).First(&a).Error
+func (a *AccountSettings) SetSecurityQuestions(db *gorm.DB, userID string, questions AddSecurityQuesionsRequestModel) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
+
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:        utility.GenerateUUID(),
+			AccountID: a.ID,
+		}
+
+		err := db.Create(&options).Error
+		if err != nil {
+			fmt.Printf("%v", err)
+			return err
+		}
+
+		a.RecoveryOptions = options
+	}
+
+	a.RecoveryOptions.QuestionOne = questions.QuestionOne
+	a.RecoveryOptions.AnswerOne = questions.AnswerOne
+
+	a.RecoveryOptions.QuestionTwo = questions.QuestionTwo
+	a.RecoveryOptions.AnswerTwo = questions.AnswerTwo
+
+	a.RecoveryOptions.QuestionThree = questions.QuestionThree
+	a.RecoveryOptions.AnswerThree = questions.AnswerThree
+
+	err = db.Save(&a.RecoveryOptions).Error
 	if err != nil {
 		return err
 	}
 
-	a.RecoveryOptions.QuestionOne = questions.question_one
-	a.RecoveryOptions.AnswerOne = questions.answer_one
+	return nil
+}
 
-	a.RecoveryOptions.QuestionTwo = questions.question_two
-	a.RecoveryOptions.AnswerTwo = questions.answer_two
+// unset recovery email
+func (a *AccountSettings) UnsetRecoveryEmail(db *gorm.DB, userID string) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
 
-	a.RecoveryOptions.QuestionThree = questions.question_three
-	a.RecoveryOptions.AnswerThree = questions.answer_three
+	// just create RecoveryOptions model if it doesn't exist
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:        utility.GenerateUUID(),
+			AccountID: a.ID,
+		}
+
+		return db.Create(&options).Error
+	}
+
+	a.RecoveryOptions.RecoveryEmail = ""
+	err = db.Save(&a.RecoveryOptions).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// unset recovery phone
+func (a *AccountSettings) UnsetRecoveryPhone(db *gorm.DB, userID string) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
+
+	// just create RecoveryOptions model if it doesn't exist
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:        utility.GenerateUUID(),
+			AccountID: a.ID,
+		}
+
+		return db.Create(&options).Error
+	}
+
+	a.RecoveryOptions.RecoveryPhone = ""
+	err = db.Save(&a.RecoveryOptions).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// unset recovery question
+func (a *AccountSettings) UnsetRecoveryQuestions(db *gorm.DB, userID string) error {
+	err := db.Preload("RecoveryOptions").Where("user_id = ?", userID).Attrs(AccountSettings{ID: utility.GenerateUUID(), UserID: userID}).FirstOrCreate(&a).Error
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
+
+	// just create RecoveryOptions model if it doesn't exist
+	if len(a.RecoveryOptions.ID) == 0 {
+		options := AccountRecoveryOptions{
+			ID:        utility.GenerateUUID(),
+			AccountID: a.ID,
+		}
+
+		return db.Create(&options).Error
+	}
+
+	a.RecoveryOptions.QuestionOne = ""
+	a.RecoveryOptions.AnswerOne = ""
+
+	a.RecoveryOptions.QuestionTwo = ""
+	a.RecoveryOptions.AnswerTwo = ""
+
+	a.RecoveryOptions.QuestionThree = ""
+	a.RecoveryOptions.AnswerThree = ""
 
 	err = db.Save(&a.RecoveryOptions).Error
 	if err != nil {

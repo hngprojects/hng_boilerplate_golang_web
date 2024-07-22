@@ -25,6 +25,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	r.SetTrustedProxies(config.GetConfig().Server.TrustedProxies)
 	r.Use(middleware.Security())
 	r.Use(middleware.Logger())
+	r.Use(middleware.Authorize())
 	r.Use(gin.Recovery())
 	r.Use(middleware.CORS())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -38,6 +39,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Invite(r, ApiVersion, validator, db, logger)
 	Waitlist(r, ApiVersion, validator, db, logger)
 	User(r, ApiVersion, validator, db, logger)
+	Account(r, ApiVersion, validator, db, logger)
 	Organisation(r, ApiVersion, validator, db, logger)
 	Newsletter(r, ApiVersion, validator, db, logger)
 
