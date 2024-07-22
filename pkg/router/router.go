@@ -32,7 +32,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 
 	// routers
 	ApiVersion := "api/v1"
-	
+
 	Health(r, ApiVersion, validator, db, logger)
 	Seed(r, ApiVersion, validator, db, logger)
 	Invite(r, ApiVersion, validator, db, logger)
