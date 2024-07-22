@@ -16,6 +16,12 @@ type Invitation struct {
 	Email          string `gorm:"type:varchar(100);"`
 }
 
+type InvitationRequest struct {
+	Emails []string `json:"emails" validate:"required"`
+	OrgID  string   `json:"org_id" validate:"required,uuid"`
+}
+
+
 func (i *Invitation) CreateInvitation(db *gorm.DB, invitation interface{}) error {
 	err := db.Create(invitation).Error
 	if err != nil {

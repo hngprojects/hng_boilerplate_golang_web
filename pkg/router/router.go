@@ -34,8 +34,10 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	ApiVersion := "api/v1"
 
 	Health(r, ApiVersion, validator, db, logger)
-	Seed(r, ApiVersion, validator, db, logger)
 	Invite(r, ApiVersion, validator, db, logger)
+	Seed(r, ApiVersion, validator, db, logger)
+	User(r, ApiVersion, validator, db, logger)
+	Organisation(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

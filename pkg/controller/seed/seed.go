@@ -8,7 +8,7 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/seed"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -23,7 +23,7 @@ func (base *Controller) GetUser(c *gin.Context) {
 	//get the user_id from the URL
 	userIDStr := c.Param("user_id")
 
-	user, err := seed.GetUser(userIDStr, base.Db.Postgresql)
+	user, err := user.GetUser(userIDStr, base.Db.Postgresql)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)

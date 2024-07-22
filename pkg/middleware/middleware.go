@@ -23,6 +23,8 @@ func CORS() gin.HandlerFunc {
 	}
 }
 
+
+
 func Logger() gin.HandlerFunc {
 	// instantiation
 	logger := logrus.New()
