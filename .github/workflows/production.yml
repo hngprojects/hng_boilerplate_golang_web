@@ -11,6 +11,7 @@ on:
 jobs:
   build and test:
     runs-on: ubuntu-latest
+    env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
       TEST_DB_NAME: db_name
@@ -48,7 +49,7 @@ jobs:
         run: curl http://localhost:8019
       - name: Run All Tests
         run: go test ./... -timeout 99999s
-  
+
   deploy:
     runs-on: ubuntu-latest
     needs: test
