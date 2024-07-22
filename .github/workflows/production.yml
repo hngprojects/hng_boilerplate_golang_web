@@ -48,7 +48,7 @@ jobs:
       - name: Test for reachability
         run: curl http://localhost:8019
       - name: Create log file
-        run: mkdir logs && mkdir logs/app.log
+        run: mkdir -p logs && touch logs/app.log
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
