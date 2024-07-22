@@ -71,6 +71,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		username     = strings.ToLower(req.UserName)
 		phoneNumber  = req.PhoneNumber
 		password     = req.Password
+		role         = req.Role
 		responseData gin.H
 	)
 
@@ -79,11 +80,16 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		return nil, http.StatusInternalServerError, err
 	}
 
+	if role == "" {
+		role = "customer"
+	}
+
 	user := models.User{
 		ID:       utility.GenerateUUID(),
 		Name:     username,
 		Email:    email,
 		Password: password,
+		Role:     role,
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: firstName,
@@ -108,6 +114,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		"first_name":   user.Profile.FirstName,
 		"last_name":    user.Profile.LastName,
 		"phone":        user.Profile.Phone,
+		"role":         user.Role,
 		"expires_in":   expiry,
 		"access_token": token,
 	}
@@ -149,9 +156,21 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 		"first_name":   userData.Profile.FirstName,
 		"last_name":    userData.Profile.LastName,
 		"phone":        userData.Profile.Phone,
+		"role":         userData.Role,
 		"expires_in":   expiry,
 		"access_token": token,
 	}
 
 	return responseData, http.StatusCreated, nil
+}
+
+func GetAllCustomers(db *gorm.DB, page int, limit int) ([]models.User, any, any, error) {
+	var users models.User
+
+	userResp, totalPages, totalItems, err := users.GetAllCustomers(db, page, limit)
+	if err != nil {
+		return userResp, nil, nil, err
+	}
+
+	return userResp, totalPages, totalItems, err
 }
