@@ -48,11 +48,5 @@ func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 	}
 
 
-	err := postgresql.CreateOneRecord(db, &c)
-
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
