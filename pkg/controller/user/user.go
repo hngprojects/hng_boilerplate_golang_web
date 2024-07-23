@@ -9,7 +9,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
+	user "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 

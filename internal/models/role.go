@@ -45,3 +45,20 @@ func (r *Role) CreateRole(db *gorm.DB) error {
 
 	return nil
 }
+
+func (r *Role) UpdateUserRole(db *gorm.DB, userId string, roleId int) (*User, error) {
+	var user User
+
+	user, err := user.GetUserByID(db, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Role = roleId
+
+	if _, err := postgresql.SaveAllFields(db, &user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

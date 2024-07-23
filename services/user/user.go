@@ -1,4 +1,4 @@
-package user
+package service
 
 import (
 	"errors"
