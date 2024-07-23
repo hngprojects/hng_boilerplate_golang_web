@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"gorm.io/gorm"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 var ErrWaitlistUserExist = errors.New("waitlist user exists")
@@ -44,6 +45,16 @@ func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
 
 	if err != nil {
 		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
+// added this function to check if waitlist user exists already
+func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
+	exists := postgresql.CheckExists(db, &w, "email = ?", w.Email)
+	if exists {
+		return http.StatusBadRequest, errors.New("User exists")
 	}
 
 	return http.StatusOK, nil
