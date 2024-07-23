@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,9 +16,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/invite"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -113,7 +110,7 @@ func GetLoginToken(t *testing.T, r *gin.Engine, auth auth.Controller, loginData 
 }
 
 // helper to create an organisation
-func CreateOrganisation(t *testing.T, r *gin.Engine,db *storage.Database ,org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
+func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
 	var (
 		orgPath = "/api/v1/organisations"
 		orgURI  = url.URL{Path: orgPath}
@@ -140,30 +137,30 @@ func CreateOrganisation(t *testing.T, r *gin.Engine,db *storage.Database ,org or
 	orgID := dataM["id"].(string)
 	return orgID
 }
+
 // helper to create an invite
-func CreateInvite(t *testing.T, r *gin.Engine, invite invite.Controller, inviteData models.InvitationCreateReq, token string) map[string]interface{} {
-	var (
-		invitePath = "/api/v1/invite/create"
-		inviteURI  = url.URL{Path: invitePath}
-	)
-	inviteUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
-	{
-		inviteUrl.POST("/organisations/send-invite", invite.CreateInvite)
-	}
-	var b bytes.Buffer
-	json.NewEncoder(&b).Encode(inviteData)
-	req, err := http.NewRequest(http.MethodPost, inviteURI.String(), &b)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+// func CreateInvite(t *testing.T, r *gin.Engine, invite invite.Controller, inviteData models.InvitationCreateReq, token string) map[string]interface{} {
+// 	var (
+// 		invitePath = "/api/v1/invite/create"
+// 		inviteURI  = url.URL{Path: invitePath}
+// 	)
+// 	inviteUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+// 	{
+// 		inviteUrl.POST("/organisations/send-invite", invite.CreateInvite)
+// 	}
+// 	var b bytes.Buffer
+// 	json.NewEncoder(&b).Encode(inviteData)
+// 	req, err := http.NewRequest(http.MethodPost, inviteURI.String(), &b)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	req.Header.Set("Content-Type", "application/json")
+// 	req.Header.Set("Authorization", "Bearer "+token)
 
-	rr := httptest.NewRecorder()
-	r.ServeHTTP(rr, req)
+// 	rr := httptest.NewRecorder()
+// 	r.ServeHTTP(rr, req)
 
-	//get the response
-	data := ParseResponse(rr)
-	return data
-}
-
+// 	//get the response
+// 	data := ParseResponse(rr)
+// 	return data
+// }
