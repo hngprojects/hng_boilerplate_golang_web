@@ -31,6 +31,14 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 	userId := userClaims["user_id"].(string)
 
 
+	//check if email format is correct
+	_, valid := utility.EmailValid(inviteReq.Email)
+	if !valid {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid email format", nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+	
 	//validate request using default validator
 	err := base.Validator.Struct(&inviteReq)
 	if err != nil {
@@ -39,13 +47,6 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	//check if email format is correct
-	_, valid := utility.EmailValid(inviteReq.Email)
-	if !valid {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid email format", nil, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
 
 	//check if organisation exists
 	_, err = organisation.CheckOrgExists(inviteReq.OrganisationID, base.Db.Postgresql)
