@@ -1,0 +1,159 @@
+package auth
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+)
+
+type Controller struct {
+	Db        *storage.Database
+	Validator *validator.Validate
+	Logger    *utility.Logger
+	ExtReq    request.ExternalRequest
+}
+
+func (base *Controller) CreateUser(c *gin.Context) {
+
+	var (
+		req = models.CreateUserRequestModel{}
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
+	}
+
+	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := auth.CreateUser(reqData, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("user created successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "user created successfully", respData)
+
+	c.JSON(code, rd)
+}
+
+func (base *Controller) CreateAdmin(c *gin.Context) {
+
+	var (
+		req = models.CreateUserRequestModel{}
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
+	}
+
+	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := auth.CreateAdmin(reqData, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("user created successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "user created successfully", respData)
+
+	c.JSON(code, rd)
+}
+
+func (base *Controller) LoginUser(c *gin.Context) {
+
+	var (
+		req = models.LoginRequestModel{}
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := auth.LoginUser(req, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("user login successfully")
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "user login successfully", respData)
+	c.JSON(http.StatusOK, rd)
+}
+
+func (base *Controller) ResetPassword(c *gin.Context) {
+	// to be implemented
+
+}
+
+func (base *Controller) VerifyResetToken(c *gin.Context) {
+	// to be implemented
+
+}
+
+func (base *Controller) ChangePassword(c *gin.Context) {
+	// to be implemented
+
+}
+
+func (base *Controller) RequestMagicLink(c *gin.Context) {
+	// to be implemented
+
+}
+
+func (base *Controller) VerifyMagicLink(c *gin.Context) {
+	// to be implemented
+
+}
