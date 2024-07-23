@@ -22,7 +22,7 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	{
 
 		// inviteUrl.POST("/organisation/send-invite", invite.PostInvite)
-		inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), middleware.Authorize(), invite.PostInvite)
+		inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), middleware.Authorize(db.Postgresql), invite.PostInvite)
 	}
 	return r
 }

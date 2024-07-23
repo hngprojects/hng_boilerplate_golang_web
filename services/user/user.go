@@ -19,3 +19,13 @@ func GetUser(userIDStr string, db *gorm.DB) (models.User, error) {
 
 	return userResp, nil
 }
+
+func GetUserByEmail(email string, db *gorm.DB)(models.User, error){
+	var user models.User
+
+	user, err := user.GetUserByEmail(db, email);
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}

@@ -3,11 +3,11 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,6 +16,8 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -107,14 +109,13 @@ func GetLoginToken(t *testing.T, r *gin.Engine, auth auth.Controller, loginData 
 	return token
 }
 
-
 // helper to create an organisation
-func CreateOrganisation(t *testing.T, r *gin.Engine, org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
+func CreateOrganisation(t *testing.T, r *gin.Engine,db *storage.Database ,org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
 	var (
 		orgPath = "/api/v1/organisations"
 		orgURI  = url.URL{Path: orgPath}
 	)
-	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 	{
 		orgUrl.POST("/organisations", org.CreateOrganisation)
 	}
@@ -131,13 +132,13 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, org organisation.Controller
 	r.ServeHTTP(rr, req)
 
 	// Assuming the response body includes the OrgID, decode it
-    var respBody struct {
-        OrgID string `json:"orgId"`
-    }
-    err = json.NewDecoder(rr.Body).Decode(&respBody)
-    if err != nil {
-        t.Fatal("Failed to decode response body:", err)
-    }
+	var respBody struct {
+		OrgID string `json:"orgId"`
+	}
+	err = json.NewDecoder(rr.Body).Decode(&respBody)
+	if err != nil {
+		t.Fatal("Failed to decode response body:", err)
+	}
 
-    return respBody.OrgID // Return the OrgID
+	return respBody.OrgID // Return the OrgID
 }
