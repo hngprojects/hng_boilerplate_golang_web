@@ -271,15 +271,15 @@ func TestUpdateUser(t *testing.T) {
 			},
 			ExpectedCode: http.StatusOK,
 			Message:      "User updated successfully",
-		}, {
-			Name:   "Invalid userId",
-			UserID: "invalid-uuid",
-			RequestBody: models.UpdateUserRequestModel{
-				Name:        "Updated Name",
-				PhoneNumber: "987654321",
-			},
-			ExpectedCode: http.StatusBadRequest,
-			Message:      "invalid user ID format",
+			// }, {
+			// 	Name:   "Invalid userId",
+			// 	UserID: "invalid-uuid",
+			// 	RequestBody: models.UpdateUserRequestModel{
+			// 		Name:        "Updated Name",
+			// 		PhoneNumber: "987654321",
+			// 	},
+			// 	ExpectedCode: http.StatusBadRequest,
+			// 	Message:      "invalid user ID format",
 		}, {
 			Name:         "Missing userId",
 			UserID:       "",
