@@ -16,7 +16,7 @@ func ValidateAddRecoveryEmail(req models.AddRecoveryEmailRequestModel) (models.A
 		req.Email = strings.ToLower(req.Email)
 		formattedMail, checkBool := utility.EmailValid(req.Email)
 		if !checkBool {
-			return req, fmt.Errorf("email address is invalid")
+			return req, fmt.Errorf("Invalid recovery email")
 		}
 		req.Email = formattedMail
 	}
@@ -74,6 +74,7 @@ func ValidateUpdateRecoveryOptions(req models.UpdateRecoveryOptionsRequestModel)
 		req.Email = strings.ToLower(req.Email)
 		formattedMail, checkBool := utility.EmailValid(req.Email)
 		if !checkBool {
+            fmt.Println("email", req)
 			return req, fmt.Errorf("email address is invalid")
 		}
 		req.Email = formattedMail
@@ -81,7 +82,11 @@ func ValidateUpdateRecoveryOptions(req models.UpdateRecoveryOptionsRequestModel)
 
 	if req.PhoneNumber != "" {
 		req.PhoneNumber = strings.ToLower(req.PhoneNumber)
-		phone, _ := utility.PhoneValid(req.PhoneNumber)
+		phone, valid := utility.PhoneValid(req.PhoneNumber)
+		if !valid {
+            fmt.Println("phone", req)
+			return req, fmt.Errorf("Invalid phone number")
+		}
 		req.PhoneNumber = phone
 	}
 
@@ -126,7 +131,10 @@ func ValidateUpdateRecoveryOptions(req models.UpdateRecoveryOptionsRequestModel)
 func ValidateAddRecoveryPhoneNumber(req models.AddRecoveryPhoneNumberRequestModel) (models.AddRecoveryPhoneNumberRequestModel, error) {
 	if req.PhoneNumber != "" {
 		req.PhoneNumber = strings.ToLower(req.PhoneNumber)
-		phone, _ := utility.PhoneValid(req.PhoneNumber)
+		phone, valid := utility.PhoneValid(req.PhoneNumber)
+		if !valid {
+			return req, fmt.Errorf("Invalid phone number")
+		}
 		req.PhoneNumber = phone
 	}
 

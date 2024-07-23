@@ -20,9 +20,9 @@ func Account(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	{
 		accountRouter.POST("/account/add-recovery-email", account.AddRecoveryEmail)
 		accountRouter.GET("/account/security-questions", account.GetSecurityQuestions)
+		accountRouter.POST("/account/submit-security-answers", account.AddSecurityAnswers)
 		accountRouter.POST("/account/recovery-number", account.AddRecoveryPhoneNumber)
 		accountRouter.PUT("/account/update-recovery-options", account.UpdateRecoveryOptions)
-		accountRouter.POST("/account/submit-security-answers", account.AddSecurityAnswers)
 		accountRouter.DELETE("/account/delete-recovery-options", account.DeleteRecoveryOptions)
 
 		// for testing, not part of the issue (probably should be)

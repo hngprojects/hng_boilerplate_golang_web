@@ -40,7 +40,7 @@ func (base *Controller) GetAccountSettings(c *gin.Context) {
 	}
 
 	base.Logger.Info("got account successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Got account settings", resp)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Got account settings", resp)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -49,7 +49,7 @@ func (base *Controller) GetSecurityQuestions(c *gin.Context) {
 	resp := account.GetSecurityQuestions()
 
 	base.Logger.Info("got security questions successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Security Questions", resp)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Security Questions", resp)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -96,7 +96,7 @@ func (base *Controller) AddRecoveryEmail(c *gin.Context) {
 	}
 
 	base.Logger.Info("recovery email added successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Recovery email successfully added", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Recovery email successfully added", nil)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -143,7 +143,7 @@ func (base *Controller) AddRecoveryPhoneNumber(c *gin.Context) {
 	}
 
 	base.Logger.Info("recovery phone number added successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Recovery phone number successfully added", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Recovery phone number successfully added", nil)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -160,7 +160,7 @@ func (base *Controller) AddSecurityAnswers(c *gin.Context) {
 
 	reqData, err := account.ValidateAddSecurityQuestions(req)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Could not submit security questions", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
@@ -183,7 +183,7 @@ func (base *Controller) AddSecurityAnswers(c *gin.Context) {
 	}
 
 	base.Logger.Info("security answers added successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Security answers submitted successfully", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Security answers submitted successfully", nil)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -200,7 +200,7 @@ func (base *Controller) UpdateRecoveryOptions(c *gin.Context) {
 
 	reqData, err := account.ValidateUpdateRecoveryOptions(req)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid recovery options", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
@@ -223,7 +223,7 @@ func (base *Controller) UpdateRecoveryOptions(c *gin.Context) {
 	}
 
 	base.Logger.Info("updated recovery options")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Recovery options updated", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Recovery options updated", nil)
 
 	c.JSON(http.StatusOK, rd)
 }
@@ -256,7 +256,7 @@ func (base *Controller) DeleteRecoveryOptions(c *gin.Context) {
 	}
 
 	base.Logger.Info("deleted recovery options")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Recovery options successfully deleted", nil)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Recovery options successfully deleted", nil)
 
 	c.JSON(http.StatusOK, rd)
 }
