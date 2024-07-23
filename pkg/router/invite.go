@@ -21,8 +21,9 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
 
-		// inviteUrl.POST("/organisation/send-invite", invite.PostInvite)
+		inviteUrl.POST("/invite/create", invite.CreateInvite)
 		inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), middleware.Authorize(), invite.PostInvite)
+		
 	}
 	return r
 }

@@ -158,7 +158,7 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		}
 
 		// Store invitation in db
-		err = invitation.CreateInvitation(base.Db.Postgresql, invitation)
+		err = invitation.CreateInvitation(base.Db.Postgresql)
 		if err != nil {
 			// Log error and skip user
 			base.Logger.Error("error creating invitation", err)

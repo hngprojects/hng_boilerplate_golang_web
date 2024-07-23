@@ -21,7 +21,7 @@ import (
 )
 
 func TestPostInvite(t *testing.T) {
-
+	
 	logger := Setup()
 	gin.SetMode(gin.TestMode)
 	validatorRef := validator.New()
