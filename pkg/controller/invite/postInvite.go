@@ -16,8 +16,8 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/organisation"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/organisation"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -28,7 +28,6 @@ type Controller struct {
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
 }
-
 
 func (base *Controller) PostInvite(c *gin.Context) {
 	var inviteReq models.InvitationRequest
@@ -45,7 +44,6 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		c.JSON(http.StatusConflict, rd)
 		return
 	}
-
 
 	// check emails limit
 	if invite.CheckEmailsLimit(inviteReq) {
@@ -138,7 +136,7 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		}
 
 		// Check if user with email exists and get user
-		user, err := user.GetUserByEmail(email, base.Db.Postgresql)
+		user, err := service.GetUserByEmail(email, base.Db.Postgresql)
 		if err != nil {
 
 			// Log error and skip user

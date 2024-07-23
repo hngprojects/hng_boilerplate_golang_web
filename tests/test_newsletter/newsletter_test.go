@@ -1,4 +1,4 @@
-package tests
+package test_newsletter
 
 import (
 	"bytes"
@@ -10,16 +10,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func setupNewsLetterTestRouter() (*gin.Engine, *newsletter.Controller) {
 	gin.SetMode(gin.TestMode)
 
-	logger := Setup()
+	logger := tst.Setup()
 	db := storage.Connection()
 	validator := validator.New()
 
@@ -60,10 +62,10 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 
 	router.ServeHTTP(resp, req)
 
-	AssertStatusCode(t, resp.Code, http.StatusCreated)
+	tst.AssertStatusCode(t, resp.Code, http.StatusCreated)
 
-	response := ParseResponse(resp)
-	AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
+	response := tst.ParseResponse(resp)
+	tst.AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
 }
 
 func TestPostNewsletter_ValidateEmail(t *testing.T) {
@@ -81,9 +83,9 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 
 	router.ServeHTTP(resp, req)
 
-	response := ParseResponse(resp)
-	AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
-	AssertResponseMessage(t, response["message"].(string), "Validation failed")
+	response := tst.ParseResponse(resp)
+	tst.AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
+	tst.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 }
 
 func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
@@ -105,9 +107,9 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 
 	router.ServeHTTP(resp, req)
 
-	response := ParseResponse(resp)
-	AssertStatusCode(t, resp.Code, http.StatusConflict)
-	AssertResponseMessage(t, response["message"].(string), "Email already subscribed")
+	response := tst.ParseResponse(resp)
+	tst.AssertStatusCode(t, resp.Code, http.StatusConflict)
+	tst.AssertResponseMessage(t, response["message"].(string), "Email already subscribed")
 }
 
 func TestPostNewsletter_SaveData(t *testing.T) {
@@ -125,9 +127,9 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 
 	router.ServeHTTP(resp, req)
 
-	response := ParseResponse(resp)
-	AssertStatusCode(t, resp.Code, http.StatusCreated)
-	AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
+	response := tst.ParseResponse(resp)
+	tst.AssertStatusCode(t, resp.Code, http.StatusCreated)
+	tst.AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
 
 	var newsletter models.NewsLetter
 	newsController.Db.Postgresql.First(&newsletter, "email = ?", fmt.Sprintf("testuser%v@qa.team", currUUID))
@@ -151,7 +153,7 @@ func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
 
 	router.ServeHTTP(resp, req)
 
-	response := ParseResponse(resp)
-	AssertStatusCode(t, resp.Code, http.StatusCreated)
-	AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
+	response := tst.ParseResponse(resp)
+	tst.AssertStatusCode(t, resp.Code, http.StatusCreated)
+	tst.AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
 }
