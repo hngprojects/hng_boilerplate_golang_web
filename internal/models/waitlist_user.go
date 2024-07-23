@@ -12,11 +12,12 @@ import (
 var ErrWaitlistUserExist = errors.New("waitlist user exists")
 
 type WaitlistUser struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `gorm:"uniqueIndex" json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        string         `json:"id"`
+	Name      string         `json:"name"`
+	Email     string         `gorm:"uniqueIndex" json:"email"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type CreateWaitlistUserRequest struct {
@@ -38,7 +39,7 @@ func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
 func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
 	err, nerr := postgresql.SelectOneFromDb(db, &w, "email = ?", w.Email)
 	if nerr != nil {
-		return http.StatusBadRequest, nerr 
+		return http.StatusBadRequest, nerr
 	}
 
 	if err != nil {
