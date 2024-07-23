@@ -29,6 +29,7 @@ type CreateUserRequestModel struct {
 	LastName    string `json:"last_name" validate:"required"`
 	UserName    string `json:"username" validate:"required"`
 	PhoneNumber string `json:"phone_number"`
+	Role        int    `json:"role" validate:"required"`
 }
 
 type LoginRequestModel struct {

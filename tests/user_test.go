@@ -42,6 +42,7 @@ func TestSignup(t *testing.T) {
 				LastName:    "user",
 				Password:    "password",
 				UserName:    fmt.Sprintf("test_username%v", currUUID),
+				Role:        models.RoleIdentity.User,
 			},
 			ExpectedCode: http.StatusCreated,
 			Message:      "user created successfully",
@@ -54,6 +55,7 @@ func TestSignup(t *testing.T) {
 				LastName:    "user",
 				Password:    "password",
 				UserName:    fmt.Sprintf("test_username%v", currUUID),
+				Role:        models.RoleIdentity.User,
 			},
 			ExpectedCode: http.StatusBadRequest,
 			Message:      "user already exists with the given email",
@@ -66,6 +68,7 @@ func TestSignup(t *testing.T) {
 				LastName:    "user",
 				Password:    "password",
 				UserName:    fmt.Sprintf("test_username%v", currUUID),
+				Role:        models.RoleIdentity.User,
 			},
 			ExpectedCode: http.StatusBadRequest,
 			Message:      "email address is invalid",
@@ -77,6 +80,7 @@ func TestSignup(t *testing.T) {
 				LastName:    "user",
 				Password:    "password",
 				UserName:    fmt.Sprintf("test_username%v", currUUID),
+				Role:        models.RoleIdentity.User,
 			},
 			ExpectedCode: http.StatusUnprocessableEntity,
 			Message:      "Validation failed",
@@ -143,6 +147,7 @@ func TestLogin(t *testing.T) {
 			LastName:    "user",
 			Password:    "password",
 			UserName:    fmt.Sprintf("test_username%v", currUUID),
+			Role:        models.RoleIdentity.User,
 		}
 	)
 
