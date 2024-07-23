@@ -8,6 +8,7 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -16,16 +17,21 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	auth := auth.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	userUrl := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
+	authUrl := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
-		userUrl.POST("/users/signup", auth.CreateUser)
-		userUrl.POST("/admin/signup", auth.CreateAdmin)
-		userUrl.POST("/login", auth.LoginUser)
-		userUrl.POST("/password-reset", auth.ResetPassword)
-		userUrl.POST("/password-reset/verify", auth.VerifyResetToken)
-		userUrl.POST("/change-password", auth.ChangePassword)
-		userUrl.POST("/magick-link", auth.RequestMagicLink)
-		userUrl.POST("/magick-link/verify", auth.VerifyMagicLink)
+		authUrl.POST("/users/signup", auth.CreateUser)
+		authUrl.POST("/admin/signup", auth.CreateAdmin)
+		authUrl.POST("/login", auth.LoginUser)
+		authUrl.POST("/password-reset", auth.ResetPassword)
+		authUrl.POST("/password-reset/verify", auth.VerifyResetToken)
+		authUrl.POST("/magick-link", auth.RequestMagicLink)
+		authUrl.POST("/magick-link/verify", auth.VerifyMagicLink)
+	}
+
+	authUrlSec := r.Group(fmt.Sprintf("%v/auth", ApiVersion), middleware.Authorize(db.Postgresql))
+	{
+		authUrlSec.POST("/logout", auth.LogoutUser)
+		authUrlSec.POST("/change-password", auth.ChangePassword)
 	}
 	return r
 }

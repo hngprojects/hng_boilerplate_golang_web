@@ -18,8 +18,7 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 
 	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		userUrl.POST("/users/signup", user.CreateUser)
-		userUrl.POST("/users/login", user.LoginUser)
+		userUrl.POST("/users/:user_id", user.GetUser)
 	}
 	return r
 }

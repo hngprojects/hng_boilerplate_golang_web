@@ -6,15 +6,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func Authorize(inputRole ...models.RoleId) gin.HandlerFunc {
+func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 	// if no role is passed it would assume default user role
 	return func(c *gin.Context) {
-		var tokenStr string
+
+		var (
+			tokenStr     string
+			access_token models.AccessToken
+		)
+
 		bearerToken := c.GetHeader("Authorization")
 		strArr := strings.Split(bearerToken, " ")
 		if len(strArr) == 2 {
@@ -38,10 +44,31 @@ func Authorize(inputRole ...models.RoleId) gin.HandlerFunc {
 
 		claims := token.Claims.(jwt.MapClaims)
 
-		// check if user id exists
-		_, ok := claims["user_id"].(string) //convert the interface to string
+		// check if user id exists and fetch it
+		userID, ok := claims["user_id"].(string) //convert the interface to string
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+			return
+		}
+
+		// check if access id exists and fetch it
+		accessID, ok := claims["access_uuid"].(string) //convert the interface to string
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+			return
+		}
+		// check user session and also if token is valid in stored session
+
+		access_token = models.AccessToken{ID: accessID}
+		if code, err := access_token.GetByID(db); err != nil {
+			c.AbortWithStatusJSON(code, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+			return
+		}
+
+		// check if session is valid
+
+		if access_token.LoginAccessToken != tokenStr || userID != access_token.OwnerID || !access_token.IsLive {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Session is invalid!", "Unauthorized", nil))
 			return
 		}
 
