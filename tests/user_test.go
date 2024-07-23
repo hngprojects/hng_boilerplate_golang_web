@@ -10,9 +10,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/assert"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+
+	// "github.com/google/uuid"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
@@ -239,19 +240,20 @@ func TestUpdateUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	validatorRef := validator.New()
 	db := storage.Connection()
+
 	var (
 		updateUserPath = "/api/v1/users/%s"
 		updateUserURI  = url.URL{}
-		currUUID       = uuid.New().String()
+		currUUID       = utility.GenerateUUID()
 		userData       = models.User{
-			ID:          uuid.New(),
+			ID:          currUUID,
 			Name:        "John Doe",
 			PhoneNumber: "123456789",
 			Role:        "admin",
 		}
 	)
 
-	db.Create(&userData)
+	db.Postgresql.Create(&userData)
 
 	tests := []struct {
 		Name         string
@@ -262,7 +264,7 @@ func TestUpdateUser(t *testing.T) {
 	}{
 		{
 			Name:   "Successful response with valid ID",
-			UserID: userData.ID.String(),
+			UserID: userData.ID,
 			RequestBody: models.UpdateUserRequestModel{
 				Name:        "Updated Name",
 				PhoneNumber: "987654321",
@@ -285,7 +287,7 @@ func TestUpdateUser(t *testing.T) {
 			ExpectedCode: http.StatusNotFound,
 		}, {
 			Name:   "Invalid request body",
-			UserID: userData.ID.String(),
+			UserID: userData.ID,
 			RequestBody: models.UpdateUserRequestModel{
 				Name:        "Updated Name",
 				PhoneNumber: "",
