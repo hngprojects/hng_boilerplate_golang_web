@@ -20,8 +20,128 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+func TestCreateInvite(t *testing.T) {
+	logger := Setup()
+	gin.SetMode(gin.TestMode)
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := url.URL{Path: "/api/v1/invite/create"}
+	currUUID := utility.GenerateUUID()
+
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser" + currUUID + "@qa.team"),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	inviteController := &invite.Controller{
+		Db:        db,
+		Validator: validatorRef,
+		Logger:    logger,
+	}
+
+	user := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	SignupUser(t, r, user, userSignUpData)
+	token := GetLoginToken(t, r, user, loginData)
+
+	tests := []struct {
+		Name         string
+		RequestBody  models.InvitationCreateReq
+		SetupFunc    func()
+		ExpectedCode int
+		Message      string
+	}{
+		{
+			Name: "Successful Invitation Creation",
+			RequestBody: models.InvitationCreateReq{
+				OrganisationID: "valid-org-id",
+				Email:          "testinvitee@qa.team",
+			},
+			SetupFunc: func() {
+				// Mock necessary services and data for a successful invitation creation
+				organisation.MockCheckOrgExists(true, nil)
+				invite.MockCheckUserIsAdmin(true, nil)
+				invite.MockGenerateInvitationToken("valid-token", nil)
+				invite.MockSaveInvitation(nil)
+				invite.MockGenerateInvitationLink("http://localhost:8019/invite/accept?token=valid-token", nil)
+			},
+			ExpectedCode: http.StatusCreated,
+			Message:      "Invitation created successfully",
+		},
+		{
+			Name: "Invalid Email Format",
+			RequestBody: models.InvitationCreateReq{
+				OrganisationID: "valid-org-id",
+				Email:          "invalid-email",
+			},
+			SetupFunc: func() {
+				// No setup needed for invalid email test
+			},
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "Invalid email format",
+		},
+		{
+			Name: "Invalid Organisation ID",
+			RequestBody: models.InvitationCreateReq{
+				OrganisationID: "invalid-org-id",
+				Email:          "testinvitee@qa.team",
+			},
+			SetupFunc: func() {
+				// Mock necessary services and data for invalid organisation ID
+				organisation.MockCheckOrgExists(false, fmt.Errorf("organisation not found"))
+			},
+			ExpectedCode: http.StatusNotFound,
+			Message:      "Invalid Organisation ID",
+		},
+		{
+			Name: "User Not Admin",
+			RequestBody: models.InvitationCreateReq{
+				OrganisationID: "valid-org-id",
+				Email:          "testinvitee@qa.team",
+			},
+			SetupFunc: func() {
+				// Mock necessary services and data for user not being an admin
+				organisation.MockCheckOrgExists(true, nil)
+				invite.MockCheckUserIsAdmin(false, nil)
+			},
+			ExpectedCode: http.StatusForbidden,
+			Message:      "User is not an admin of the organisation",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			if tt.SetupFunc != nil {
+				tt.SetupFunc()
+			}
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodPost, requestURI.String(), utility.ToJSONBuffer(tt.RequestBody))
+			req.Header.Set("Authorization", "Bearer "+token)
+
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.ExpectedCode, w.Code)
+			if tt.ExpectedCode == http.StatusCreated {
+				assert.Contains(t, w.Body.String(), tt.Message)
+			} else {
+				assert.Contains(t, w.Body.String(), tt.Message)
+			}
+		})
+	}
+}
+
 func TestPostInvite(t *testing.T) {
-	
+
 	logger := Setup()
 	gin.SetMode(gin.TestMode)
 	validatorRef := validator.New()

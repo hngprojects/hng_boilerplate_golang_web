@@ -8,11 +8,11 @@ import (
 )
 
 type Invitation struct {
-	ID             string       `gorm:"type:uuid;primary_key;"`
+	ID             string       `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
 	UserID         string       `gorm:"type:uuid;"`
 	OrganisationID string       `gorm:"type:uuid;"`
 	Organisation   Organisation `gorm:"foreignKey:OrganisationID"`
-	Token		  string       `gorm:"type:varchar(255);"`
+	Token          string       `gorm:"type:varchar(255);"`
 	CreatedAt      time.Time
 	ExpiresAt      time.Time
 	IsValid        bool

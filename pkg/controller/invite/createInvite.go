@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/organisation"
@@ -18,6 +19,17 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
+
+	//
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
 
 	//validate request using default validator
 	err := base.Validator.Struct(&inviteReq)
@@ -43,6 +55,20 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
+	//check if user is an admin of the organisation
+	isAdmin, err := invite.CheckUserIsAdmin(base.Db.Postgresql, userId, inviteReq.OrganisationID)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to check if user is an admin", err, nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	if !isAdmin {
+		rd := utility.BuildErrorResponse(http.StatusForbidden, "error", "User is not an admin of the organisation", nil, nil)
+		c.JSON(http.StatusForbidden, rd)
+		return
+	}
+
 	//generate token
 	token, err := invite.GenerateInvitationToken()
 	if err != nil {
@@ -52,7 +78,7 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 	}
 
 	//save invitation
-	err = invite.SaveInvitation(base.Db.Postgresql, token, inviteReq)
+	err = invite.SaveInvitation(base.Db.Postgresql, userId , token, inviteReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to save invitation", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
@@ -62,6 +88,8 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 	//generate invitation link
 	invitationLink := invite.GenerateInvitationLink("http://localhost:8019", token)
 
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "success", "Invitation created successfully", invitationLink, nil)
+	mapData := map[string]string{"invitation_link": invitationLink}
+
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "Invitation created successfully", mapData)
 	c.JSON(http.StatusCreated, rd)
 }

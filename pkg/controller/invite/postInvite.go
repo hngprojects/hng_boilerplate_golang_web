@@ -80,7 +80,7 @@ func (base *Controller) PostInvite(c *gin.Context) {
 	///check if user from the claims is a member of the organisation
 	claims, exists := c.Get("userClaims")
 	if !exists {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", err, nil)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}

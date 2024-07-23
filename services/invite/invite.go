@@ -4,10 +4,24 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 
-	"gorm.io/gorm"
+	"strings"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"gorm.io/gorm"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
+
+// check if user is an admin
+func CheckUserIsAdmin(db *gorm.DB, user_id string, org_id string) (bool, error) {
+	//use the org_id to check for an existing organisation
+	var org models.Organisation
+
+	orgResp, err := org.GetOrgByID(db, org_id)
+	if err != nil {
+		return false, err
+	}
+	return orgResp.OwnerID == user_id, nil
+}
 
 // check emails limit
 func CheckEmailsLimit(inviteReq models.InvitationRequest) bool {
@@ -39,13 +53,19 @@ func GenerateInvitationLink(baseurl, token string) string {
 	return baseurl + "/invite/accept/" + token
 }
 
-func SaveInvitation(db *gorm.DB, token string, req models.InvitationCreateReq) error {
-	var invitation models.Invitation
+func SaveInvitation(db *gorm.DB, user_id string, token string, req models.InvitationCreateReq) error {
+	var (
+		email = strings.ToLower(req.Email)
+	)
 
-	invitation.Token = token
-	invitation.Email = req.Email
-	invitation.OrganisationID = req.OrganisationID
-	invitation.IsValid = true
+	invitation := models.Invitation{
+		ID:             utility.GenerateUUID(),
+		UserID:         user_id,
+		Token:          token,
+		Email:          email,
+		OrganisationID: req.OrganisationID,
+		IsValid:        true,
+	}
 
 	err := invitation.CreateInvitation(db)
 	if err != nil {
