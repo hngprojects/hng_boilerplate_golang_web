@@ -4,7 +4,6 @@ import (
     "errors"
     "github.com/go-playground/validator/v10"
     "github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-    "github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
     "github.com/hngprojects/hng_boilerplate_golang_web/utility"
     "gorm.io/gorm"
 )
@@ -27,17 +26,17 @@ func CreateUserSubmission(db *gorm.DB, req models.SqueezeRequest) error {
         Interests:      req.Interests,
         ReferralSource: req.ReferralSource,
     }
-    if err := storage.DB.Postgresql.Create(&userSubmission).Error; err != nil {
-        return errors.New("failed to save submission to database")
-    }
-    return nil
+    return userSubmission.Create(db)
 }
-
 
 func SendConfirmationEmail(email string) error {
     subject := "Confirmation Email"
-    body := "Thank you for your submission. We have received your request and will process it shortly."
-    err := utility.SendEmail(email, subject, body)
+    data := struct {
+        Email string
+    }{
+        Email: email,
+    }
+    err := utility.SendEmail(email, subject, "templates/confirmation_email.html", data)
     if err != nil {
         return errors.New("failed to send confirmation email")
     }
