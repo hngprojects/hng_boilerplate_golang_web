@@ -14,8 +14,8 @@ func SeedDatabase(db *gorm.DB) {
 	// instantiate uuid
 
 	roles := []models.Role{
-		{ID: models.RoleIdentity.User, Name: "user", Description: "user related functions"},
-		{ID: models.RoleIdentity.SuperAdmin, Name: "super admin", Description: "super admin related functions"},
+		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
+		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
 	}
 
 	Userid1 := utility.GenerateUUID()
@@ -35,7 +35,7 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", OwnerID: Userid1},
 			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", OwnerID: Userid1},
 		},
-		Role: models.RoleIdentity.User,
+		Role: int(models.RoleIdentity.User),
 	}
 
 	Userid2 := utility.GenerateUUID()
@@ -55,7 +55,7 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", OwnerID: Userid2},
 			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", OwnerID: Userid2},
 		},
-		Role: models.RoleIdentity.SuperAdmin,
+		Role: int(models.RoleIdentity.SuperAdmin),
 	}
 
 	organisations := []models.Organisation{

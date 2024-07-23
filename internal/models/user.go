@@ -67,3 +67,13 @@ func (u *User) CreateUser(db *gorm.DB) error {
 
 	return nil
 }
+
+func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
+    var users []User
+
+    if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Limit(2).Find(&users).Error; err != nil {
+        return users, err
+    }
+
+    return users, nil
+}
