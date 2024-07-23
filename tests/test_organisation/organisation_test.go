@@ -148,7 +148,7 @@ func TestOrganizationCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 		{
 			orgUrl.POST("/organisations", org.CreateOrganisation)
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -130,6 +131,38 @@ func (base *Controller) LoginUser(c *gin.Context) {
 	base.Logger.Info("user login successfully")
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user login successfully", respData)
+	c.JSON(http.StatusOK, rd)
+}
+
+func (base *Controller) LogoutUser(c *gin.Context) {
+
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+
+	access_uuid, ok := userClaims["access_uuid"].(string)
+	owner_id, ok := userClaims["user_id"].(string)
+	if !ok {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get access id", nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := auth.LogoutUser(access_uuid, owner_id, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("user login successfully")
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "user logout successfully", respData)
 	c.JSON(http.StatusOK, rd)
 }
 

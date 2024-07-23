@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -98,7 +99,20 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		return nil, http.StatusInternalServerError, err
 	}
 
-	token, expiry, err := middleware.CreateToken(user)
+	tokenData, err := middleware.CreateToken(user)
+	if err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+	}
+
+	tokens := map[string]string{
+		"access_token": tokenData.AccessToken,
+		"exp":          strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+	}
+
+	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
+
+	err = access_token.CreateAccessToken(db, tokens)
+
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
 	}
@@ -110,8 +124,8 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		"last_name":    user.Profile.LastName,
 		"phone":        user.Profile.Phone,
 		"role":         models.UserRoleName,
-		"expires_in":   expiry,
-		"access_token": token,
+		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"access_token": tokenData.AccessToken,
 	}
 
 	return responseData, http.StatusCreated, nil
@@ -153,7 +167,20 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 		return nil, http.StatusInternalServerError, err
 	}
 
-	token, expiry, err := middleware.CreateToken(user)
+	tokenData, err := middleware.CreateToken(user)
+	if err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+	}
+
+	tokens := map[string]string{
+		"access_token": tokenData.AccessToken,
+		"exp":          strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+	}
+
+	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
+
+	err = access_token.CreateAccessToken(db, tokens)
+
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
 	}
@@ -165,8 +192,8 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 		"last_name":    user.Profile.LastName,
 		"phone":        user.Profile.Phone,
 		"role":         models.AdminRoleName,
-		"expires_in":   expiry,
-		"access_token": token,
+		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"access_token": tokenData.AccessToken,
 	}
 
 	return responseData, http.StatusCreated, nil
@@ -194,7 +221,19 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("unable to fetch user " + err.Error())
 	}
 
-	token, expiry, err := middleware.CreateToken(userData)
+	tokenData, err := middleware.CreateToken(user)
+	if err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+	}
+
+	tokens := map[string]string{
+		"access_token": tokenData.AccessToken,
+		"exp":          strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+	}
+
+	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
+
+	err = access_token.CreateAccessToken(db, tokens)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
@@ -207,11 +246,31 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 		"last_name":    userData.Profile.LastName,
 		"phone":        userData.Profile.Phone,
 		"role":         userData.Role,
-		"expires_in":   expiry,
-		"access_token": token,
+		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"access_token": tokenData.AccessToken,
 	}
 
-	return responseData, http.StatusCreated, nil
+	return responseData, http.StatusOK, nil
+}
+
+func LogoutUser(access_uuid, owner_id string, db *gorm.DB) (gin.H, int, error) {
+
+	var (
+		responseData gin.H
+	)
+
+	access_token := models.AccessToken{ID: access_uuid, OwnerID: owner_id}
+
+	// revoke user access_token to invalidate session
+	err := access_token.RevokeAccessToken(db)
+
+	if err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error revoking user session: " + err.Error())
+	}
+
+	responseData = gin.H{}
+
+	return responseData, http.StatusOK, nil
 }
 
 func ResetPassword(c *gin.Context) {

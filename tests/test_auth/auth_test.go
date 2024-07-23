@@ -14,11 +14,13 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+// test user signup
 func TestUserSignup(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
@@ -127,14 +129,12 @@ func TestUserSignup(t *testing.T) {
 				tst.AssertBool(t, role == string(models.UserRoleName), true)
 			}
 
-
 		})
 
 	}
 
 }
-
-
+// test admin signup
 func TestAdminSignup(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
@@ -238,7 +238,6 @@ func TestAdminSignup(t *testing.T) {
 
 			}
 			if dataResp := data["data"]; dataResp != nil {
-				fmt.Println(dataResp)
 				// check user role
 				role := dataResp.(map[string]interface{})["role"].(string)
 				tst.AssertBool(t, role == string(models.AdminRoleName), true)
@@ -249,6 +248,7 @@ func TestAdminSignup(t *testing.T) {
 
 }
 
+// test login
 func TestLogin(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
@@ -326,6 +326,113 @@ func TestLogin(t *testing.T) {
 			}
 
 			req.Header.Set("Content-Type", "application/json")
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
+
+			data := tst.ParseResponse(rr)
+
+			code := int(data["status_code"].(float64))
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
+
+			if test.Message != "" {
+				message := data["message"]
+				if message != nil {
+					tst.AssertResponseMessage(t, message.(string), test.Message)
+				} else {
+					tst.AssertResponseMessage(t, "", test.Message)
+				}
+
+			}
+
+		})
+
+	}
+
+}
+// test user logout
+func TestLogout(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	var (
+		logoutPath = "/api/v1/auth/logout"
+		logoutURI  = url.URL{Path: logoutPath}
+	)
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "Hashira@password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	authen := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	tst.SignupUser(t, r, authen, userSignUpData)
+
+	token := tst.GetLoginToken(t, r, authen, loginData)
+
+	tests := []struct {
+		Name         string
+		ExpectedCode int
+		RequestBody  interface{}
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name:         "user logout successfully",
+			ExpectedCode: http.StatusOK,
+			RequestBody:  nil,
+			Message:      "user logout successfully",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		}, {
+			Name:         "Session is invalid!",
+			ExpectedCode: http.StatusUnauthorized,
+			RequestBody:  nil,
+			Message:      "Session is invalid!",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+	}
+
+	authRoute := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	for _, test := range tests {
+		r = gin.Default()
+
+		authUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		{
+			authUrl.POST("/auth/logout", authRoute.LogoutUser)
+
+		}
+		t.Run(test.Name, func(t *testing.T) {
+
+			var b bytes.Buffer
+			json.NewEncoder(&b).Encode(test.RequestBody)
+
+			req, err := http.NewRequest(http.MethodPost, logoutURI.String(), &b)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
 
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
