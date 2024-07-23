@@ -13,10 +13,7 @@ import (
 func SeedDatabase(db *gorm.DB) {
 	// instantiate uuid
 
-	roles := []models.Role{
-		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
-		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
-	}
+	SeedTestDatabase(db)
 
 	Userid1 := utility.GenerateUUID()
 	user1 := models.User{
@@ -64,18 +61,6 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
 	}
 
-	var existingRole models.Role
-	if err := db.Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			postgresql.CreateMultipleRecords(db, &roles, len(roles))
-		} else {
-			fmt.Println("An error occurred: ", err)
-		}
-
-	} else {
-		fmt.Println("Roles already exist, skipping seeding.")
-	}
-
 	var existingUser models.User
 	if err := db.Preload("Profile").Preload("Products").Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -96,6 +81,27 @@ func SeedDatabase(db *gorm.DB) {
 		}
 	} else {
 		fmt.Println("Users already exist, skipping seeding.")
+	}
+
+}
+
+func SeedTestDatabase(db *gorm.DB) {
+
+	roles := []models.Role{
+		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
+		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
+	}
+
+	var existingRole models.Role
+	if err := db.Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			postgresql.CreateMultipleRecords(db, &roles, len(roles))
+		} else {
+			fmt.Println("An error occurred: ", err)
+		}
+
+	} else {
+		fmt.Println("Roles already exist, skipping seeding.")
 	}
 
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -27,6 +28,8 @@ func Setup() *utility.Logger {
 	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
+
+		seed.SeedTestDatabase(db.Postgresql)
 	}
 	return logger
 }
