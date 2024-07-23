@@ -7,10 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func Authorize() gin.HandlerFunc {
+func Authorize(inputRole ...models.RoleId) gin.HandlerFunc {
+	// if no role is passed it would assume default user role
 	return func(c *gin.Context) {
 		var tokenStr string
 		bearerToken := c.GetHeader("Authorization")
@@ -42,6 +44,25 @@ func Authorize() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
 			return
 		}
+
+		// compare user role
+
+		userRole, ok := claims["role"].(int) //check if token is authorised for middleware
+		var authorizedRole bool
+
+		for _, role := range inputRole {
+			if int(role) == userRole {
+				authorizedRole = true
+				break
+			}
+		}
+
+		if !ok && !authorizedRole && len(inputRole) > 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+			return
+		}
+
+		// check authorization status
 
 		authoriseStatus, ok := claims["authorised"].(bool) //check if token is authorised for middleware
 		if !ok && !authoriseStatus {

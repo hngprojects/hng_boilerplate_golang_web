@@ -3,19 +3,28 @@ package models
 import (
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"gorm.io/gorm"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
+type RoleName string
+type RoleId int
+
 type DefaultIdentity struct {
-	User       int
-	SuperAdmin int
+	User       RoleId
+	SuperAdmin RoleId
 }
 
 var RoleIdentity = DefaultIdentity{
 	User:       1,
 	SuperAdmin: 2,
 }
+
+var (
+	UserRoleName  RoleName = "user"
+	AdminRoleName RoleName = "admin"
+)
 
 type Role struct {
 	ID          int            `gorm:"primaryKey;type:int" json:"id"`

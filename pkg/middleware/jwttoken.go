@@ -14,8 +14,8 @@ func CreateToken(user models.User) (string, time.Time, error) {
 
 	var (
 		config  = config.GetConfig()
-		UnixExp = time.Now().AddDate(0, 0, 7).Unix() // token valid for a week
-		exp     = time.Now().AddDate(0, 0, 7)
+		UnixExp = time.Now().AddDate(0, 0, config.Server.AccessTokenExpireDuration).Unix() // token valid for env set days
+		exp     = time.Now().AddDate(0, 0, config.Server.AccessTokenExpireDuration)
 	)
 
 	//create token
@@ -24,6 +24,7 @@ func CreateToken(user models.User) (string, time.Time, error) {
 
 	// specify user claims
 	userClaims["user_id"] = userid
+	userClaims["role"] = user.Role
 	userClaims["exp"] = UnixExp
 	userClaims["authorised"] = true
 
