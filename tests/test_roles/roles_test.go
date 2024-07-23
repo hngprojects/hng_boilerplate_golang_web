@@ -36,7 +36,7 @@ func setupRoleTestRouter() (*gin.Engine, *user.Controller) {
 }
 
 func SetupRolesRoutes(r *gin.Engine, userController *user.Controller) {
-	r.PUT("/api/v1/users/:user_id/roles/:role_id", middleware.Authorize(), userController.AssignRoleToUser)
+	r.PUT("/api/v1/users/:user_id/roles/:role_id", middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin), userController.AssignRoleToUser)
 }
 
 func TestE2EUpdateUserRole(t *testing.T) {

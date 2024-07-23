@@ -5,8 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -27,15 +26,6 @@ func (base *Controller) AssignRoleToUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.LoginUser(req, base.Db.Postgresql)
-	if err != nil {
-		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-
-	base.Logger.Info("user login successfully")
-
-	rd := utility.BuildSuccessResponse(http.StatusOK, "user login successfully", respData)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Role updated successfully", userData)
 	c.JSON(http.StatusOK, rd)
 }

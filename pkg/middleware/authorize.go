@@ -74,7 +74,7 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 
 		// compare user role
 
-		userRole, ok := claims["role"].(int) //check if token is authorised for middleware
+		userRole := int(claims["role"].(float64)) //check if token is authorised for middleware
 		var authorizedRole bool
 
 		for _, role := range inputRole {
