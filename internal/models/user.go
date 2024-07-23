@@ -22,7 +22,6 @@ type User struct {
 }
 
 type GoogleAuth struct {
-	ID        string    `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
 	UserID    string    `gorm:"type:uuid;not null" json:"user_id"`
 	GoogleID  string    `gorm:"type:varchar(255);unique;not null" json:"google_id"`
 	Token     string    `gorm:"type:text;not null" json:"token"`

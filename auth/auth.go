@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"log"
 	"net/http"
@@ -11,12 +12,14 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"gorm.io/gorm"
+	// "gorm.io/gorm"
 )
 
 type AuthPayload struct {
@@ -88,6 +91,7 @@ func Handle_Google_Callback(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "code exchange failed"})
 		return
 	}
+	fmt.Println(token)
 
 	client := googleOauthConfig.Client(context.Background(), token)
 	response, err := client.Get("https://www.googleapis.com/oauth2/v1/userinfo?alt=json")
@@ -104,7 +108,7 @@ func Handle_Google_Callback(c *gin.Context) {
 	}
 
 	// Logic for updating user in database
-	user, err := updateUserInfo(userInfo)
+	user, err := updateUserInfo(userInfo, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user info"})
 		return
@@ -130,7 +134,7 @@ func Handle_Google_Callback(c *gin.Context) {
 }
 
 // Update user information in database
-func updateUserInfo(userInfo map[string]interface{}) (map[string]interface{}, error) {
+func updateUserInfo(userInfo map[string]interface{}, token *oauth2.Token) (map[string]interface{}, error) {
 	// Implement actual database logic
 
 	//Initialize your DB connection here
@@ -138,37 +142,36 @@ func updateUserInfo(userInfo map[string]interface{}) (map[string]interface{}, er
 
 	// Example of checking if user exists
 	var user models.User
-	err := db.Where("email = ?", userInfo["email"]).First(&user).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	// err := db.Where("email = ?", userInfo["id"]).First(&user).Error
+	// if err != nil && err != gorm.ErrRecordNotFound {
+	// 	return nil, err
+	// }
+
+	// // If user does not exist, create a new user
+	// if err == gorm.ErrRecordNotFound {
+	var id, err = uuid.NewV1()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	user = models.User{
+		ID:        id.String(),
+		Email:     userInfo["email"].(string),
+		Name:      userInfo["given_name"].(string),
+		Password:  "securepassword",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	if err := user.CreateUser(db); err != nil {
 		return nil, err
 	}
 
-	// If user does not exist, create a new user
-	if err == gorm.ErrRecordNotFound {
-		user = models.User{
-			ID:        userInfo["id"].(string),
-			Email:     userInfo["email"].(string),
-			Name:      userInfo["name"].(string),
-			Password:  "securepassword",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
+	user.CreateGoogleAuthUser(db, userInfo["id"].(string), token.AccessToken, time.Now().Add(time.Hour*24))
 
-		if err := user.CreateUser(db); err != nil {
-			return nil, err
-		}
+	// }
 
-		user.CreateGoogleAuthUser(db,
-			"google-id", "token", time.Now().Add(time.Hour*24))
-
-	}
-
-	return map[string]interface{}{
-		"id":    user.ID,
-		"email": user.Email,
-		"name":  user.Name,
-		// Return other fields as needed
-	}, nil
+	return userInfo, nil
 
 }
 
