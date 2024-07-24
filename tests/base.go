@@ -28,8 +28,8 @@ func Setup() *utility.Logger {
 	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
-
-		seed.SeedTestDatabase(db.Postgresql)
+		// fix correct seed call
+		seed.SeedDatabase(db.Postgresql)
 	}
 	return logger
 }

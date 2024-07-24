@@ -11,7 +11,6 @@ import (
 )
 
 func SeedDatabase(db *gorm.DB) {
-	// instantiate uuid
 
 	SeedTestDatabase(db)
 
