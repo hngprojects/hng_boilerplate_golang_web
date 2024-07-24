@@ -88,5 +88,5 @@ func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 		return errors.New("user not authorised to delete this organisation")
 	}
 
-	return org.Delete(db, orgId)
+	return org.Delete(db)
 }

@@ -1,4 +1,4 @@
-package tests
+package test_organisation
 
 import (
 	"bytes"
@@ -13,15 +13,16 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func TestOrganisationCreate(t *testing.T) {
-	logger := Setup()
+func TestOrganizationCreate(t *testing.T) {
+	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
 	validatorRef := validator.New()
@@ -41,11 +42,11 @@ func TestOrganisationCreate(t *testing.T) {
 		Password: userSignUpData.Password,
 	}
 
-	user := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	auth := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	SignupUser(t, r, user, userSignUpData)
+	tst.SignupUser(t, r, auth, userSignUpData)
 
-	token := GetLoginToken(t, r, user, loginData)
+	token := tst.GetLoginToken(t, r, auth, loginData)
 
 	tests := []struct {
 		Name         string
@@ -147,7 +148,7 @@ func TestOrganisationCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 		{
 			orgUrl.POST("/organisations", org.CreateOrganisation)
 
@@ -169,19 +170,19 @@ func TestOrganisationCreate(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 
-			AssertStatusCode(t, rr.Code, test.ExpectedCode)
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
 
-			data := ParseResponse(rr)
+			data := tst.ParseResponse(rr)
 
 			code := int(data["status_code"].(float64))
-			AssertStatusCode(t, code, test.ExpectedCode)
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
 
 			if test.Message != "" {
 				message := data["message"]
 				if message != nil {
-					AssertResponseMessage(t, message.(string), test.Message)
+					tst.AssertResponseMessage(t, message.(string), test.Message)
 				} else {
-					AssertResponseMessage(t, "", test.Message)
+					tst.AssertResponseMessage(t, "", test.Message)
 				}
 
 			}
@@ -193,7 +194,7 @@ func TestOrganisationCreate(t *testing.T) {
 }
 
 func TestOrganisationDelete(t *testing.T) {
-	logger := Setup()
+	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
 	validatorRef := validator.New()
@@ -212,12 +213,12 @@ func TestOrganisationDelete(t *testing.T) {
 		Password: userSignUpData.Password,
 	}
 
-	user := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	SignupUser(t, r, user, userSignUpData)
+	tst.SignupUser(t, r, user, userSignUpData)
 
-	token := GetLoginToken(t, r, user, loginData)
+	token := tst.GetLoginToken(t, r, user, loginData)
 
 	organisationCreationData := models.CreateOrgRequestModel{
 		Name:        fmt.Sprintf("Org %v", currUUID),
@@ -230,7 +231,7 @@ func TestOrganisationDelete(t *testing.T) {
 		Country:     "wakanda",
 	}
 
-	orgID := GetOrgId(t, r, org, organisationCreationData, token)
+	orgID := tst.GetOrgId(t, r, org, organisationCreationData, token)
 
 	tests := []struct {
 		Name         string
@@ -279,7 +280,7 @@ func TestOrganisationDelete(t *testing.T) {
 		},
 	}
 
-	orgUrl := r.Group("/api/v1", middleware.Authorize())
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
 	{
 		orgUrl.DELETE("/organisations/:org_id", org.DeleteOrganisation)
 	}

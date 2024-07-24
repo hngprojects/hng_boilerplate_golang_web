@@ -18,6 +18,8 @@ type User struct {
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
 	CreatedAt     time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
+	Role          int            `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"role"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type CreateUserRequestModel struct {
@@ -34,6 +36,11 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type ChangePasswordRequestModel struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=7"`
+}
+
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
@@ -48,7 +55,10 @@ func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []inter
 func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	var user User
 
-	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("id = ?", userID).First(&user).Error; err != nil {
+	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+	if err := query.First(&user).Error; err != nil {
 		return user, err
 	}
 
@@ -64,4 +74,22 @@ func (u *User) CreateUser(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
+	var users []User
+
+	query := postgresql.PreloadEntities(db, &users, "Profile", "Products", "Organisations")
+	query = query.Limit(2)
+
+	if err := query.Find(&users).Error; err != nil {
+		return users, err
+	}
+
+	return users, nil
+}
+
+func (u *User) Update(db *gorm.DB) error {
+	_, err := postgresql.SaveAllFields(db, &u)
+	return err
 }

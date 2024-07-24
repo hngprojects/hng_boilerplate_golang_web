@@ -216,10 +216,10 @@ func SelectFirstFromDb(db *gorm.DB, receiver interface{}) error {
 	return tx.Error
 }
 
-func SelectOneFromDbAndUpdateField(db *gorm.DB, receiver interface{}, fieldName string, value interface{}, query interface{}, args ...interface{}) error {
-	tx := db.Model(receiver).Where(query, args...).Update(fieldName, value)
-	return tx.Error
-}
+// func SelectOneFromDbAndUpdateField(db *gorm.DB, receiver interface{}, fieldName string, value interface{}, query interface{}, args ...interface{}) error {
+// 	tx := db.Model(receiver).Where(query, args...).Update(fieldName, value)
+// 	return tx.Error
+// }
 
 func CheckExists(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) bool {
 
@@ -245,4 +245,11 @@ func CheckExistsInTable(db *gorm.DB, table string, query interface{}, args ...in
 	var result map[string]interface{}
 	tx := db.Table(table).Where(query, args...).Take(&result)
 	return tx.RowsAffected != 0
+}
+
+func PreloadEntities(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+	return db
 }
