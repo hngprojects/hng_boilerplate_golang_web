@@ -32,7 +32,7 @@ func ValidateCreateOrgRequest(req models.CreateOrgRequestModel, db *gorm.DB) (mo
 		}
 	}
 
-	return req, 0,  nil
+	return req, 0, nil
 }
 
 func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId string) (*models.Organisation, error) {
@@ -71,4 +71,20 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 	}
 
 	return &org, nil
+}
+
+func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
+	var org models.Organisation
+	if err := db.Where("id = ? AND deleted = ?", orgId, false).First(&org).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("organisation not found")
+		}
+		return err
+	}
+
+	if org.OwnerID != userId {
+		return errors.New("user not authorised to delete this organisation")
+	}
+
+	return org.Delete(db)
 }

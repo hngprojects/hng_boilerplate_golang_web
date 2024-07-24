@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -71,3 +72,43 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, rd)
 }
+
+func (base *Controller) DeleteOrganisation(c *gin.Context) {
+	orgId := c.Param("org_id")
+
+	if _, err := uuid.Parse(orgId); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid organisation id format", "failed to delete organisation", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", "failed to delete organisation", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
+	if err := service.DeleteOrganisation(orgId, userId, base.Db.Postgresql); err != nil {
+		switch err.Error() {
+		case "organisation not found":
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete organisation", nil)
+			c.JSON(http.StatusNotFound, rd)
+		case "user not authorised to delete this organisation":
+			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to delete organisation", nil)
+			c.JSON(http.StatusForbidden, rd)
+		default:
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to delete organisation", err.Error(), nil)
+			c.JSON(http.StatusInternalServerError, rd)
+		}
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusNoContent, "", nil)
+	c.JSON(http.StatusNoContent, rd)
+}
+
+

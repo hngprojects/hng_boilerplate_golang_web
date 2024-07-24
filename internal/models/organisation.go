@@ -22,6 +22,7 @@ type Organisation struct {
 	Users       []User    `gorm:"many2many:user_organisations;foreignKey:ID;joinForeignKey:org_id;References:ID;joinReferences:user_id"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
+	Deleted     bool      `gorm:"default:false; not null" json:"-"`
 }
 
 type CreateOrgRequestModel struct {
@@ -38,6 +39,16 @@ type CreateOrgRequestModel struct {
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 
 	err := postgresql.CreateOneRecord(db, &c)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Organisation) Delete(db *gorm.DB) error {
+	err := db.Model(c).Update("deleted", true).Error
 
 	if err != nil {
 		return err

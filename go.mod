@@ -15,6 +15,7 @@ require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.4.0
 	github.com/jeanphorn/log4go v0.0.0-20231225120528-d93eb9001e51
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nyaruka/phonenumbers v1.3.6
