@@ -21,7 +21,7 @@ func SignupWaitlistUserService(db *gorm.DB, req models.CreateWaitlistUserRequest
 		req.Email = strings.ToLower(req.Email)
 
 		existingUser := &models.WaitlistUser{Email: req.Email}
-		code, err := existingUser.GetWaitlistUserByEmail(db)
+		code, err := existingUser.CheckExistsByEmail(db)
 		if err != nil {
 			return nil, code, models.ErrWaitlistUserExist
 		}
