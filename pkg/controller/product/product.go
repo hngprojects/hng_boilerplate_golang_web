@@ -40,7 +40,7 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.CreateProduct(req, base.Db.Postgresql)
+	respData, code, err := product.CreateProduct(req, base.Db.Postgresql, c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
