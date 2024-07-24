@@ -27,8 +27,8 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar.jpg",
 		},
 		Products: []models.Product{
-			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", OwnerID: Userid1},
-			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", OwnerID: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Price: 45.33, Category: ["Electronics", "Groceries"], OwnerID: Userid1},
+			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", Price: 45.33, Category: ["Electronics", "Groceries"], OwnerID: Userid1},
 		},
 	}
 
@@ -46,8 +46,8 @@ func SeedDatabase(db *gorm.DB) {
 			AvatarURL: "http://example.com/avatar2.jpg",
 		},
 		Products: []models.Product{
-			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", OwnerID: Userid2},
-			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", OwnerID: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", Price: 45.33, Category: ["Electronics", "Groceries"], OwnerID: Userid2},
+			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", Price: 45.33, Category: ["Electronics", "Groceries"], OwnerID: Userid2},
 		},
 	}
 
