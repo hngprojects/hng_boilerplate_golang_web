@@ -23,7 +23,7 @@ func (base *Controller) GetUser(c *gin.Context) {
 	//get the user_id from the URL
 	userIDStr := c.Param("user_id")
 
-	user, err := service.GetUser(userIDStr, base.Db.Postgresql)
+	user, err := user.GetUser(userIDStr, base.Db.Postgresql)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)

@@ -61,12 +61,20 @@ func AssertBool(t *testing.T, got, expected bool) {
 }
 
 // helper to signup a user
-func SignupUser(t *testing.T, r *gin.Engine, auth auth.Controller, userSignUpData models.CreateUserRequestModel) {
+func SignupUser(t *testing.T, r *gin.Engine, auth auth.Controller, userSignUpData models.CreateUserRequestModel, admin bool) {
 	var (
 		signupPath = "/api/v1/auth/users/signup"
 		signupURI  = url.URL{Path: signupPath}
 	)
+
 	r.POST(signupPath, auth.CreateUser)
+
+	if admin{
+		signupPath = "/api/v1/auth/admin/signup"
+		signupURI = url.URL{Path: signupPath}
+		r.POST(signupPath, auth.CreateAdmin)
+	}
+
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(userSignUpData)
 	req, err := http.NewRequest(http.MethodPost, signupURI.String(), &b)

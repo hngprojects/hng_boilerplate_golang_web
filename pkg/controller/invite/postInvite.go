@@ -136,7 +136,7 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		}
 
 		// Check if user with email exists and get user
-		user, err := service.GetUserByEmail(email, base.Db.Postgresql)
+		user, err := user.GetUserByEmail(email, base.Db.Postgresql)
 		if err != nil {
 
 			// Log error and skip user
