@@ -12,11 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/product"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/product"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
@@ -76,6 +76,10 @@ func TestProductCreate(t *testing.T) {
 			},
 			ExpectedCode: http.StatusUnprocessableEntity,
 			Message:      "Validation failed",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
 		},
 	}
 
