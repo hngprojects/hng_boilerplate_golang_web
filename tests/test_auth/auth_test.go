@@ -1,4 +1,4 @@
-package test_waitlist
+package test_auth
 
 import (
 	"bytes"
@@ -134,6 +134,7 @@ func TestUserSignup(t *testing.T) {
 	}
 
 }
+
 // test admin signup
 func TestAdminSignup(t *testing.T) {
 	logger := tst.Setup()
@@ -352,6 +353,7 @@ func TestLogin(t *testing.T) {
 	}
 
 }
+
 // test user logout
 func TestLogout(t *testing.T) {
 	logger := tst.Setup()

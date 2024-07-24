@@ -31,8 +31,8 @@ func Setup() *utility.Logger {
 	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
-
-		seed.SeedTestDatabase(db.Postgresql)
+		// fix correct seed call
+		seed.SeedDatabase(db.Postgresql)
 	}
 	return logger
 }
@@ -57,6 +57,22 @@ func AssertResponseMessage(t *testing.T, got, expected string) {
 func AssertBool(t *testing.T, got, expected bool) {
 	if got != expected {
 		t.Errorf("handler returned wrong boolean: got %v expected %v", got, expected)
+	}
+}
+
+func AssertValidationError(t *testing.T, response map[string]interface{}, field string, expectedMessage string) {
+	errors, ok := response["error"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected 'error' field in response")
+	}
+
+	errorMessage, exists := errors[field]
+	if !exists {
+		t.Fatalf("expected validation error message for field '%s'", field)
+	}
+
+	if errorMessage != expectedMessage {
+		t.Errorf("unexpected error message for field '%s': got %v, want %v", field, errorMessage, expectedMessage)
 	}
 }
 

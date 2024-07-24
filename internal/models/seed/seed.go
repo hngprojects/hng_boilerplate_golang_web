@@ -11,7 +11,6 @@ import (
 )
 
 func SeedDatabase(db *gorm.DB) {
-	// instantiate uuid
 
 	SeedTestDatabase(db)
 
@@ -62,7 +61,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	var existingUser models.User
-	if err := db.Preload("Profile").Preload("Products").Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
+
+	query := postgresql.PreloadEntities(db, &existingUser, "Profile", "Products")
+	if err := query.Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			postgresql.CreateOneRecord(db, &user1)
 			postgresql.CreateOneRecord(db, &user2)
@@ -75,7 +76,6 @@ func SeedDatabase(db *gorm.DB) {
 			existingUser.AddUserToOrganisation(db, &user1, []interface{}{&organisations[0], &organisations[1]})
 			existingUser.AddUserToOrganisation(db, &user2, []interface{}{&organisations[0], &organisations[1], &organisations[2]})
 			fmt.Println("Users added to organisations.")
-
 		} else {
 			fmt.Println("An error occurred: ", err)
 		}

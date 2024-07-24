@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -28,10 +29,11 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		authUrl.POST("/magick-link/verify", auth.VerifyMagicLink)
 	}
 
-	authUrlSec := r.Group(fmt.Sprintf("%v/auth", ApiVersion), middleware.Authorize(db.Postgresql))
+	authUrlSec := r.Group(fmt.Sprintf("%v/auth", ApiVersion),
+		middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		authUrlSec.POST("/logout", auth.LogoutUser)
-		authUrlSec.POST("/change-password", auth.ChangePassword)
+		authUrlSec.PUT("/change-password", auth.ChangePassword)
 	}
 	return r
 }
