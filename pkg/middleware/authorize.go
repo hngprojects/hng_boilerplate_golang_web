@@ -107,3 +107,32 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 
 	}
 }
+
+func GetIdFromToken(c *gin.Context) (string, interface{}) {
+	var tokenStr string
+	bearerToken := c.GetHeader("Authorization")
+	strArr := strings.Split(bearerToken, " ")
+	if len(strArr) == 2 {
+		tokenStr = strArr[1]
+	}
+
+	if tokenStr == "" {
+		r := utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token could not be found!", "Unauthorized", nil)
+		return "", r
+	}
+
+	token, err := TokenValid(tokenStr)
+	if err != nil {
+		r := utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil)
+		return "", r
+	}
+
+	// access user claims
+
+	claims := token.Claims.(jwt.MapClaims)
+	id, ok := claims["user_id"].(string)
+	if !ok {
+		return "", utility.BuildErrorResponse(http.StatusForbidden, "error", "Forbidden", "Unauthorized", nil)
+	}
+	return id, ""
+}
