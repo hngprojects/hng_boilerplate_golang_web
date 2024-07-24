@@ -21,7 +21,7 @@ type Controller struct {
 
 func (base *Controller) GetUser(c *gin.Context) {
 	//get the user_id from the URL
-	userIDStr := c.Param("user_id")
+	userIDStr := c.Param("userid")
 
 	user, err := seed.GetUser(userIDStr, base.Db.Postgresql)
 

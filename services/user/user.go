@@ -103,6 +103,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 	}
 
 	responseData = gin.H{
+		"id":           user.ID,
 		"email":        user.Email,
 		"username":     user.Name,
 		"first_name":   user.Profile.FirstName,
@@ -155,3 +156,51 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 	return responseData, http.StatusCreated, nil
 }
+
+func GetUserByID(userID string, db *gorm.DB) (models.User, error) {
+    var (
+        user         = models.User{}
+       
+    )
+
+	userData, err := user.GetUserByID(db, userID)
+	if err != nil {
+		return  userData, fmt.Errorf("unable to fetch user " + err.Error())
+	}
+	
+    return userData, nil
+}
+
+// responseData = gin.H{
+	// 	"email":        userData.Email,
+	// 	"username":     userData.Name,
+	// 	"first_name":   userData.Profile.FirstName,
+	// 	"last_name":    userData.Profile.LastName,
+	// 	"phone":        userData.Profile.Phone,
+	// }
+// func GetUserByID( db *gorm.DB) (gin.H, int, error) {
+// 	var (
+// 		user         = models.User{}
+// 		responseData gin.H
+// 	)
+
+// 	exists := postgresql.CheckExists(db, &user, "id = ?", .ID)
+// 	if !exists {
+// 		return responseData, 400, fmt.Errorf("user not found")
+// 	}
+// 	userData, err := user.GetUserByID(db, user.ID)
+// 	if err != nil {
+// 		return responseData, http.StatusInternalServerError, fmt.Errorf("unable to fetch user " + err.Error())
+// 	}
+
+// 	responseData = gin.H{
+// 		"email":        userData.Email,
+// 		"username":     userData.Name,
+// 		"first_name":   userData.Profile.FirstName,
+// 		"last_name":    userData.Profile.LastName,
+// 		"phone":        userData.Profile.Phone,
+		
+// 	}
+
+// 	return responseData, http.StatusCreated, nil
+// }

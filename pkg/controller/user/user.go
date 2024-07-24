@@ -92,3 +92,44 @@ func (base *Controller) LoginUser(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user login successfully", respData)
 	c.JSON(http.StatusOK, rd)
 }
+
+// func (base *Controller) GetUserByID(c *gin.Context) {
+//     var (
+//         userID = c.Param("userId")
+//     )
+
+//     user, err := base.UserService.GetUserByID(userID)
+//     if err != nil {
+//         var rd utility.Response
+//         if gorm.IsRecordNotFoundError(err) {
+//             rd = utility.BuildErrorResponse(http.StatusNotFound, "error", "User not found", err, nil)
+//         } else {
+//             rd = utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Internal server error", err, nil)
+//         }
+//         c.JSON(rd.StatusCode, rd)
+//         return
+//     }
+
+//     base.Logger.Info("User retrieved successfully")
+//     rd := utility.BuildSuccessResponse(http.StatusOK, "User retrieved successfully", user)
+//     c.JSON(http.StatusOK, rd)
+// }
+
+func (base *Controller) GetUserByID(c *gin.Context) {
+    var (
+        userID = c.Param("userid")
+    )
+	
+
+	respData, err := user.GetUserByID(userID, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+    
+
+    base.Logger.Info("User retrieved successfully")
+    rd := utility.BuildSuccessResponse(http.StatusOK, "User retrieved successfully", respData)
+    c.JSON(http.StatusOK, rd)
+}

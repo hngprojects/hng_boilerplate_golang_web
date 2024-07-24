@@ -18,7 +18,7 @@ func Seed(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 
 	seedUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		seedUrl.GET("/users/:user_id", seed.GetUser)
+		seedUrl.GET("/users/get/:userid", seed.GetUser)
 	}
 	return r
 }

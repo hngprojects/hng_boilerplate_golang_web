@@ -34,6 +34,16 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type GetUserRequestModel struct {
+	
+	Email       string `json:"email" validate:"required"`
+	Password    string `json:"password" validate:"required"`
+	FirstName   string `json:"first_name" validate:"required"`
+	LastName    string `json:"last_name" validate:"required"`
+	UserName    string `json:"username" validate:"required"`
+	PhoneNumber string `json:"phone_number"`
+}
+
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
@@ -44,6 +54,10 @@ func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []inter
 
 	return nil
 }
+
+// func (u *User) GetUserByID(db *gorm.DB, userID string) error {
+//     return db.Where("id = ?", userID).First(u).Error
+// }
 
 func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	var user User
