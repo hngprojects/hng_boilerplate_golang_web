@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -175,7 +174,8 @@ func UpdateUser(req models.UpdateUserRequestModel, userID string, db *gorm.DB) (
 		return responseData, http.StatusNotFound, fmt.Errorf("invalid user ID format")
 	}
 	// Check if the user exists
-	if err := db.Where("id = ?", id).First(&user).Error; err != nil {
+	exists := postgresql.CheckExists(db, &user, "id = ?", id)
+	if !exists {
 		return responseData, http.StatusNotFound, fmt.Errorf("user not found")
 	}
 
@@ -188,9 +188,9 @@ func UpdateUser(req models.UpdateUserRequestModel, userID string, db *gorm.DB) (
 	user.Name = req.Name
 	user.PhoneNumber = req.PhoneNumber
 
-	// Save the updated user data
-	if err := db.Save(&user).Error; err != nil {
-		return responseData, http.StatusInternalServerError, fmt.Errorf("failed to update user: %v", err)
+	// Save updated user using the SaveAllFields function
+	if _, err := postgresql.SaveAllFields(db, &user); err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error updating user: %v", err)
 	}
 
 	responseData = gin.H{
