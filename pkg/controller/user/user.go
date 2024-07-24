@@ -17,37 +17,5 @@ type Controller struct {
 }
 
 func (base *Controller) GetUser(c *gin.Context) {
-
-	// var (
-	// 	req = models.CreateUserRequestModel{}
-	// )
-
-	// err := c.ShouldBind(&req)
-	// if err != nil {
-	// 	rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
-	// 	c.JSON(http.StatusBadRequest, rd)
-	// 	return
-	// }
-
-	// err = base.Validator.Struct(&req)
-	// if err != nil {
-	// 	rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
-	// 	c.JSON(http.StatusUnprocessableEntity, rd)
-	// 	return
-	// }
-
-	// reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql)
-	// if err != nil {
-	// 	rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
-	// 	c.JSON(http.StatusBadRequest, rd)
-	// 	return
-	// }
-	// _ = reqData
-
-	// // perform get user request here
-
-	// base.Logger.Info("user created successfully")
-	// rd := utility.BuildSuccessResponse(http.StatusCreated, "user created successfully",)
-
-	// c.JSON(http.StatusOK, rd)
+	// to be implemented
 }
