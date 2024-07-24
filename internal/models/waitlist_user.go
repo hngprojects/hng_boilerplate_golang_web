@@ -56,6 +56,5 @@ func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
 	if exists {
 		return http.StatusBadRequest, errors.New("User exists")
 	}
-
 	return http.StatusOK, nil
 }
