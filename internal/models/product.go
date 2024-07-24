@@ -11,7 +11,7 @@ import (
 type Product struct {
 	ID          string     `gorm:"type:uuid;primaryKey" json:"product_id"`
 	Name        string     `gorm:"column:name; type:varchar(255); not null" json:"name"`
-	Price       float64    `gorm:"column:price; type:decimal(10,2);not null" json:"price"`
+	Price       float64    `gorm:"column:price; type:decimal(10,2);null" json:"price"`
 	Description string     `gorm:"column:description; type:text" json:"description"`
 	OwnerID     string     `gorm:"type:uuid;" json:"owner_id"`
 	Category    []Category `gorm:"many2many:product_categories;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"category"`
