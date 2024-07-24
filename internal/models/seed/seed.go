@@ -1,4 +1,3 @@
-
 package seed
 
 import (
@@ -12,7 +11,9 @@ import (
 )
 
 func SeedDatabase(db *gorm.DB) {
-	// Create UUIDs for users
+
+	SeedTestDatabase(db)
+
 	Userid1 := utility.GenerateUUID()
 	Userid2 := utility.GenerateUUID()
 
@@ -39,6 +40,7 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Price: 45.33, OwnerID: Userid1},
 			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", Price: 45.33, OwnerID: Userid1},
 		},
+		Role: int(models.RoleIdentity.User),
 	}
 
 	user2 := models.User{
@@ -57,18 +59,20 @@ func SeedDatabase(db *gorm.DB) {
 			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", Price: 45.33, OwnerID: Userid2},
 			{ID: utility.GenerateUUID(), Name: "Product4", Description: "Description4", Price: 45.33, OwnerID: Userid2},
 		},
+		Role: int(models.RoleIdentity.SuperAdmin),
 	}
 
 	// Create organisations and categories
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf("%s@email.com", utility.RandomString(4)), Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf("%s@email.com", utility.RandomString(4)), Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf("%s@email.com", utility.RandomString(4)), Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User
 
-	if err := db.Preload("Profile").Preload("Products").Preload("Products.Categories").Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
+	query := postgresql.PreloadEntities(db, &existingUser, "Profile", "Products")
+	if err := query.Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed users
 			postgresql.CreateOneRecord(db, &user1)
@@ -107,4 +111,26 @@ func SeedDatabase(db *gorm.DB) {
 	} else {
 		fmt.Println("Users already exist, skipping seeding.")
 	}
+
+}
+
+func SeedTestDatabase(db *gorm.DB) {
+
+	roles := []models.Role{
+		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
+		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
+	}
+
+	var existingRole models.Role
+	if err := db.Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			postgresql.CreateMultipleRecords(db, &roles, len(roles))
+		} else {
+			fmt.Println("An error occurred: ", err)
+		}
+
+	} else {
+		fmt.Println("Roles already exist, skipping seeding.")
+	}
+
 }

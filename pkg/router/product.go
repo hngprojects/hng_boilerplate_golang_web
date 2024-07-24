@@ -17,10 +17,11 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	product := product.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	productUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize())
+	productUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
 		productUrl.POST("/products", product.CreateProduct)
 		productUrl.DELETE("/products/:product_id", product.DeleteProductController)
 	}
+
 	return r
 }
