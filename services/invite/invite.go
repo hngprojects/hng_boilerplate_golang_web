@@ -4,13 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"time"
-
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 // check if user is an admin
@@ -75,7 +74,6 @@ func SaveInvitation(db *gorm.DB, user_id string, token string, req models.Invita
 	}
 	return nil
 }
-
 func ExtractTokenFromInvitationLink(invitationLink string) string {
 	splitLink := strings.Split(invitationLink, "/")
 	return splitLink[len(splitLink)-1]

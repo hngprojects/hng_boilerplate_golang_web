@@ -1,10 +1,9 @@
 package utility
 
 import (
+	"github.com/nyaruka/phonenumbers"
 	"net/mail"
 	"os"
-
-	"github.com/nyaruka/phonenumbers"
 )
 
 func EmailValid(email string) (string, bool) {

@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 
-
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/spf13/viper"
@@ -33,7 +32,7 @@ func Setup(logger *utility.Logger, name string) *Configuration {
 		viper.AutomaticEnv()
 
 		var config BaseConfig
-		
+
 		// bind config keys to viper
 		err := BindKeys(viper.GetViper(), config)
 		if err != nil {
