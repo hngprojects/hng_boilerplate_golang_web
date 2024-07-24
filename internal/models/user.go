@@ -74,7 +74,10 @@ func (u *User) CreateUser(db *gorm.DB) error {
 func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
 	var users []User
 
-	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Limit(2).Find(&users).Error; err != nil {
+	query := postgresql.PreloadEntities(db, &users, "Profile", "Products", "Organisations")
+	query = query.Limit(2)
+
+	if err := query.Find(&users).Error; err != nil {
 		return users, err
 	}
 
