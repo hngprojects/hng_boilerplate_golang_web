@@ -16,7 +16,8 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -24,12 +25,14 @@ import (
 
 func Setup() *utility.Logger {
 	logger := utility.NewLogger()
-	config := config.Setup(logger, "../app")
+	config := config.Setup(logger, "../../app")
 
 	postgresql.ConnectToDatabase(logger, config.TestDatabase)
 	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)
+		// fix correct seed call
+		seed.SeedDatabase(db.Postgresql)
 	}
 	return logger
 }
@@ -58,12 +61,12 @@ func AssertBool(t *testing.T, got, expected bool) {
 }
 
 // helper to signup a user
-func SignupUser(t *testing.T, r *gin.Engine, user user.Controller, userSignUpData models.CreateUserRequestModel) {
+func SignupUser(t *testing.T, r *gin.Engine, auth auth.Controller, userSignUpData models.CreateUserRequestModel) {
 	var (
-		signupPath = "/api/v1/users/signup"
+		signupPath = "/api/v1/auth/users/signup"
 		signupURI  = url.URL{Path: signupPath}
 	)
-	r.POST(signupPath, user.CreateUser)
+	r.POST(signupPath, auth.CreateUser)
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(userSignUpData)
 	req, err := http.NewRequest(http.MethodPost, signupURI.String(), &b)
@@ -78,12 +81,12 @@ func SignupUser(t *testing.T, r *gin.Engine, user user.Controller, userSignUpDat
 
 // help to fetch user token
 
-func GetLoginToken(t *testing.T, r *gin.Engine, user user.Controller, loginData models.LoginRequestModel) string {
+func GetLoginToken(t *testing.T, r *gin.Engine, auth auth.Controller, loginData models.LoginRequestModel) string {
 	var (
-		loginPath = "/api/v1/users/login"
+		loginPath = "/api/v1/auth/login"
 		loginURI  = url.URL{Path: loginPath}
 	)
-	r.POST(loginPath, user.LoginUser)
+	r.POST(loginPath, auth.LoginUser)
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(loginData)
 	req, err := http.NewRequest(http.MethodPost, loginURI.String(), &b)
@@ -112,7 +115,7 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org o
 		orgPath = "/api/v1/organisations"
 		orgURI  = url.URL{Path: orgPath}
 	)
-	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 	{
 		orgUrl.POST("/organisations", org.CreateOrganisation)
 	}

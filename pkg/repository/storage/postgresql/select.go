@@ -240,3 +240,10 @@ func CheckExistsInTable(db *gorm.DB, table string, query interface{}, args ...in
 	tx := db.Table(table).Where(query, args...).Take(&result)
 	return tx.RowsAffected != 0
 }
+
+func PreloadEntities(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+	return db
+}

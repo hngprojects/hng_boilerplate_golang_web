@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/invite"
 	orgController "github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
@@ -32,7 +32,7 @@ func TestAcceptInvite(t *testing.T) {
 		Logger:    logger,
 	}
 
-	authController := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	authController := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
 	// Set up user and obtain token
@@ -138,8 +138,8 @@ func TestAcceptInvite(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			r := gin.Default()
 
-			r.POST("/api/v1/invite/accept", middleware.Authorize(), inviteController.PostAcceptInvite)
-			r.GET("/api/v1/invite/accept/:t", middleware.Authorize(), inviteController.GetAcceptInvite)
+			r.POST("/api/v1/invite/accept", middleware.Authorize(db.Postgresql), inviteController.PostAcceptInvite)
+			r.GET("/api/v1/invite/accept/:t", middleware.Authorize(db.Postgresql), inviteController.GetAcceptInvite)
 
 			var req *http.Request
 			var err error
