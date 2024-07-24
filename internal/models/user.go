@@ -36,6 +36,11 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type ChangePasswordRequestModel struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=7"`
+}
+
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation

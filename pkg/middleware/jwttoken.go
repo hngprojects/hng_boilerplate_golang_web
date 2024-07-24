@@ -1,10 +1,13 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -79,4 +82,21 @@ func TokenValid(bearerToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Unauthorized")
 	}
 	return token, nil
+}
+
+func GetUserClaims(c *gin.Context, db *gorm.DB, theValue string) (interface{}, error) {
+
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		return nil, errors.New("user claims not found")
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+	userValue, ok := userClaims[theValue]
+	if !ok {
+		return nil, errors.New("invalid value")
+	}
+
+	return userValue, nil
+
 }

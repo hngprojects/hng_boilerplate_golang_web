@@ -1,4 +1,4 @@
-package tests_roles
+package test_users
 
 import (
 	"fmt"
@@ -6,41 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func setupRoleTestRouter() (*gin.Engine, *user.Controller) {
-	gin.SetMode(gin.TestMode)
-
-	logger := tests.Setup()
-	db := storage.Connection()
-	validator := validator.New()
-
-	userController := &user.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
-	}
-
-	r := gin.Default()
-	SetupRolesRoutes(r, userController)
-	return r, userController
-}
-
-func SetupRolesRoutes(r *gin.Engine, userController *user.Controller) {
-	r.PUT("/api/v1/users/:user_id/roles/:role_id", middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin), userController.AssignRoleToUser)
-}
-
-func TestE2EUpdateUserRole(t *testing.T) {
-	router, userController := setupRoleTestRouter()
+func TestUpdateUserRole(t *testing.T) {
+	router, userController := SetupUsersTestRouter()
 	db := userController.Db.Postgresql
 	currUUID := utility.GenerateUUID()
 	theRole := models.RoleIdentity.SuperAdmin
