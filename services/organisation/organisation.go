@@ -75,8 +75,10 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 
 func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 	var org models.Organisation
-	if err := db.Where("id = ? AND deleted = ?", orgId, false).First(&org).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+
+	org, err := org.GetActiveOrganisationById(db, orgId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("organisation not found")
 		}
 		return err
@@ -86,5 +88,5 @@ func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 		return errors.New("user not authorised to delete this organisation")
 	}
 
-	return org.Delete(db)
+	return org.Delete(db, orgId)
 }

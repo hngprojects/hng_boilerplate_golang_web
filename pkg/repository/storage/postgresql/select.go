@@ -192,6 +192,7 @@ func SelectOneFromDb(db *gorm.DB, receiver interface{}, query interface{}, args 
 	}
 	return tx.Error, nil
 }
+
 func SelectLatestFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
 	tx := db.Order("id desc").Where(query, args...).First(receiver)
@@ -212,6 +213,11 @@ func SelectRandomFromDb(db *gorm.DB, receiver interface{}, query interface{}, ar
 
 func SelectFirstFromDb(db *gorm.DB, receiver interface{}) error {
 	tx := db.First(receiver)
+	return tx.Error
+}
+
+func SelectOneFromDbAndUpdateField(db *gorm.DB, receiver interface{}, fieldName string, value interface{}, query interface{}, args ...interface{}) error {
+	tx := db.Model(receiver).Where(query, args...).Update(fieldName, value)
 	return tx.Error
 }
 
