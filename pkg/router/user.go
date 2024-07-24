@@ -7,7 +7,9 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -18,8 +20,8 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 
 	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		userUrl.POST("/users/signup", user.CreateUser)
-		userUrl.POST("/users/login", user.LoginUser)
+		userUrl.POST("/users/:user_id", user.GetUser)
+		userUrl.PUT("/users/:user_id/roles/:role_id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), user.AssignRoleToUser)
 	}
 	return r
 }
