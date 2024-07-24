@@ -29,6 +29,10 @@ type InvitationCreateReq struct {
 	Email          string `json:"email" validate:"required,email"`
 }
 
+type InvitationAcceptReq struct {
+	InvitationLink string `json:"invitation_link" validate:"required"`
+}
+
 func (i *Invitation) CreateInvitation(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &i)
 	if err != nil {
