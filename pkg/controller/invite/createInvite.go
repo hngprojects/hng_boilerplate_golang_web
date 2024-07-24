@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 

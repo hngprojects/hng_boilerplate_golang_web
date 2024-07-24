@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
+	serviceInvite "github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -39,7 +39,7 @@ func (base *Controller) GetInvites(c *gin.Context) {
 	}
 
 	// get all invitations
-	invitations, err := invite.GetInvitations(user, base.Db.Postgresql)
+	invitations, err := serviceInvite.GetInvitations(user, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
