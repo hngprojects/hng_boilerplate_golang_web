@@ -3,7 +3,6 @@ package test_waitlist
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +14,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func TestWailistSignup(t *testing.T) {
@@ -23,8 +21,6 @@ func TestWailistSignup(t *testing.T) {
 	logger := tests.Setup()
 	validate := validator.New()
 	db := storage.Connection()
-	currUUID := utility.GenerateUUID()
-	testEmail := fmt.Sprintf("testuser%v@qa.team", currUUID)
 
 	ttests := []struct {
 		Name            string
@@ -36,7 +32,7 @@ func TestWailistSignup(t *testing.T) {
 			Name: "user can signup on waitlist",
 			Request: models.CreateWaitlistUserRequest{
 				Name:  "Tester",
-				Email: testEmail,
+				Email: "tester@gmail.com",
 			},
 			ExpectedCode:    http.StatusCreated,
 			ExpectedMessage: "waitlist signup successful",
@@ -45,7 +41,7 @@ func TestWailistSignup(t *testing.T) {
 			Name: "user can not signup with duplicate email",
 			Request: models.CreateWaitlistUserRequest{
 				Name:  "Tester",
-				Email: testEmail,
+				Email: "tester@gmail.com",
 			},
 			ExpectedCode:    http.StatusBadRequest,
 			ExpectedMessage: "waitlist user exists",
