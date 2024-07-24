@@ -48,7 +48,6 @@ func SeedDatabase(db *gorm.DB) {
 		Name:     "Jane Doe",
 		Email:    "jane@example.com",
 		Password: utility.RandomString(20),
-		Email:    "jane@example.com",
 		Profile: models.Profile{
 			ID:        utility.GenerateUUID(),
 			FirstName: "Jane",
