@@ -2,7 +2,6 @@ package router
 
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
@@ -19,6 +18,7 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
 		inviteUrl.POST("/organisation/send-invite", invite.PostInvite)
+		inviteUrl.PATCH("/api/v1/invite/deactivate", invite.DeactivateInvitation)
 	}
 	return r
 }
