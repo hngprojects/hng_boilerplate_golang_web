@@ -44,8 +44,6 @@ func getResponseData(w *httptest.ResponseRecorder) (map[string]interface{}, erro
 	return nil, fmt.Errorf("response data is not in expected format")
 }
 
-
-
 func TestCreateJobPost(t *testing.T) {
 	r := SetupRouter()
 	w := httptest.NewRecorder()
@@ -122,52 +120,6 @@ func TestFetchJobPostById(t *testing.T) {
 
 	// Fetch a non-existing job post
 	req, _ = http.NewRequest("GET", "/api/v1/jobs/invalid-id", nil)
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestUpdateJobPostById(t *testing.T) {
-	r := SetupRouter()
-	w := httptest.NewRecorder()
-
-	// First, create a job post to update later
-	body := map[string]interface{}{
-		"title":        "Software Engineer",
-		"description":  "Develop and maintain software applications",
-		"location":     "Remote",
-		"salary":       100000,
-		"job_type":     "Full-Time",
-		"company_name": "TechCorp",
-	}
-	jsonValue, _ := json.Marshal(body)
-	req, _ := http.NewRequest("POST", "/api/v1/jobs", bytes.NewBuffer(jsonValue))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	createResponse, err := getResponseData(w)
-	assert.NoError(t, err)
-	jobPostID, ok := createResponse["ID"].(string)
-	assert.True(t, ok)
-
-	// Update the created job post by ID
-	updateBody := map[string]interface{}{
-		"title": "Senior Software Engineer",
-	}
-	jsonValue, _ = json.Marshal(updateBody)
-	req, _ = http.NewRequest("PATCH", "/api/v1/jobs/"+jobPostID, bytes.NewBuffer(jsonValue))
-	req.Header.Set("Content-Type", "application/json")
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	response, err := getResponseData(w)
-	assert.NoError(t, err)
-	assert.Equal(t, "Senior Software Engineer", response["title"])
-
-	// Update a non-existing job post
-	req, _ = http.NewRequest("PATCH", "/api/v1/jobs/invalid-id", bytes.NewBuffer(jsonValue))
-	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

@@ -1,48 +1,58 @@
-package jobpost
+package service
 
 import (
+	"fmt"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
-func CreateJobPost(db *gorm.DB, reqBody models.JobPost) (models.JobPost, error) {
-	jobPost, err := reqBody.AddJobPost(db, reqBody)
-	if err != nil {
-		return jobPost, err
+func ValidateCreateJobPost(req models.JobPost) error {
+	if req.Title == "" || req.Description == "" || req.Location == "" || req.Salary <= 0 || req.JobType == "" || req.CompanyName == "" {
+		return fmt.Errorf("all fields are required and must follow their data types")
+	}
+	return nil
+}
+
+func CreateJobPost(req models.JobPost, db *gorm.DB) (models.JobPost, error) {
+	jobpost := models.JobPost{
+		ID:          utility.GenerateUUID(),
+		Title:       req.Title,
+		Description: req.Description,
+		Location:    req.Location,
+		Salary:      req.Salary,
+		JobType:     req.JobType,
+		CompanyName: req.CompanyName,
+	}
+	if err := jobpost.CreateJobPost(db); err != nil {
+		return models.JobPost{}, err
 	}
 
-	return jobPost, nil
+	return jobpost, nil
 }
 
 func FetchAllJobPost(db *gorm.DB) ([]models.JobPost, error) {
-  var jobPost models.JobPost
-  jobPosts, err := jobPost.GetAllJobPosts(db) 
-  if err != nil {
-    return nil, err
-  }
+	var jobposts []models.JobPost
+	jobpost := models.JobPost{}
 
-  return jobPosts, nil
-}
-
-func FetchJobPostById(db *gorm.DB, reqBody string) (models.JobPost, error) {
-  var jobPost models.JobPost
-
-  jobPost, err := jobPost.GetJobPostById(db, reqBody)
-  if err != nil {
-    return jobPost, err
-  }
-
-  return jobPost, nil
-}
-
-func UpdateJobPostById(db *gorm.DB, id string, updates map[string]interface{}) (models.JobPost, error) {
-	var jobPost models.JobPost
-
-	jobPost, err := jobPost.EditJobPostById(db, id, updates)
-	if err != nil {
-		return jobPost, err
+	if err := jobpost.FetchAllJobPosts(db, &jobposts); err != nil {
+		return nil, err
 	}
 
-	return jobPost, nil
+	return jobposts, nil
 }
+
+func FetchJobPostByID(db *gorm.DB, id string) (models.JobPost, error) {
+	jobpost := models.JobPost{}
+	jobpost.ID = id
+	err := jobpost.FetchJobPost(db)
+	if err != nil {
+		return models.JobPost{}, err
+	}
+	return jobpost, nil
+}
+
+
+
+

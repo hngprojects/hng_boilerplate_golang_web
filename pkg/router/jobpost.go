@@ -13,13 +13,12 @@ import (
 
 func JobPost(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger)*gin.Engine {
 		extReq := request.ExternalRequest{Logger: logger, Test: false}
-		result := jobpost.Controller{Db: db, Validator: validator, Logger:logger, ExtReq:extReq}
+		controller := jobpost.Controller{Db: db, Validator: validator, Logger:logger, ExtReq:extReq}
 		jobPostUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 		{
-			jobPostUrl.POST("/jobs", result.CreateJobPost)
-			jobPostUrl.GET("/jobs", result.FetchAllJobPost)
-			jobPostUrl.GET("/jobs/:id", result.FetchJobPostById)
-			jobPostUrl.PATCH("/jobs/:id", result.UpdateJobPostById)
+			jobPostUrl.POST("/jobs", controller.CreateJobPost)
+			jobPostUrl.GET("/jobs", controller.FetchAllJobPost)
+			jobPostUrl.GET("/jobs/:id", controller.FetchJobPostByID)
 		}
 		return r
 }
