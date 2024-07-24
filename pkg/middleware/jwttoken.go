@@ -2,8 +2,11 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
@@ -67,4 +70,51 @@ func TokenValid(bearerToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Unauthorized")
 	}
 	return token, nil
+}
+func CheckAuthHeader (ctx *gin.Context) {
+	authHeader := ctx.GetHeader("authorization")
+	if authHeader == "" {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"message": "Forbidden",
+			"errors": []gin.H{
+				{
+					"field":   "authorization",
+					"message": "User is not authorized to deactivate this invitation link",
+				},
+			},
+			"status_code": 403,
+		})
+		return
+	}
+
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"message": "Forbidden",
+			"errors": []gin.H{
+				{
+					"field":   "authorization",
+					"message": "Invalid authorization header",
+				},
+			},
+			"status_code": 403,
+		})
+		return
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	token, err := TokenValid(tokenString)
+	fmt.Println(token)
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"message": "Forbidden",
+			"errors": []gin.H{
+				{
+					"field":   "authorization",
+					"message": err.Error(),
+				},
+			},
+			"status_code": 403,
+		})
+		return
+	}
 }

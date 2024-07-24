@@ -1,17 +1,14 @@
 package invite
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -27,26 +24,9 @@ type InvitationRequest struct {
 	OrgID  string   `json:"org_id" binding:"uuid"`
 }
 
-type Organization struct {
-	ID        string         `gorm:"primaryKey;type:uuid" json:"id"`
-	Name      string         `gorm:"not null" json:"name"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-}
+
 
 // Invitation model definition
-type Invitation struct {
-	ID             string         `gorm:"primaryKey;type:uuid" json:"id"`
-	Email          string         `gorm:"unique;not null" json:"email" validate:"required,email"`
-	OrganizationID string         `gorm:"type:uuid;not null" json:"organization_id"`
-	Organization   Organization   `gorm:"foreignKey:OrganizationID" json:"organization"`
-	IsValid        bool           `gorm:"not null;default:true" json:"is_valid"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
-}
-
 
 
 func (base *Controller) PostInvite(c *gin.Context) {
@@ -86,51 +66,6 @@ type InvLink struct {
 
 // DeactivateInvitation handler
 func (base *Controller) DeactivateInvitation (ctx *gin.Context) {
-	authHeader := ctx.GetHeader("authorization")
-	if authHeader == "" {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"message": "Forbidden",
-			"errors": []gin.H{
-				{
-					"field":   "authorization",
-					"message": "User is not authorized to deactivate this invitation link",
-				},
-			},
-			"status_code": 403,
-		})
-		return
-	}
-
-	if !strings.HasPrefix(authHeader, "Bearer ") {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"message": "Forbidden",
-			"errors": []gin.H{
-				{
-					"field":   "authorization",
-					"message": "Invalid authorization header",
-				},
-			},
-			"status_code": 403,
-		})
-		return
-	}
-
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	token, err := middleware.TokenValid(tokenString)
-	fmt.Println(token)
-	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"message": "Forbidden",
-			"errors": []gin.H{
-				{
-					"field":   "authorization",
-					"message": err.Error(),
-				},
-			},
-			"status_code": 403,
-		})
-		return
-	}
 
 	// Bind the request body to the invLink struct
 	var invLink InvLink
@@ -149,7 +84,7 @@ func (base *Controller) DeactivateInvitation (ctx *gin.Context) {
 	}
 
 	db := storage.Connection()
-	var invitation Invitation 
+	var invitation models.Invitation 
 	result := db.Postgresql.Where("invitation_link = ?", invLink.InvitationLink).First(&invitation)
 
 	if result.Error != nil {
