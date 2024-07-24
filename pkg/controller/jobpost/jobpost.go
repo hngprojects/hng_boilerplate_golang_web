@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	// "github.com/google/uuid"
+
+	"github.com/google/uuid"
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -69,12 +70,12 @@ func (base *Controller) FetchAllJobPost(c *gin.Context) {
 }
 
 func (base *Controller) FetchJobPostByID(c *gin.Context) {
-	id := c.Param("id") 
-	// if _, err := uuid.Parse(id); err != nil {
-	// 	rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid ID format", err, nil)
-	// 	c.JSON(http.StatusBadRequest, rd)
-	// 	return
-	// }
+	id := c.Param("ID") 
+	if _, err := uuid.Parse(id); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid ID format", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
 	respData, err := service.FetchJobPostByID(base.Db.Postgresql, id)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch job post", err, nil)
