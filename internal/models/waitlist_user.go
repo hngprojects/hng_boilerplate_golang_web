@@ -38,12 +38,21 @@ func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
 func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
 	err, nerr := postgresql.SelectOneFromDb(db, &w, "email = ?", w.Email)
 	if nerr != nil {
-		return http.StatusBadRequest, nerr 
+		return http.StatusBadRequest, nerr
 	}
 
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 
+	return http.StatusOK, nil
+}
+
+// added this function to check if waitlist user exists already
+func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
+	exists := postgresql.CheckExists(db, &w, "email = ?", w.Email)
+	if exists {
+		return http.StatusBadRequest, errors.New("User exists")
+	}
 	return http.StatusOK, nil
 }

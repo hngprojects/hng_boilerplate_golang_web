@@ -1,4 +1,4 @@
-package test_waitlist
+package tests
 
 import (
 	"bytes"
@@ -12,12 +12,11 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
 func TestWailistSignup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger := tests.Setup()
+	logger := Setup()
 	validate := validator.New()
 	db := storage.Connection()
 
@@ -72,16 +71,16 @@ func TestWailistSignup(t *testing.T) {
 			hr := httptest.NewRecorder()
 			r.ServeHTTP(hr, req)
 
-			tests.AssertStatusCode(t, hr.Code, tt.ExpectedCode)
+			AssertStatusCode(t, hr.Code, tt.ExpectedCode)
 
-			data := tests.ParseResponse(hr)
+			data := ParseResponse(hr)
 
 			if tt.ExpectedMessage != "" {
 				message := data["message"]
 				if message != nil {
-					tests.AssertResponseMessage(t, message.(string), tt.ExpectedMessage)
+					AssertResponseMessage(t, message.(string), tt.ExpectedMessage)
 				} else {
-					tests.AssertResponseMessage(t, "", tt.ExpectedMessage)
+					AssertResponseMessage(t, "", tt.ExpectedMessage)
 				}
 			}
 		})
