@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -16,9 +17,11 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	invite := invite.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
+	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize())
 	{
 		inviteUrl.POST("/organisation/send-invite", invite.PostInvite)
+		inviteUrl.POST("/invite/accept", invite.PostAcceptInvite)
+		inviteUrl.GET("/invite/accept/:t", invite.GetAcceptInvite)
 	}
 	return r
 }
