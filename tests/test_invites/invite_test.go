@@ -13,16 +13,17 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/invite"
 	orgController "github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func TestCreateInvite(t *testing.T) {
-	logger := Setup()
+	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 	validatorRef := validator.New()
 	db := storage.Connection()
@@ -50,10 +51,10 @@ func TestCreateInvite(t *testing.T) {
 		Logger:    logger,
 	}
 
-	user := user.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	auth := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	SignupUser(t, r, user, userSignUpData)
-	token := GetLoginToken(t, r, user, loginData)
+	tst.SignupUser(t, r, auth, userSignUpData)
+	token := tst.GetLoginToken(t, r, auth, loginData)
 
 	//create an organisation
 	orgReq := models.CreateOrgRequestModel{
@@ -68,7 +69,7 @@ func TestCreateInvite(t *testing.T) {
 	}
 
 	org := orgController.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	org_id := CreateOrganisation(t, r, org, orgReq, token)
+	org_id := tst.CreateOrganisation(t, r, db, org, orgReq, token)
 
 	tests := []struct {
 		Name         string
@@ -146,7 +147,7 @@ func TestCreateInvite(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
+		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 		{
 			inviteURL.POST("/invite/create", inviteController.CreateInvite)
 
@@ -168,19 +169,19 @@ func TestCreateInvite(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 
-			AssertStatusCode(t, rr.Code, test.ExpectedCode)
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
 
-			data := ParseResponse(rr)
+			data := tst.ParseResponse(rr)
 
 			code := int(data["status_code"].(float64))
-			AssertStatusCode(t, code, test.ExpectedCode)
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
 
 			if test.Message != "" {
 				message := data["message"]
 				if message != nil {
-					AssertResponseMessage(t, message.(string), test.Message)
+					tst.AssertResponseMessage(t, message.(string), test.Message)
 				} else {
-					AssertResponseMessage(t, "", test.Message)
+					tst.AssertResponseMessage(t, "", test.Message)
 				}
 
 			}

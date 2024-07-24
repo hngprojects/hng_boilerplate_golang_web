@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"strings"
 
+	"gorm.io/gorm"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"gorm.io/gorm"
 )
 
 func SignupWaitlistUserService(db *gorm.DB, req models.CreateWaitlistUserRequest) (*models.WaitlistUser, int, error) {
@@ -21,7 +22,7 @@ func SignupWaitlistUserService(db *gorm.DB, req models.CreateWaitlistUserRequest
 		req.Email = strings.ToLower(req.Email)
 
 		existingUser := &models.WaitlistUser{Email: req.Email}
-		code, err := existingUser.GetWaitlistUserByEmail(db)
+		code, err := existingUser.CheckExistsByEmail(db) // replaced from GetWaitlistUserByEmail to CheckExistsByEmail
 		if err != nil {
 			return nil, code, models.ErrWaitlistUserExist
 		}
