@@ -1,8 +1,9 @@
-package test_waitlist
+package tests
 
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,14 +13,16 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func TestWailistSignup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger := tests.Setup()
+	logger := Setup()
 	validate := validator.New()
 	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	testEmail := fmt.Sprintf("testuser%v@qa.team", currUUID)
 
 	ttests := []struct {
 		Name            string
@@ -31,7 +34,7 @@ func TestWailistSignup(t *testing.T) {
 			Name: "user can signup on waitlist",
 			Request: models.CreateWaitlistUserRequest{
 				Name:  "Tester",
-				Email: "tester@gmail.com",
+				Email: testEmail,
 			},
 			ExpectedCode:    http.StatusCreated,
 			ExpectedMessage: "waitlist signup successful",
@@ -40,7 +43,7 @@ func TestWailistSignup(t *testing.T) {
 			Name: "user can not signup with duplicate email",
 			Request: models.CreateWaitlistUserRequest{
 				Name:  "Tester",
-				Email: "tester@gmail.com",
+				Email: testEmail,
 			},
 			ExpectedCode:    http.StatusBadRequest,
 			ExpectedMessage: "waitlist user exists",
@@ -72,16 +75,16 @@ func TestWailistSignup(t *testing.T) {
 			hr := httptest.NewRecorder()
 			r.ServeHTTP(hr, req)
 
-			tests.AssertStatusCode(t, hr.Code, tt.ExpectedCode)
+			AssertStatusCode(t, hr.Code, tt.ExpectedCode)
 
-			data := tests.ParseResponse(hr)
+			data := ParseResponse(hr)
 
 			if tt.ExpectedMessage != "" {
 				message := data["message"]
 				if message != nil {
-					tests.AssertResponseMessage(t, message.(string), tt.ExpectedMessage)
+					AssertResponseMessage(t, message.(string), tt.ExpectedMessage)
 				} else {
-					tests.AssertResponseMessage(t, "", tt.ExpectedMessage)
+					AssertResponseMessage(t, "", tt.ExpectedMessage)
 				}
 			}
 		})
