@@ -174,20 +174,6 @@ func (base *Controller) PostInvite(c *gin.Context) {
 			},
 		)
 
-		// // Send email
-		// subject := "You're Invited to Join " + org.Name
-		// senderEmail := "micahshallom@gmail.com"
-		// to := []string{"hamzasaidu34@gmail.com"}
-		// domain := config.Config.Mail.Domain
-		// apikey := config.Config.Mail.APIKey
-
-		// inviteErr := send_invites.MockSendInvite(domain, apikey, senderEmail, to, subject)
-		// if inviteErr != nil {
-		// 	// Log error and skip user
-		// 	base.Logger.Error("error sending invitation", err)
-		// 	continue
-		// }
-
 		base.Logger.Info("Invitations posted successfully")
 		rd := utility.BuildSuccessResponse(http.StatusCreated, "Invitation(s) sent successfully", invitations)
 
