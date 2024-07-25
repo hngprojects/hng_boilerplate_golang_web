@@ -3,8 +3,6 @@ package test_jobpost
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -131,12 +129,6 @@ func TestFetchJobPostByID(t *testing.T) {
 	req, _ = http.NewRequest(http.MethodGet, "/api/v1/jobs/"+jobPostID, nil)
 	resp2 := httptest.NewRecorder()
 	router.ServeHTTP(resp2, req)
-
-	bodyBytes, err := io.ReadAll(resp2.Body)
-	if err != nil {
-		t.Fatalf("Failed to read response body: %v", err)
-	}
-	fmt.Printf("Response body from fetch job post by ID: %s\n", string(bodyBytes))
 
 	tests.AssertStatusCode(t, resp2.Code, http.StatusOK)
 }

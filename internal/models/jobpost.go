@@ -8,7 +8,7 @@ import (
 )
 
 type JobPost struct {
-	ID				string 		`gorm:"column:id; type:uuid; primaryKey" json:"job_id`
+	ID				string 		`gorm:"type:uuid; primaryKey" json:"job_id`
 	Title 			string 		`gorm:"column:title; type:text; not null" json:"title"`
 	Description     string 		`gorm:"column:description; type:varchar(255); not null" json:"description"`
 	Location        string 		`gorm:"column:location; type:varchar(255); not null" json:"location"`
