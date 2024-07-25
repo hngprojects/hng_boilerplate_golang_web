@@ -57,6 +57,22 @@ func AssertBool(t *testing.T, got, expected bool) {
 	}
 }
 
+func AssertValidationError(t *testing.T, response map[string]interface{}, field string, expectedMessage string) {
+	errors, ok := response["error"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected 'error' field in response")
+	}
+
+	errorMessage, exists := errors[field]
+	if !exists {
+		t.Fatalf("expected validation error message for field '%s'", field)
+	}
+
+	if errorMessage != expectedMessage {
+		t.Errorf("unexpected error message for field '%s': got %v, want %v", field, errorMessage, expectedMessage)
+	}
+}
+
 // helper to signup a user
 func SignupUser(t *testing.T, r *gin.Engine, auth auth.Controller, userSignUpData models.CreateUserRequestModel) {
 	var (
