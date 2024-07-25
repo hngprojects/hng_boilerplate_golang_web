@@ -19,7 +19,6 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	//
 	claims, exists := c.Get("userClaims")
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
@@ -29,7 +28,6 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	//validate request using default validator
 	err := base.Validator.Struct(&inviteReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
@@ -37,7 +35,6 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	//check if email format is correct
 	_, valid := utility.EmailValid(inviteReq.Email)
 	if !valid {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid email format", nil, nil)
@@ -45,13 +42,11 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	//call checker validator to check if user is an admin of the organisation and if organisation exists
 	err = invite.CheckerValidator(c, base.Db, inviteReq, userId)
 	if err != nil {
 		return
 	}
 
-	//generate token, save to db and return invitation link
 	inviteLink, err := invite.InvitationLinkGenerator(c, base.Db, inviteReq, userId)
 	if err != nil {
 		return
