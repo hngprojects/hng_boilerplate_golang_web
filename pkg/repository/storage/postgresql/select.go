@@ -216,11 +216,6 @@ func SelectFirstFromDb(db *gorm.DB, receiver interface{}) error {
 	return tx.Error
 }
 
-// func SelectOneFromDbAndUpdateField(db *gorm.DB, receiver interface{}, fieldName string, value interface{}, query interface{}, args ...interface{}) error {
-// 	tx := db.Model(receiver).Where(query, args...).Update(fieldName, value)
-// 	return tx.Error
-// }
-
 func CheckExists(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) bool {
 
 	tx := db.Where(query, args...).First(receiver)
