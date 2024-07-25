@@ -98,7 +98,6 @@ func TestCreateInvite(t *testing.T) {
 				Email:          "micah",
 			},
 			ExpectedCode: http.StatusBadRequest,
-			// Message:      "Invalid email format",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
@@ -111,7 +110,6 @@ func TestCreateInvite(t *testing.T) {
 				Email:          "",
 			},
 			ExpectedCode: http.StatusBadRequest,
-			// Message:      "Failed to parse request body",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
@@ -190,4 +188,3 @@ func TestCreateInvite(t *testing.T) {
 
 	}
 }
-
