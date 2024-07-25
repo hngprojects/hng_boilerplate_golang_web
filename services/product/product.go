@@ -1,6 +1,7 @@
 package product
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -37,10 +38,33 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 	}
 
 	responseData = gin.H{
+		"id":          product.ID,
 		"name":        product.Name,
 		"description": product.Description,
 		"price":       product.Price,
 		"owner_id":    product.OwnerID,
+	}
+	return responseData, http.StatusCreated, nil
+}
+
+func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
+	product := models.Product{}
+	product, err := product.GetProduct(db, productId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, http.StatusNotFound, err
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"id":          product.ID,
+		"name":        product.Name,
+		"description": product.Description,
+		"price":       product.Price,
+		"categories":  product.Category,
+		"created_at":  product.CreatedAt,
+		"updated_at":  product.UpdatedAt,
 	}
 	return responseData, http.StatusCreated, nil
 }

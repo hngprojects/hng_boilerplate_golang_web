@@ -52,3 +52,23 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 
 	c.JSON(code, rd)
 }
+
+func (base *Controller) GetProduct(c *gin.Context) {
+	productId := c.Param("product_id")
+	respData, code, err := product.GetProduct(productId, base.Db.Postgresql)
+	if err != nil {
+		resp := gin.H{"error": "Product not found"}
+		if code == http.StatusNotFound {
+			resp = gin.H{"error": "Invalid product ID"}
+		}
+
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), resp, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Product found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Product found successfully", respData)
+
+	c.JSON(code, rd)
+}

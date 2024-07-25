@@ -19,6 +19,7 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 
 	productUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
+        productUrl.GET("/products/:product_id", product.GetProduct)
 		productUrl.POST("/products", product.CreateProduct)
 	}
 	return r

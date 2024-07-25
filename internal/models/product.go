@@ -11,7 +11,7 @@ import (
 type Product struct {
 	ID          string     `gorm:"type:uuid;primaryKey" json:"product_id"`
 	Name        string     `gorm:"column:name; type:varchar(255); not null" json:"name"`
-	Price       float64    `gorm:"column:price; type:decimal(10,2);not null" json:"price"`
+    Price       float64    `gorm:"column:price; type:decimal(10,2);not null; default:0" json:"price"`
 	Description string     `gorm:"column:description; type:text" json:"description"`
 	OwnerID     string     `gorm:"type:uuid;" json:"owner_id"`
 	Category    []Category `gorm:"many2many:product_categories;;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"category"`
@@ -41,4 +41,14 @@ func (p *Product) AddProductToCategory(db *gorm.DB, categories []interface{}) er
 		return err
 	}
 	return nil
+}
+
+func (p *Product) GetProduct(db *gorm.DB, id string) (Product, error) {
+	var product Product
+	err := db.Preload("Category").Model(p).First(&product, "id = ?", id).Error
+	if err != nil {
+		return Product{}, err
+	}
+
+	return product, nil
 }
