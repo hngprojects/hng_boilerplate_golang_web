@@ -176,11 +176,6 @@ func (base *Controller) VerifyResetToken(c *gin.Context) {
 
 }
 
-func (base *Controller) ChangePassword(c *gin.Context) {
-	// to be implemented
-
-}
-
 func (base *Controller) RequestMagicLink(c *gin.Context) {
 	// to be implemented
 
