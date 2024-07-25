@@ -39,9 +39,6 @@ type InvitationCreateReq struct {
 }
 
 func (i *Invitation) CreateInvitation(db *gorm.DB) error {
-	//set the expiration time to 24 hours
-	i.ExpiresAt = time.Now().Add(time.Hour * 24)
-	
 	err := postgresql.CreateOneRecord(db, &i)
 	if err != nil {
 		return err

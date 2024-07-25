@@ -40,7 +40,6 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	User(r, ApiVersion, validator, db, logger)
 	Organisation(r, ApiVersion, validator, db, logger)
 	Newsletter(r, ApiVersion, validator, db, logger)
-	Product(r, ApiVersion, validator, db, logger)
 	Auth(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {

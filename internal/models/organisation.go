@@ -50,8 +50,7 @@ func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 func (o *Organisation) GetOrgByID(db *gorm.DB, orgID string) (Organisation, error) {
 	var org Organisation
 
-	err, nerr := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID); 
-	if nerr != nil {
+	if err := db.Where("id = ?", orgID).First(&org).Error; err != nil {
 		return org, err
 	}
 	return org, nil
