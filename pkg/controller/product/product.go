@@ -2,6 +2,7 @@ package product
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -55,14 +56,24 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 
 func (base *Controller) GetProduct(c *gin.Context) {
 	productId := c.Param("product_id")
+
+    matched, err := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", productId)
+    if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "An unexpected error occured", nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+    }
+
+    if !matched {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "", "Invalid product ID", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+    }
+
+
 	respData, code, err := product.GetProduct(productId, base.Db.Postgresql)
 	if err != nil {
-		resp := gin.H{"error": "Product not found"}
-		if code == http.StatusNotFound {
-			resp = gin.H{"error": "Invalid product ID"}
-		}
-
-		rd := utility.BuildErrorResponse(code, "error", err.Error(), resp, nil)
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Product not found", nil)
 		c.JSON(code, rd)
 		return
 	}

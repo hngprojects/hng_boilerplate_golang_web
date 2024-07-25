@@ -66,5 +66,5 @@ func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
 		"created_at":  product.CreatedAt,
 		"updated_at":  product.UpdatedAt,
 	}
-	return responseData, http.StatusCreated, nil
+	return responseData, http.StatusOK, nil
 }
