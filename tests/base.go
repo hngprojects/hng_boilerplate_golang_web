@@ -162,29 +162,3 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org o
 	return orgID
 }
 
-// helper to create an invite
-// func CreateInvite(t *testing.T, r *gin.Engine, invite invite.Controller, inviteData models.InvitationCreateReq, token string) map[string]interface{} {
-// 	var (
-// 		invitePath = "/api/v1/invite/create"
-// 		inviteURI  = url.URL{Path: invitePath}
-// 	)
-// 	inviteUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize())
-// 	{
-// 		inviteUrl.POST("/organisations/send-invite", invite.CreateInvite)
-// 	}
-// 	var b bytes.Buffer
-// 	json.NewEncoder(&b).Encode(inviteData)
-// 	req, err := http.NewRequest(http.MethodPost, inviteURI.String(), &b)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	req.Header.Set("Content-Type", "application/json")
-// 	req.Header.Set("Authorization", "Bearer "+token)
-
-// 	rr := httptest.NewRecorder()
-// 	r.ServeHTTP(rr, req)
-
-// 	//get the response
-// 	data := ParseResponse(rr)
-// 	return data
-// }
