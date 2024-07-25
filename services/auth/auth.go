@@ -194,6 +194,8 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 		"role":         models.AdminRoleName,
 		"expires_in":   tokenData.ExpiresAt.Unix(),
 		"access_token": tokenData.AccessToken,
+		"created_at":   user.CreatedAt,
+		"updated_at":   user.UpdatedAt,
 	}
 
 	return responseData, http.StatusCreated, nil
@@ -248,6 +250,8 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 		"role":         userData.Role,
 		"expires_in":   tokenData.ExpiresAt.Unix(),
 		"access_token": tokenData.AccessToken,
+		"created_at":   userData.CreatedAt,
+		"updated_at":   userData.UpdatedAt,
 	}
 
 	return responseData, http.StatusOK, nil
