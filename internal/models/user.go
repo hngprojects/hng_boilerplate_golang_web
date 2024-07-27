@@ -36,11 +36,6 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type ChangePasswordRequestModel struct {
-	OldPassword string `json:"old_password" validate:"required"`
-	NewPassword string `json:"new_password" validate:"required,min=7"`
-}
-
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
@@ -56,6 +51,19 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	var user User
 
 	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (u *User) GetUserByEmail(db *gorm.DB, userEmail string) (User, error) {
+	var user User
+
+	query := db.Where("email = ?", userEmail)
 	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
