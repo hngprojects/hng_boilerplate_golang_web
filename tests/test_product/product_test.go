@@ -132,7 +132,6 @@ func TestProductCreate(t *testing.T) {
 	}
 
 }
-
 func TestProductGet(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
@@ -170,7 +169,6 @@ func TestProductGet(t *testing.T) {
 	productUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 	{
 		productUrl.POST("/products", product.CreateProduct)
-
 	}
 
 	var b bytes.Buffer
@@ -187,8 +185,7 @@ func TestProductGet(t *testing.T) {
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
-	productCreateResp := tst.ParseResponse(rr)
-	productId := productCreateResp["data"].(map[string]interface{})["id"].(string) // don't mind this goofy ahh line
+	productId := "0190f549-033f-7f31-acf2-f3db2f7e70de"
 
 	tests := []struct {
 		Name         string
@@ -206,16 +203,18 @@ func TestProductGet(t *testing.T) {
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
-		}, {
+		},
+		{
 			Name:         "Get product invalid id",
 			ExpectedCode: http.StatusBadRequest,
-			productId:    "ohio rizzler",
+			productId:    "invalid-id",
 			Message:      "Invalid product ID",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
-		}, {
+		},
+		{
 			Name:         "Get product product does not exist",
 			ExpectedCode: http.StatusNotFound,
 			productId:    utility.GenerateUUID(),
@@ -233,7 +232,6 @@ func TestProductGet(t *testing.T) {
 		productUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 		{
 			productUrl.GET("/products/:product_id", product.GetProduct)
-
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
@@ -251,7 +249,5 @@ func TestProductGet(t *testing.T) {
 
 			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
 		})
-
 	}
-
 }
