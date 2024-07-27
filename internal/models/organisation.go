@@ -37,12 +37,23 @@ type CreateOrgRequestModel struct {
 }
 
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
-
 	err := postgresql.CreateOneRecord(db, &c)
-
 	if err != nil {
 		return err
 	}
-
 	return nil
+}
+
+func (c *Organisation) Delete(db *gorm.DB) error {
+	err := postgresql.DeleteRecordFromDb(db, &c)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Organisation) GetActiveOrganisationById(db *gorm.DB, orgID string) (Organisation, error) {
+	var org Organisation
+	err, _ := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID)
+	return org, err
 }

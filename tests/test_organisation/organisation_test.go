@@ -192,3 +192,145 @@ func TestOrganizationCreate(t *testing.T) {
 	}
 
 }
+
+func TestOrganisationDelete(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	tst.SignupUser(t, r, user, userSignUpData)
+
+	token := tst.GetLoginToken(t, r, user, loginData)
+
+	organisationCreationData := models.CreateOrgRequestModel{
+		Name:        fmt.Sprintf("Org %v", currUUID),
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		Description: "Some random description about vibranium",
+		State:       "test",
+		Industry:    "user",
+		Type:        "type1",
+		Address:     "wakanda land",
+		Country:     "wakanda",
+	}
+
+	orgID := tst.GetOrgId(t, r, org, organisationCreationData, token)
+
+	tests := []struct {
+		Name         string
+		OrgID        string
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name:         "Invalid Organisation ID Format",
+			OrgID:        "invalid-id-erttt",
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "invalid organisation id format",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Successful Deletion of Organisation",
+			OrgID:        orgID,
+			ExpectedCode: http.StatusNoContent,
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Organisation Not Found",
+			OrgID:        utility.GenerateUUID(),
+			ExpectedCode: http.StatusNotFound,
+			Message:      "organisation not found",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "User Not Authorized to Delete Organization",
+			OrgID:        orgID,
+			ExpectedCode: http.StatusUnauthorized,
+			Message:      "Token could not be found!",
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+	}
+
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+	{
+		orgUrl.DELETE("/organisations/:org_id", org.DeleteOrganisation)
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s", test.OrgID), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			if rr.Code != test.ExpectedCode {
+				t.Errorf("Expected status code %d, got %d", test.ExpectedCode, rr.Code)
+			}
+
+			// For 204 No Content, we don't try to parse the body
+			if rr.Code == http.StatusNoContent {
+				// Success case with no content, just return
+				return
+			}
+
+			var data map[string]interface{}
+			if err := json.NewDecoder(rr.Body).Decode(&data); err != nil {
+				t.Fatalf("Failed to decode response body: %v", err)
+			}
+
+			code, ok := data["status_code"].(float64)
+			if !ok {
+				t.Fatalf("Expected status_code to be float64, got %T", data["status_code"])
+			}
+			if int(code) != test.ExpectedCode {
+				t.Errorf("Expected status code %d, got %d", test.ExpectedCode, int(code))
+			}
+
+			if test.Message != "" {
+				message, ok := data["message"].(string)
+				if !ok {
+					t.Fatalf("Expected message to be string, got %T", data["message"])
+				}
+				if message != test.Message {
+					t.Errorf("Expected message '%s', got '%s'", test.Message, message)
+				}
+			}
+		})
+	}
+}

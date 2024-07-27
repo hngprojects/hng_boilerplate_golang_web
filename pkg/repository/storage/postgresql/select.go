@@ -192,6 +192,7 @@ func SelectOneFromDb(db *gorm.DB, receiver interface{}, query interface{}, args 
 	}
 	return tx.Error, nil
 }
+
 func SelectLatestFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
 	tx := db.Order("id desc").Where(query, args...).First(receiver)

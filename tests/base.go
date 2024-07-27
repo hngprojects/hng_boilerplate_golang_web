@@ -15,6 +15,8 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -120,4 +122,59 @@ func GetLoginToken(t *testing.T, r *gin.Engine, auth auth.Controller, loginData 
 	token := dataM["access_token"].(string)
 
 	return token
+}
+
+func GetOrgId(t *testing.T, r *gin.Engine, organisation organisation.Controller, orgCreationData models.CreateOrgRequestModel, token string) string {
+	orgCreationPath := "/api/v1/organisations"
+	orgCreationURI := url.URL{Path: orgCreationPath}
+	db := storage.Connection()
+
+	// Register the route
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+	orgUrl.POST("/organisations", organisation.CreateOrganisation)
+
+	// Encode the request body
+	var b bytes.Buffer
+	if err := json.NewEncoder(&b).Encode(orgCreationData); err != nil {
+		t.Fatalf("Failed to encode organization creation data: %v", err)
+	}
+
+	// Create the request
+	req, err := http.NewRequest(http.MethodPost, orgCreationURI.String(), &b)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	// Perform the request
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	// Check the status code
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("Expected status code %d, got %d", http.StatusCreated, rr.Code)
+	}
+
+	// Parse the response
+	var response struct {
+		Status     string `json:"status"`
+		StatusCode int    `json:"status_code"`
+		Message    string `json:"message"`
+		Data       struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	// Check if the status is success
+	if response.Status != "success" {
+		t.Fatalf("Expected status 'success', got '%s'", response.Status)
+	}
+
+	// Return the organization ID
+	return response.Data.ID
 }
