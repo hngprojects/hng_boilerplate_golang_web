@@ -73,6 +73,24 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 	return &org, nil
 }
 
+func GetOrganisationById(orgId string, userId string, db *gorm.DB) (models.Organisation, error) {
+	var org models.Organisation
+
+	org, err := org.GetActiveOrganisationById(db, orgId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Organisation{}, errors.New("organisation not found")
+		}
+		return models.Organisation{}, err
+	}
+
+	if org.OwnerID != userId {
+		return models.Organisation{}, errors.New("user not authorised to retrieve this organisation")
+	}
+
+	return org, nil
+}
+
 func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 	var org models.Organisation
 

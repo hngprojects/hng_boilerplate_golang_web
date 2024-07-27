@@ -193,6 +193,106 @@ func TestOrganizationCreate(t *testing.T) {
 
 }
 
+func TestGetOrganisationById(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+
+	orgID, token := initialise(currUUID, t, r, user, org)
+
+	tests := []struct {
+		Name         string
+		OrgID        string
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name:         "Invalid Organisation ID Format",
+			OrgID:        "invalid-id-erttt",
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "invalid organisation id format",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Successful retrieval of Organisation",
+			OrgID:        orgID,
+			ExpectedCode: http.StatusOK,
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Organisation Not Found",
+			OrgID:        utility.GenerateUUID(),
+			ExpectedCode: http.StatusNotFound,
+			Message:      "organisation not found",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+	}
+
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+	{
+		orgUrl.GET("/organisations/:org_id", org.GetOrganisationById)
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s", test.OrgID), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			if rr.Code != test.ExpectedCode {
+				tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
+			}
+
+			var data map[string]interface{}
+			if err := json.NewDecoder(rr.Body).Decode(&data); err != nil {
+				t.Fatalf("Failed to decode response body: %v", err)
+			}
+
+			code, ok := data["status_code"].(float64)
+			if !ok {
+				t.Fatalf("Expected status_code to be float64, got %T", data["status_code"])
+			}
+			if int(code) != test.ExpectedCode {
+				tst.AssertStatusCode(t, int(code), test.ExpectedCode)
+			}
+
+			if test.Message != "" {
+				message, ok := data["message"].(string)
+				if !ok {
+					tst.AssertResponseMessage(t, message, test.Message)
+				}
+				if message != test.Message {
+					tst.AssertResponseMessage(t, message, test.Message)
+				}
+			}
+		})
+	}
+}
+
 func TestOrganisationDelete(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
@@ -200,38 +300,11 @@ func TestOrganisationDelete(t *testing.T) {
 	validatorRef := validator.New()
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
-	userSignUpData := models.CreateUserRequestModel{
-		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
-		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
-		FirstName:   "test",
-		LastName:    "user",
-		Password:    "password",
-		UserName:    fmt.Sprintf("test_username%v", currUUID),
-	}
-	loginData := models.LoginRequestModel{
-		Email:    userSignUpData.Email,
-		Password: userSignUpData.Password,
-	}
-
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	tst.SignupUser(t, r, user, userSignUpData)
-
-	token := tst.GetLoginToken(t, r, user, loginData)
-
-	organisationCreationData := models.CreateOrgRequestModel{
-		Name:        fmt.Sprintf("Org %v", currUUID),
-		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
-		Description: "Some random description about vibranium",
-		State:       "test",
-		Industry:    "user",
-		Type:        "type1",
-		Address:     "wakanda land",
-		Country:     "wakanda",
-	}
-
-	orgID := tst.GetOrgId(t, r, org, organisationCreationData, token)
+	
+	orgID, token := initialise(currUUID, t, r, user, org)
 
 	tests := []struct {
 		Name         string
@@ -333,4 +406,38 @@ func TestOrganisationDelete(t *testing.T) {
 			}
 		})
 	}
+}
+
+func initialise(currUUID string, t *testing.T, r *gin.Engine, user auth.Controller, org organisation.Controller) (string, string) {
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	tst.SignupUser(t, r, user, userSignUpData)
+
+	token := tst.GetLoginToken(t, r, user, loginData)
+
+	organisationCreationData := models.CreateOrgRequestModel{
+		Name:        fmt.Sprintf("Org %v", currUUID),
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		Description: "Some random description about vibranium",
+		State:       "test",
+		Industry:    "user",
+		Type:        "type1",
+		Address:     "wakanda land",
+		Country:     "wakanda",
+	}
+
+	orgID := tst.GetOrgId(t, r, org, organisationCreationData, token)
+
+	return orgID, token
 }
