@@ -46,3 +46,13 @@ func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 
 	return nil
 }
+
+func (o *Organisation) GetOrgByID(db *gorm.DB, orgID string) (Organisation, error) {
+	var org Organisation
+
+	err, nerr := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID); 
+	if nerr != nil {
+		return org, err
+	}
+	return org, nil
+}

@@ -314,7 +314,7 @@ func TestLogin(t *testing.T) {
 	r := gin.Default()
 	r.POST(loginPath, auth.LoginUser)
 
-	tst.SignupUser(t, r, auth, userSignUpData)
+	tst.SignupUser(t, r, auth, userSignUpData, false)
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
@@ -381,7 +381,7 @@ func TestLogout(t *testing.T) {
 
 	authen := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	tst.SignupUser(t, r, authen, userSignUpData)
+	tst.SignupUser(t, r, authen, userSignUpData, false)
 
 	token := tst.GetLoginToken(t, r, authen, loginData)
 
