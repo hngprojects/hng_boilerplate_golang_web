@@ -72,3 +72,25 @@ func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.C
 	}
 	return responseData, http.StatusOK, nil
 }
+
+func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
+	product := models.Product{}
+	product, err := product.GetProduct(db, productId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, http.StatusNotFound, err
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"id":          product.ID,
+		"name":        product.Name,
+		"description": product.Description,
+		"price":       product.Price,
+		"categories":  product.Category,
+		"created_at":  product.CreatedAt,
+		"updated_at":  product.UpdatedAt,
+	}
+	return responseData, http.StatusOK, nil
+}

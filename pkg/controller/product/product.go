@@ -2,6 +2,7 @@ package product
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -83,4 +84,33 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusCreated, "Product deleted successfully", respData)
 
 	ctx.JSON(code, rd)
+}
+
+func (base *Controller) GetProduct(c *gin.Context) {
+	productId := c.Param("product_id")
+
+	matched, err := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", productId)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "An unexpected error occured", nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	if !matched {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "", "Invalid product ID", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := product.GetProduct(productId, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Product not found", nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Product found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Product found successfully", respData)
+
+	c.JSON(code, rd)
 }

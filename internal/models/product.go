@@ -54,3 +54,13 @@ func (p *Product) DeleteProduct(db *gorm.DB) error {
 	}
 	return nil
 }
+
+func (p *Product) GetProduct(db *gorm.DB, id string) (Product, error) {
+	var product Product
+	err := db.Preload("Category").Model(p).First(&product, "id = ?", id).Error
+	if err != nil {
+		return Product{}, err
+	}
+
+	return product, nil
+}
