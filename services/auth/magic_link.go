@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -20,6 +21,7 @@ func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
 	var (
 		user      = models.User{}
 		magicLink = models.MagicLink{}
+		config    = config.GetConfig()
 	)
 
 	magicExist, err := magicLink.GetMagicLinkByEmail(db, userEmail)
@@ -43,7 +45,7 @@ func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
 		ID:        utility.GenerateUUID(),
 		Email:     userEmail,
 		Token:     requestToken,
-		ExpiresAt: time.Now().Add(10 * time.Minute),
+		ExpiresAt: time.Now().Add(time.Duration(config.App.MagicLinkDuration) * time.Minute),
 	}
 
 	err = magic.CreateMagicLink(db)

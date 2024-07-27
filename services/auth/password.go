@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -61,6 +62,7 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 	var (
 		user      = models.User{}
 		passReset = models.PasswordReset{}
+		config    = config.GetConfig()
 	)
 
 	resetExist, err := passReset.GetPasswordResetByEmail(db, userEmail)
@@ -84,7 +86,7 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 		ID:        utility.GenerateUUID(),
 		Email:     userEmail,
 		Token:     resetToken,
-		ExpiresAt: time.Now().Add(30 * time.Minute),
+		ExpiresAt: time.Now().Add(time.Duration(config.App.ResetPasswordDuration) * time.Minute),
 	}
 
 	err = reset.CreatePasswordReset(db)
