@@ -65,6 +65,16 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	return user, nil
 }
 
+func (u *User) GetUserByEmail(db *gorm.DB, email string) (User, error) {
+	var user User
+
+	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", email).First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func (u *User) CreateUser(db *gorm.DB) error {
 
 	err := postgresql.CreateOneRecord(db, &u)
@@ -92,4 +102,9 @@ func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
 func (u *User) Update(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &u)
 	return err
+}
+
+
+func (u *User) CheckUserIsAdmin(db *gorm.DB) bool {
+	return u.Role == int(RoleIdentity.SuperAdmin)
 }

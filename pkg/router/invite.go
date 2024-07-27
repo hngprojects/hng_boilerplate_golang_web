@@ -8,6 +8,8 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/invite"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -16,9 +18,13 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	invite := invite.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
+	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
-		inviteUrl.POST("/organisation/send-invite", invite.PostInvite)
+
+		inviteUrl.POST("/invite/create", invite.CreateInvite)
+		inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), invite.PostInvite)
+		inviteUrl.GET("/organisation/invitations", invite.GetInvites)
+
 	}
 	return r
 }
