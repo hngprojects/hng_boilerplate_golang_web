@@ -78,8 +78,8 @@ func (base *Controller) FetchJobPostByID(c *gin.Context) {
 	}
 	respData, err := service.FetchJobPostByID(base.Db.Postgresql, id)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch job post", err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Failed to fetch job post", err, nil)
+		c.JSON(http.StatusNotFound, rd)
 		return
 	}
 
