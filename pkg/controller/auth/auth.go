@@ -165,13 +165,3 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user logout successfully", respData)
 	c.JSON(http.StatusOK, rd)
 }
-
-func (base *Controller) RequestMagicLink(c *gin.Context) {
-	// to be implemented
-
-}
-
-func (base *Controller) VerifyMagicLink(c *gin.Context) {
-	// to be implemented
-
-}
