@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -22,6 +23,14 @@ type User struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+type PasswordReset struct {
+	ID        string `gorm:"type:uuid;primaryKey;unique;not null" json:"id"`
+	Email     string `gorm:"index"`
+	Token     string `gorm:"uniqueIndex"`
+	ExpiresAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type CreateUserRequestModel struct {
 	Email       string `json:"email" validate:"required"`
 	Password    string `json:"password" validate:"required"`
@@ -41,6 +50,15 @@ type ChangePasswordRequestModel struct {
 	NewPassword string `json:"new_password" validate:"required,min=7"`
 }
 
+type ForgotPasswordRequestModel struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type ResetPasswordRequestModel struct {
+	Token       string `json:"token" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=7"`
+}
+
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
@@ -56,6 +74,19 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	var user User
 
 	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (u *User) GetUserByEmail(db *gorm.DB, userEmail string) (User, error) {
+	var user User
+
+	query := db.Where("email = ?", userEmail)
 	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
@@ -92,4 +123,45 @@ func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
 func (u *User) Update(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &u)
 	return err
+}
+
+func (p *PasswordReset) CreatePasswordReset(db *gorm.DB) error {
+
+	err := postgresql.CreateOneRecord(db, &p)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pr *PasswordReset) GetPasswordResetByToken(db *gorm.DB, token string) (PasswordReset, error) {
+	var reset PasswordReset
+	if err := db.Where("token = ? AND expires_at > ?", token, time.Now()).First(&reset).Error; err != nil {
+		return reset, err
+	}
+	return reset, nil
+}
+
+func (pr *PasswordReset) GetPasswordResetByEmail(db *gorm.DB, email string) (*PasswordReset, error) {
+	var reset PasswordReset
+	if err := db.Where("email = ?", email).First(&reset).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &reset, nil
+}
+
+func (p *PasswordReset) DeletePasswordReset(db *gorm.DB) error {
+
+	err := postgresql.DeleteRecordFromDb(db, p)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

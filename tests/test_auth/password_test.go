@@ -15,8 +15,8 @@ import (
 )
 
 func TestUpdateUserPassword(t *testing.T) {
-	router, userController := SetupAuthTestRouter()
-	db := userController.Db.Postgresql
+	router, authController := SetupAuthTestRouter()
+	db := authController.Db.Postgresql
 	currUUID := utility.GenerateUUID()
 	theRole := models.RoleIdentity.SuperAdmin
 	password, _ := utility.HashPassword("password")
@@ -35,7 +35,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		Password: "password",
 	}
 
-	auth := auth.Controller{Db: userController.Db, Validator: userController.Validator, Logger: userController.Logger}
+	auth := auth.Controller{Db: authController.Db, Validator: authController.Validator, Logger: authController.Logger}
 	token := tests.GetLoginToken(t, router, auth, loginData)
 
 	t.Run("Successful Password Change", func(t *testing.T) {

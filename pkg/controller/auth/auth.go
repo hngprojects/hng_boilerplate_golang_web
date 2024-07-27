@@ -166,16 +166,6 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-func (base *Controller) ResetPassword(c *gin.Context) {
-	// to be implemented
-
-}
-
-func (base *Controller) VerifyResetToken(c *gin.Context) {
-	// to be implemented
-
-}
-
 func (base *Controller) RequestMagicLink(c *gin.Context) {
 	// to be implemented
 
