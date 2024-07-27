@@ -55,22 +55,8 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 
 func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	var (
-		req = models.DeleteProductRequestModel{}
+		req = ctx.Param("product_id")
 	)
-
-	err := ctx.ShouldBind(&req)
-	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
-		ctx.JSON(http.StatusBadRequest, rd)
-		return
-	}
-
-	err = base.Validator.Struct(&req)
-	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
-		ctx.JSON(http.StatusUnprocessableEntity, rd)
-		return
-	}
 
 	respData, code, err := product.DeleteProduct(req, base.Db.Postgresql, ctx)
 	if err != nil {

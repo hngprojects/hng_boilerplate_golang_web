@@ -45,19 +45,17 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 	}
 	return responseData, http.StatusCreated, nil
 }
-func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+func DeleteProduct(req string, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
 	var product models.Product
-	if err := db.First(&product, req.ProductID).Error; err != nil {
+	if err := db.Where("id = ?", req).First(&product).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("product not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
 
-	ownerID, err := middleware.GetIdFromToken(ctx)
-	if err != nil {
-		return nil, http.StatusUnauthorized, errors.New("failed to get owner ID from token")
-	}
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+	print(ownerID)
 
 	if product.OwnerID != ownerID {
 		return nil, http.StatusForbidden, errors.New("you are not authorized to delete this product")
