@@ -44,7 +44,7 @@ func TestProductCreate(t *testing.T) {
 
 	auth := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	tst.SignupUser(t, r, auth, userSignUpData)
+	tst.SignupUser(t, r, auth, userSignUpData,false)
 
 	token := tst.GetLoginToken(t, r, auth, loginData)
 
