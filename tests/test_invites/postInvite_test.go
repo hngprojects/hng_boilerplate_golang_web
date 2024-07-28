@@ -29,7 +29,7 @@ func TestPostInvite(t *testing.T) {
 			Name: "Successful invitation sent",
 			RequestBody: models.InvitationRequest{
 				OrgID:  setup.OrgID,
-				Emails: []string{"testuser0190e1ef-eeaf-7224-9dd9-cdf8396666ed@qa.team"},
+				Emails: []string{setup.Email},
 			},
 			ExpectedCode: http.StatusCreated,
 			Message:      "Invitation(s) sent successfully",
