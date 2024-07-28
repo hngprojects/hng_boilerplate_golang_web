@@ -14,9 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// check if user is an admin
 func CheckUserIsAdmin(db *gorm.DB, user_id string, org_id string) (bool, error) {
-	//use the org_id to check for an existing organisation
 	var org models.Organisation
 
 	orgResp, err := org.GetOrgByID(db, org_id)
@@ -26,12 +24,10 @@ func CheckUserIsAdmin(db *gorm.DB, user_id string, org_id string) (bool, error) 
 	return orgResp.OwnerID == user_id, nil
 }
 
-// check emails limit
 func CheckEmailsLimit(inviteReq models.InvitationRequest) bool {
 	return len(inviteReq.Emails) > 5 // limit to 5 emails for testing
 }
 
-// check duplicate emails
 func CheckDuplicateEmails(inviteReq models.InvitationRequest) bool {
 	emailsMap := make(map[string]bool)
 	for _, email := range inviteReq.Emails {
