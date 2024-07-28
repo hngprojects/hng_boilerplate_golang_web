@@ -61,6 +61,7 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 	userId := userClaims["user_id"].(string)
 
 	respData, err := service.CreateOrganisation(reqData, base.Db.Postgresql, userId)
+	
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -73,7 +74,7 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 	c.JSON(http.StatusCreated, rd)
 }
 
-func (base *Controller) GetOrganisationById(c *gin.Context) {
+func (base *Controller) GetOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 
 	if _, err := uuid.Parse(orgId); err != nil {
@@ -92,7 +93,7 @@ func (base *Controller) GetOrganisationById(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	orgData, err := service.GetOrganisationById(orgId, userId, base.Db.Postgresql)
+	orgData, err := service.GetOrganisation(orgId, userId, base.Db.Postgresql)
 
 	if err != nil {
 		switch err.Error() {

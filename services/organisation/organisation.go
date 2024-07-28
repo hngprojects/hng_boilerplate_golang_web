@@ -1,4 +1,4 @@
-package service
+package organisation
 
 import (
 	"errors"
@@ -73,28 +73,9 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 	return &org, nil
 }
 
-func GetOrganisationById(orgId string, userId string, db *gorm.DB) (models.Organisation, error) {
-	var org models.Organisation
+func GetOrganisation(orgId string,userId string, db *gorm.DB)(*models.Organisation, error){
+	org, err := CheckOrgExists(orgId, db)
 
-	org, err := org.GetActiveOrganisationById(db, orgId)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return models.Organisation{}, errors.New("organisation not found")
-		}
-		return models.Organisation{}, err
-	}
-
-	if org.OwnerID != userId {
-		return models.Organisation{}, errors.New("user not authorised to retrieve this organisation")
-	}
-
-	return org, nil
-}
-
-func UpdateOrganisation(orgId string, userId string, updateReq models.CreateOrgRequestModel, db *gorm.DB) (*models.Organisation, error) {
-	var org models.Organisation
-
-	org, err := org.GetActiveOrganisationById(db, orgId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("organisation not found")
@@ -102,11 +83,35 @@ func UpdateOrganisation(orgId string, userId string, updateReq models.CreateOrgR
 		return nil, err
 	}
 
-	if org.OwnerID != userId {
+	isMember, err := CheckUserIsMemberOfOrg(userId, orgId, db)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("user not authorised to retrieve this organisation")
+	}
+
+	return &org, nil
+}
+
+func UpdateOrganisation(orgId string, userId string, updateReq models.CreateOrgRequestModel, db *gorm.DB) (*models.Organisation, error) {
+	org, err := CheckOrgExists(orgId, db)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("organisation not found")
+		}
+		return nil, err
+	}
+
+	isMember, err := CheckUserIsMemberOfOrg(userId, orgId, db)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
 		return nil, errors.New("user not authorised to update this organisation")
 	}
 
-	if updateReq.Email != "" && updateReq.Email != org.Email {
+	if updateReq.Email != org.Email {
 		updateReq.Email = strings.ToLower(updateReq.Email)
 		formattedMail, checkBool := utility.EmailValid(updateReq.Email)
 		if !checkBool {
@@ -132,9 +137,7 @@ func UpdateOrganisation(orgId string, userId string, updateReq models.CreateOrgR
 }
 
 func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
-	var org models.Organisation
-
-	org, err := org.GetActiveOrganisationById(db, orgId)
+	org, err := CheckOrgExists(orgId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("organisation not found")
@@ -142,9 +145,52 @@ func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 		return err
 	}
 
-	if org.OwnerID != userId {
+	isMember, err := CheckUserIsMemberOfOrg(userId, orgId, db)
+	if err != nil {
+		return err
+	}
+	if !isMember {
 		return errors.New("user not authorised to delete this organisation")
 	}
 
 	return org.Delete(db)
 }
+
+
+func CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {
+	var org models.Organisation
+	var user models.User
+
+	org, err := org.GetOrgByID(db, orgId)
+	if err != nil {
+		return false, err
+	}
+
+	user, err = user.GetUserByID(db, userId)
+	if err != nil {
+		return false, err
+	}
+
+	for _, org := range user.Organisations {
+		if org.ID == orgId {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func CheckOrgExists(orgId string, db *gorm.DB) (models.Organisation, error) {
+	var org models.Organisation
+
+	org, err := org.GetOrgByID(db, orgId)
+	if err != nil {
+		return org, err
+	}
+
+	return org, nil
+}
+
+
+
+

@@ -44,7 +44,7 @@ func TestOrganizationCreate(t *testing.T) {
 
 	auth := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	tst.SignupUser(t, r, auth, userSignUpData)
+	tst.SignupUser(t, r, auth, userSignUpData, false)
 
 	token := tst.GetLoginToken(t, r, auth, loginData)
 
@@ -193,7 +193,7 @@ func TestOrganizationCreate(t *testing.T) {
 
 }
 
-func TestGetOrganisationById(t *testing.T) {
+func TestGetOrganisation(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -204,7 +204,7 @@ func TestGetOrganisationById(t *testing.T) {
 	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	orgID, token := initialise(currUUID, t, r, user, org)
+	orgID, token := initialise(currUUID, t, r, db, user, org)
 
 	tests := []struct {
 		Name         string
@@ -246,7 +246,7 @@ func TestGetOrganisationById(t *testing.T) {
 
 	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
 	{
-		orgUrl.GET("/organisations/:org_id", org.GetOrganisationById)
+		orgUrl.GET("/organisations/:org_id", org.GetOrganisation)
 	}
 
 	for _, test := range tests {
@@ -304,7 +304,7 @@ func TestOrganisationUpdate(t *testing.T) {
 	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	orgID, token := initialise(currUUID, t, r, user, org)
+	orgID, token := initialise(currUUID, t, r, db, user, org)
 
 	tests := []struct {
 		Name         string
@@ -470,7 +470,7 @@ func TestOrganisationDelete(t *testing.T) {
 	org := organisation.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	orgID, token := initialise(currUUID, t, r, user, org)
+	orgID, token := initialise(currUUID, t, r, db, user, org)
 
 	tests := []struct {
 		Name         string
@@ -574,7 +574,7 @@ func TestOrganisationDelete(t *testing.T) {
 	}
 }
 
-func initialise(currUUID string, t *testing.T, r *gin.Engine, user auth.Controller, org organisation.Controller) (string, string) {
+func initialise(currUUID string, t *testing.T, r *gin.Engine, db *storage.Database, user auth.Controller, org organisation.Controller) (string, string) {
 	userSignUpData := models.CreateUserRequestModel{
 		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
 		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
@@ -588,7 +588,7 @@ func initialise(currUUID string, t *testing.T, r *gin.Engine, user auth.Controll
 		Password: userSignUpData.Password,
 	}
 
-	tst.SignupUser(t, r, user, userSignUpData)
+	tst.SignupUser(t, r, user, userSignUpData, false)
 
 	token := tst.GetLoginToken(t, r, user, loginData)
 
@@ -603,7 +603,7 @@ func initialise(currUUID string, t *testing.T, r *gin.Engine, user auth.Controll
 		Country:     "wakanda",
 	}
 
-	orgID := tst.GetOrgId(t, r, org, organisationCreationData, token)
+	orgID := tst.CreateOrganisation(t, r, db, org, organisationCreationData, token)
 
 	return orgID, token
 }
