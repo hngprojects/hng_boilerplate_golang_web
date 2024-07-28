@@ -22,7 +22,7 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 		organisationUrl.POST("/organisations", organisation.CreateOrganisation)
 		organisationUrl.GET("/organisations/:org_id", organisation.GetOrganisationById)
 		organisationUrl.DELETE("/organisations/:org_id", organisation.DeleteOrganisation)
-
+		organisationUrl.PUT("/organisations/:org_id", organisation.UpdateOrganisation)
 	}
 	return r
 }

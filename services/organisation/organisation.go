@@ -91,6 +91,46 @@ func GetOrganisationById(orgId string, userId string, db *gorm.DB) (models.Organ
 	return org, nil
 }
 
+func UpdateOrganisation(orgId string, userId string, updateReq models.CreateOrgRequestModel, db *gorm.DB) (*models.Organisation, error) {
+	var org models.Organisation
+
+	org, err := org.GetActiveOrganisationById(db, orgId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("organisation not found")
+		}
+		return nil, err
+	}
+
+	if org.OwnerID != userId {
+		return nil, errors.New("user not authorised to update this organisation")
+	}
+
+	if updateReq.Email != "" && updateReq.Email != org.Email {
+		updateReq.Email = strings.ToLower(updateReq.Email)
+		formattedMail, checkBool := utility.EmailValid(updateReq.Email)
+		if !checkBool {
+			return nil, errors.New("email address is invalid")
+		}
+		updateReq.Email = formattedMail
+		exists := postgresql.CheckExists(db, &org, "email = ?", updateReq.Email)
+		if exists {
+			return nil, errors.New("organisation already exists with the given email")
+		}
+	}
+
+	org.Name = updateReq.Name
+    org.Description = updateReq.Description
+    org.Email = updateReq.Email
+    org.State = updateReq.State
+    org.Industry = updateReq.Industry
+    org.Type = updateReq.Type
+    org.Address = updateReq.Address
+    org.Country = updateReq.Country
+
+	return org.Update(db)
+}
+
 func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 	var org models.Organisation
 

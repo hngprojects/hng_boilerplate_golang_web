@@ -116,6 +116,63 @@ func (base *Controller) GetOrganisationById(c *gin.Context) {
 
 }
 
+func (base *Controller) UpdateOrganisation(c *gin.Context) {
+	orgId := c.Param("org_id")
+	var updateReq models.CreateOrgRequestModel
+
+	if _, err := uuid.Parse(orgId); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid organisation id format", "failed to update organisation", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", "failed to update organisation", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
+	if err := c.ShouldBind(&updateReq); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	if err := base.Validator.Struct(&updateReq); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
+	}
+
+	updatedOrg, err := service.UpdateOrganisation(orgId, userId, updateReq, base.Db.Postgresql)
+
+	if err != nil {
+		switch err.Error() {
+		case "organisation not found":
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to update organisation", nil)
+			c.JSON(http.StatusNotFound, rd)
+		case "user not authorised to update this organisation":
+			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to update organisation", nil)
+			c.JSON(http.StatusForbidden, rd)
+		case "organisation already exists with the given email":
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update organisation", nil)
+			c.JSON(http.StatusForbidden, rd)
+		default:
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to update organisation", err.Error(), nil)
+			c.JSON(http.StatusInternalServerError, rd)
+		}
+		return
+	}
+
+	base.Logger.Info("organisation updated successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "organisation updated successfully", updatedOrg)
+	c.JSON(http.StatusOK, rd)
+}
+
 func (base *Controller) DeleteOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 

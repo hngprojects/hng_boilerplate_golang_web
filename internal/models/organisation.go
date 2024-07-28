@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -56,4 +57,18 @@ func (c *Organisation) GetActiveOrganisationById(db *gorm.DB, orgID string) (Org
 	var org Organisation
 	err, _ := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID)
 	return org, err
+}
+
+func (c *Organisation) Update(db *gorm.DB) (*Organisation, error) {
+	result, err := postgresql.SaveAllFields(db, c)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure the updated organization is correctly populated
+	if result.RowsAffected == 0 {
+		return nil, errors.New("failed to update organisation")
+	}
+
+	return c, nil
 }
