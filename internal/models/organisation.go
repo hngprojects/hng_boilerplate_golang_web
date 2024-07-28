@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -37,20 +38,39 @@ type CreateOrgRequestModel struct {
 }
 
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
-
 	err := postgresql.CreateOneRecord(db, &c)
-
 	if err != nil {
 		return err
 	}
-
 	return nil
+}
+
+func (c *Organisation) Delete(db *gorm.DB) error {
+	err := postgresql.DeleteRecordFromDb(db, &c)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Organisation) Update(db *gorm.DB) (*Organisation, error) {
+	result, err := postgresql.SaveAllFields(db, c)
+	if err != nil {
+		return nil, err
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, errors.New("failed to update organisation")
+	}
+
+	return c, nil
 }
 
 func (o *Organisation) GetOrgByID(db *gorm.DB, orgID string) (Organisation, error) {
 	var org Organisation
 
-	if err := db.Where("id = ?", orgID).First(&org).Error; err != nil {
+	err, nerr := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID)
+	if nerr != nil {
 		return org, err
 	}
 	return org, nil

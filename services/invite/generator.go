@@ -10,7 +10,6 @@ import (
 )
 
 func InvitationLinkGenerator(c *gin.Context, base *storage.Database, inviteReq models.InvitationCreateReq, userId string) (string, error) {
-	//generate token
 	token, err := GenerateInvitationToken()
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to generate token", err, nil)
@@ -18,7 +17,6 @@ func InvitationLinkGenerator(c *gin.Context, base *storage.Database, inviteReq m
 		return "", err
 	}
 
-	//save invitation
 	err = SaveInvitation(base.Postgresql, userId, token, inviteReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to save invitation", err, nil)
@@ -26,7 +24,6 @@ func InvitationLinkGenerator(c *gin.Context, base *storage.Database, inviteReq m
 		return "", err
 	}
 
-	//generate invitation link
 	invitationLink := GenerateInvitationLink("http://localhost:8019", token)
 
 	return invitationLink, nil

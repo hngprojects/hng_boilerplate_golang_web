@@ -20,7 +20,9 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
 		organisationUrl.POST("/organisations", organisation.CreateOrganisation)
-
+		organisationUrl.GET("/organisations/:org_id", organisation.GetOrganisation)
+		organisationUrl.DELETE("/organisations/:org_id", organisation.DeleteOrganisation)
+		organisationUrl.PUT("/organisations/:org_id", organisation.UpdateOrganisation)
 	}
 	return r
 }
