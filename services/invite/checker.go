@@ -93,6 +93,7 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 		return http.StatusBadRequest, "No emails provided", nil
 	}
 
+
 	// Loop through emails and create invitation
 	for _, email := range inviteReq.Emails {
 		if email == "" {
@@ -105,6 +106,7 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 		}
 
 		if _, valid := utility.EmailValid(email); !valid {
+			fmt.Println("Invalid email address: ", email)
 			inviteErrors = append(
 				inviteErrors,
 				map[string]interface{}{
@@ -165,6 +167,7 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 		})
 	}
 
+	
 	if len(inviteErrors) > 0 {
 		rd := utility.BuildSuccessResponse(
 			http.StatusOK,
@@ -172,14 +175,15 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 			invitations,
 		)
 		c.JSON(http.StatusOK, rd)
-
+		
 		return http.StatusBadRequest, fmt.Sprintf("%d invitations failed", len(inviteErrors)), inviteErrors
 	}
-
+	
 	return http.StatusCreated, "Invitation(s) sent successfully", invitations
 }
 
 // write a dummy sending email functions
 func SendEmail(email string, orgName string, expiresAt string) error {
+	fmt.Println("Sending email to: ", email)
 	return nil
 }

@@ -38,13 +38,14 @@ func (base *Controller) PostInvite(c *gin.Context) {
 	}
 
 	claims, exists := c.Get("userClaims")
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	userClaims := claims.(jwt.MapClaims)
-	userId := userClaims["user_id"].(string)
 
 	org, statusCode, msg, err := invite.CheckerPostInvite(base.Db, inviteReq, userId)
 	if err != nil {
@@ -53,9 +54,9 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		return
 	}
 
-	statusCode, msg, invitations := invite.IteratorPostInvite(c,inviteReq, base.Db, base.Logger, org)
+	statusCode, msg, invitations := invite.IteratorPostInvite(c, inviteReq, base.Db, base.Logger, org)
 	if statusCode != http.StatusCreated {
-		rd := utility.BuildErrorResponse(statusCode, "error",msg,nil, invitations)
+		rd := utility.BuildErrorResponse(statusCode, "error", msg, nil, invitations)
 		c.JSON(statusCode, rd)
 		return
 	}

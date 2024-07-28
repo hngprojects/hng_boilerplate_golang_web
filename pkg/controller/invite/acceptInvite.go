@@ -1,12 +1,13 @@
 package invite
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"net/http"
 )
 
 func (base *Controller) PostAcceptInvite(c *gin.Context) {
@@ -31,7 +32,8 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		return
 	}
 	invitationToken := invite.ExtractTokenFromInvitationLink(inviteReq.InvitationLink)
-	invitation, msg,  err := invite.AcceptInvitationLink(userId,invitationToken, base.Db.Postgresql)
+
+	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
 	if err != nil {
 		base.Logger.Error("Failed to accept invitation link", err)
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", msg, err, nil)
@@ -55,7 +57,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		return
 	}
 
-
 	rd := utility.BuildSuccessResponse(http.StatusOK, "Invitation accepted successfully", nil)
 	c.JSON(http.StatusOK, rd)
 }
@@ -66,15 +67,14 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 	claims, exists := c.Get("userClaims")
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
-	
 
-	invitation,msg, err := invite.AcceptInvitationLink(userId,invitationToken, base.Db.Postgresql)
+	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(
-			http.StatusBadRequest, 
-			"error", 
-			msg, 
-			err, 
+			http.StatusBadRequest,
+			"error",
+			msg,
+			err,
 			nil,
 		)
 		c.JSON(http.StatusBadRequest, rd)
@@ -87,7 +87,7 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	
+
 	err = invite.AddUserToOrganisation(base.Db.Postgresql, invitation.OrganisationID, userId)
 	if err != nil {
 		base.Logger.Error("Failed to add user to organisation", err)
