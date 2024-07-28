@@ -3,20 +3,16 @@ package invite
 import (
 	"errors"
 	"fmt"
-	"errors"
-	"fmt"
 	"net/http"
-	"time"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 
-
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/organisation"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -162,7 +158,6 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 			)
 			continue
 		}
-		
 
 		invitations = append(invitations, map[string]interface{}{
 			"email":        email,
@@ -185,12 +180,12 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 	return http.StatusCreated, "Invitation(s) sent successfully", invitations
 }
 
-//write a dummy sending email function
+// write a dummy sending email function
 func SendEmail(email string, orgName string, expiresAt string) error {
 	return nil
 }
 
-func CheckerPostInvite(c *gin.Context,base *storage.Database,inviteReq models.InvitationRequest) (models.Organisation, error) {
+func CheckerPostInvite(c *gin.Context, base *storage.Database, inviteReq models.InvitationRequest) (models.Organisation, error) {
 	var org models.Organisation
 
 	claims, exists := c.Get("userClaims")
@@ -244,7 +239,7 @@ func CheckerPostInvite(c *gin.Context,base *storage.Database,inviteReq models.In
 	return org, nil
 }
 
-func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base *storage.Database,logger *utility.Logger, org models.Organisation) {
+func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base *storage.Database, logger *utility.Logger, org models.Organisation) {
 	invitations := []map[string]interface{}{}
 
 	for _, email := range inviteReq.Emails {
