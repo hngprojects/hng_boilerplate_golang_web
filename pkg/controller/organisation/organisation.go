@@ -60,6 +60,7 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 	userId := userClaims["user_id"].(string)
 
 	respData, err := service.CreateOrganisation(reqData, base.Db.Postgresql, userId)
+	
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)

@@ -101,3 +101,7 @@ func (u *User) Update(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &u)
 	return err
 }
+
+func (u *User) CheckUserIsAdmin(db *gorm.DB) bool {
+	return u.Role == int(RoleIdentity.SuperAdmin)
+}

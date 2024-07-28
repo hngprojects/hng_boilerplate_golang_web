@@ -11,6 +11,7 @@ type Configuration struct {
 	TestDatabase Database
 	App          App
 	IPStack      IPStack
+	Mail         MAIL
 }
 
 type BaseConfig struct {
@@ -49,6 +50,9 @@ type BaseConfig struct {
 
 	IPSTACK_KEY      string `mapstructure:"IPSTACK_KEY"`
 	IPSTACK_BASE_URL string `mapstructure:"IPSTACK_BASE_URL"`
+
+	MAIL_DOMAIN string `mapstructure:"DOMAIN"`
+	MAIL_APIKEY string `mapstructure:"APIKEY"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -102,6 +106,11 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 		IPStack: IPStack{
 			Key:     config.IPSTACK_KEY,
 			BaseUrl: config.IPSTACK_BASE_URL,
+		},
+
+		Mail: MAIL{
+			Domain: config.MAIL_DOMAIN,
+			APIKey: config.MAIL_APIKEY,
 		},
 	}
 }
