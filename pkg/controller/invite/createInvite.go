@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/invite"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -42,11 +43,16 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	err = invite.CheckerValidator(c, base.Db, inviteReq, userId)
+	//call checker validator to check if user is an admin of the organisation and if organisation exists
+	_, statusCode, msg, err := invite.CheckerValidator(base.Db, inviteReq, userId, base.Logger)
 	if err != nil {
+		rd := utility.BuildErrorResponse(statusCode, "error", msg, err, nil)
+		c.JSON(statusCode, rd)
 		return
 	}
 
+
+	//generate token, save to db and return invitation link
 	inviteLink, err := invite.InvitationLinkGenerator(c, base.Db, inviteReq, userId)
 	if err != nil {
 		return
