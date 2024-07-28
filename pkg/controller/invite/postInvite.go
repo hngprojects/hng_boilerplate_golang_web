@@ -62,3 +62,4 @@ func (base *Controller) PostInvite(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(statusCode, msg, invitations)
 	c.JSON(statusCode, rd)
 }
+
