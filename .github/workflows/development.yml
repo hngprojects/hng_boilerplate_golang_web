@@ -48,6 +48,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Create app config file
         run: cp app-sample.env app.env
+      - name: Build the application
+        run: go build -o development_app
+      - name: Run the application
+        run: nohup ./development_app > /dev/null 2>&1 &
+      - name: Wait for application to start
+        run: sleep 30s
+      - name: Test for reachability
+        run: curl http://localhost:8019
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
