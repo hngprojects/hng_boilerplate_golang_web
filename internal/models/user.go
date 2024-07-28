@@ -36,6 +36,11 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type ChangePasswordRequestModel struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=7"`
+}
+
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
@@ -54,6 +59,16 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (u *User) GetUserByEmail(db *gorm.DB, email string) (User, error) {
+	var user User
+
+	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", email).First(&user).Error; err != nil {
 		return user, err
 	}
 
@@ -87,4 +102,9 @@ func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
 func (u *User) Update(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &u)
 	return err
+}
+
+
+func (u *User) CheckUserIsAdmin(db *gorm.DB) bool {
+	return u.Role == int(RoleIdentity.SuperAdmin)
 }

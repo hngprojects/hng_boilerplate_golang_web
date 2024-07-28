@@ -10,6 +10,7 @@ func AuthMigrationModels() []interface{} {
 		models.Profile{},
 		models.Product{},
 		models.User{},
+		models.Invitation{},
 		models.WaitlistUser{},
 		models.NewsLetter{},
 		models.JobPost{},

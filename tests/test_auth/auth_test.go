@@ -1,4 +1,4 @@
-package test_waitlist
+package test_auth
 
 import (
 	"bytes"
@@ -134,6 +134,7 @@ func TestUserSignup(t *testing.T) {
 	}
 
 }
+
 // test admin signup
 func TestAdminSignup(t *testing.T) {
 	logger := tst.Setup()
@@ -313,7 +314,7 @@ func TestLogin(t *testing.T) {
 	r := gin.Default()
 	r.POST(loginPath, auth.LoginUser)
 
-	tst.SignupUser(t, r, auth, userSignUpData)
+	tst.SignupUser(t, r, auth, userSignUpData, false)
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
@@ -352,6 +353,7 @@ func TestLogin(t *testing.T) {
 	}
 
 }
+
 // test user logout
 func TestLogout(t *testing.T) {
 	logger := tst.Setup()
@@ -379,7 +381,7 @@ func TestLogout(t *testing.T) {
 
 	authen := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	tst.SignupUser(t, r, authen, userSignUpData)
+	tst.SignupUser(t, r, authen, userSignUpData, false)
 
 	token := tst.GetLoginToken(t, r, authen, loginData)
 
