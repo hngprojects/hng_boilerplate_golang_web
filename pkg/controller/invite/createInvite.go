@@ -47,10 +47,13 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 	}
 
 	//call checker validator to check if user is an admin of the organisation and if organisation exists
-	err = invite.CheckerValidator(c, base.Db, inviteReq, userId)
+	_, statusCode, msg, err := invite.CheckerValidator(base.Db, inviteReq, userId, base.Logger)
 	if err != nil {
+		rd := utility.BuildErrorResponse(statusCode, "error", msg, err, nil)
+		c.JSON(statusCode, rd)
 		return
 	}
+
 
 	//generate token, save to db and return invitation link
 	inviteLink, err := invite.InvitationLinkGenerator(c, base.Db, inviteReq, userId)
