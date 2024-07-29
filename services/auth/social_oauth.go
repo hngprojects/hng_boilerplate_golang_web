@@ -25,9 +25,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	tokenString := req.Token
 
 	// Parse the token
-
 	_, err := jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
-		// Provide the key for HMAC verification (replace with your actual key)
 		return []byte(""), nil
 	})
 
@@ -38,21 +36,24 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 		user         models.User
 	)
 
+	if err != nil && errors.Is(err, errors.New("key is of invalid type")) {
+		fmt.Println(err)
+		return responseData, http.StatusNotFound, fmt.Errorf("token decode failed")
+	}
+
 	reqUser = models.CreateUserRequestModel{
 		Email: email,
 	}
 
 	// check if user already exists
 	_, err = ValidateCreateUserRequest(reqUser, db)
-	if err != nil && errors.Is(err, errors.New("user already exists with the given email")) {
-
+	if err != nil {
 		exists := postgresql.CheckExists(db, &user, "email = ?", email)
 		if !exists {
 			return responseData, http.StatusNotFound, fmt.Errorf("user not found")
 		}
 
 	} else {
-
 		user = models.User{
 			ID:    utility.GenerateUUID(),
 			Name:  username,
