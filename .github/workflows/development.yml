@@ -9,8 +9,21 @@ on:
       - dev
 
 jobs:
-  build_and_test:
+  build:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set Golang
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
+      - name: Build the application
+        run: go build -o development_app
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
     env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
@@ -33,10 +46,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Set Golang
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.22.1"
       - name: Create app config file
         run: cp app-sample.env app.env
       - name: Build the application
@@ -52,8 +61,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_test
-    if: github.event_name == 'push'
+    needs: test
     env:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -87,4 +95,4 @@ jobs:
               git clone -b dev https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }} MIGRATE=true
+            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
