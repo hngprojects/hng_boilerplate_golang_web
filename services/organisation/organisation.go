@@ -3,6 +3,7 @@ package organisation
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 
@@ -217,22 +218,22 @@ func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db
 
 }
 
-func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Context) ([]UserResponse, error) {
+func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Context) ([]UserResponse, postgresql.PaginationResponse, error) {
 	var users []UserResponse
 	_, err := CheckOrgExists(orgId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("organisation not found")
+			return nil, postgresql.PaginationResponse{}, errors.New("organisation not found")
 		}
-		return nil, err
+		return nil, postgresql.PaginationResponse{}, err
 	}
 
 	isMember, err := CheckUserIsMemberOfOrg(userId, orgId, db)
 	if err != nil {
-		return nil, err
+		return nil, postgresql.PaginationResponse{}, err
 	}
 	if !isMember {
-		return nil, errors.New("user does not have access to the organisation")
+		return nil, postgresql.PaginationResponse{}, errors.New("user does not have access to the organisation")
 	}
 
 	pagination := postgresql.GetPagination(c)
@@ -247,12 +248,26 @@ func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Con
 		Offset(offset).
 		Limit(pagination.Limit).
 		Find(&users).Error; err != nil {
-		return nil, err
+		return nil, postgresql.PaginationResponse{}, err
 	}
 
-	fmt.Println("retrieved users", users)
+	var totalUsers int64
+	if err := db.Table("users").
+		Joins("JOIN user_organisations ON user_organisations.user_id = users.id").
+		Joins("JOIN profiles ON profiles.userid = users.id").
+		Where("user_organisations.organisation_id = ?", orgId).
+		Count(&totalUsers).Error; err != nil {
+		return nil, postgresql.PaginationResponse{}, err
+	}
 
-	return users, nil
+	totalPages := int(math.Ceil(float64(totalUsers) / float64(pagination.Limit)))
+	paginationResponse := postgresql.PaginationResponse{
+		CurrentPage:     pagination.Page,
+		PageCount:       pagination.Limit,
+		TotalPagesCount: totalPages,
+	}
+
+	return users, paginationResponse, nil
 }
 
 func CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {

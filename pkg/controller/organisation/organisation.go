@@ -275,7 +275,7 @@ func (base *Controller) GetUsersInOrganisation(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	users, err := service.GetUsersInOrganisation(orgId, userId, base.Db.Postgresql, c)
+	users, paginationRes, err := service.GetUsersInOrganisation(orgId, userId, base.Db.Postgresql, c)
 
 	if err != nil {
 		switch err.Error() {
@@ -293,7 +293,7 @@ func (base *Controller) GetUsersInOrganisation(c *gin.Context) {
 	}
 
 	base.Logger.Info("users retrieved successfully")
-	response := utility.BuildSuccessResponse(http.StatusOK, "users retrieved successfully", users)
+	response := utility.BuildSuccessResponse(http.StatusOK, "users retrieved successfully", users, paginationRes)
 
 	c.JSON(http.StatusOK, response)
 }
