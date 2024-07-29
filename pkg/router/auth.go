@@ -20,8 +20,7 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 
 	authUrl := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
-		authUrl.POST("/users/signup", auth.CreateUser)
-		authUrl.POST("/admin/signup", auth.CreateAdmin)
+		authUrl.POST("/register", auth.CreateUser)
 		authUrl.POST("/login", auth.LoginUser)
 		authUrl.POST("/password-reset", auth.ResetPassword)
 		authUrl.POST("/password-reset/verify", auth.VerifyResetToken)
@@ -36,10 +35,9 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		authUrlSec.PUT("/change-password", auth.ChangePassword)
 	}
 
-	authSocial := r.Group(fmt.Sprintf("%v/auth/social", ApiVersion))
+	authSocial := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
-		authSocial.GET("/:provider", auth.ProviderLogin)
-		authSocial.GET("/:provider/callback", auth.CompleteUserAuth)
+		authSocial.POST("/google", auth.GoogleLogin)
 		authSocial.GET("/logout/:provider", auth.ProviderLogout)
 	}
 	return r
