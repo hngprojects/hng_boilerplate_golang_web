@@ -35,7 +35,7 @@ type VerifyMagicLinkRequest struct {
 }
 
 type ChangePasswordRequestModel struct {
-	OldPassword string `json:"old_password" validate:"required"`
+	OldPassword string `json:"old_password" validate:""`
 	NewPassword string `json:"new_password" validate:"required,min=7"`
 }
 

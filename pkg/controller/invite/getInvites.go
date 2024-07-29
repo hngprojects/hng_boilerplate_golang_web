@@ -21,10 +21,10 @@ func (base *Controller) GetInvites(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	user, err := user.GetUser(userId, base.Db.Postgresql)
+	user, code, err := user.GetUser(userId, base.Db.Postgresql)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
 		return
 	}
 

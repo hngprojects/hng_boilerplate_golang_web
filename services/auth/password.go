@@ -35,7 +35,7 @@ func UpdateUserPassword(c *gin.Context, req models.ChangePasswordRequestModel, d
 		return nil, http.StatusNotFound, fmt.Errorf("unable to fetch user " + err.Error())
 	}
 
-	if !utility.CompareHash(req.OldPassword, userDataExist.Password) {
+	if !utility.CompareHash(req.OldPassword, userDataExist.Password) && userDataExist.Password != "" {
 		return nil, http.StatusBadRequest, fmt.Errorf("old password is incorrect")
 	}
 
