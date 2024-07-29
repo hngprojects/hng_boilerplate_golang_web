@@ -43,6 +43,7 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		"description": product.Description,
 		"price":       product.Price,
 		"owner_id":    product.OwnerID,
+		"product_id":  product.ID,
 	}
 	return responseData, http.StatusCreated, nil
 }
