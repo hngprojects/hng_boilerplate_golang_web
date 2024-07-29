@@ -178,3 +178,157 @@ func TestJobPostCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestFetchAllJobPost(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := "/api/v1/jobs"
+
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	r := gin.Default()
+	jobUrl := r.Group("/api/v1")
+	{
+		jobUrl.GET("/jobs", jobPostController.FetchAllJobPost)
+	}
+
+	tests := []struct {
+		name         string
+		expectedCode int
+		message      string
+	}{
+		{
+			name:         "Fetch all job posts",
+			expectedCode: http.StatusOK,
+			message:      "Job listings retrieved successfully.",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, requestURI, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.expectedCode)
+
+			data := tst.ParseResponse(rr)
+			message := data["message"].(string)
+			tst.AssertResponseMessage(t, message, test.message)
+		})
+	}
+}
+
+func TestFetchJobPostById(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := "/api/v1/jobs"
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	authController := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	tst.SignupUser(t, r, authController, userSignUpData, false)
+
+	token := tst.GetLoginToken(t, r, authController, loginData)
+
+	jobPostData := models.CreateJobPostModel{
+		Title:               "Software Engineer Intern",
+		Salary:              "5000-7000 USD",
+		JobType:             "internship",
+		Location:            "San Francisco, CA",
+		Deadline:            time.Now().AddDate(0, 1, 0),
+		WorkMode:            "remote",
+		Experience:          "Entry level (0-2 years)",
+		HowToApply:          "Submit your resume and cover letter to hr@company.com",
+		JobBenefits:         "Flexible hours, Remote work, Health insurance",
+		CompanyName:         "Tech Innovators",
+		Description:         "We are looking for a passionate Software Engineer Intern to join our team. You will be working on exciting projects and gain hands-on experience.",
+		KeyResponsibilities: "Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews",
+		Qualifications:      "Ability to work solo, Bachelor degree",
+	}
+
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
+
+	var b bytes.Buffer
+	json.NewEncoder(&b).Encode(jobPostData)
+
+	req, err := http.NewRequest(http.MethodPost, requestURI, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	tst.AssertStatusCode(t, rr.Code, http.StatusCreated)
+
+	data := tst.ParseResponse(rr)
+	jobPostID := data["data"].(map[string]interface{})["id"].(string)
+
+	tests := []struct {
+		name         string
+		expectedCode int
+		message      string
+		jobPostID    string
+	}{
+		{
+			name:         "Fetch job post by ID",
+			expectedCode: http.StatusOK,
+			message:      "Job post retrieved successfully",
+			jobPostID:    jobPostID,
+		},
+		{
+			name:         "Invalid uuid format",
+			expectedCode: http.StatusBadRequest,
+			message:      "Invalid ID format",
+			jobPostID:    "invalidIDFormat",
+		},
+	}
+
+	r.GET("/api/v1/jobs/:job_id", jobPostController.FetchJobPostByID)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/jobs/%s", test.jobPostID), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.expectedCode)
+
+			data := tst.ParseResponse(rr)
+			message := data["message"].(string)
+			tst.AssertResponseMessage(t, message, test.message)
+		})
+	}
+}
