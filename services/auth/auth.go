@@ -276,28 +276,3 @@ func LogoutUser(access_uuid, owner_id string, db *gorm.DB) (gin.H, int, error) {
 
 	return responseData, http.StatusOK, nil
 }
-
-func ResetPassword(c *gin.Context) {
-	// to be implemented
-
-}
-
-func VerifyResetToken(c *gin.Context) {
-	// to be implemented
-
-}
-
-func ChangePassword(c *gin.Context) {
-	// to be implemented
-
-}
-
-func RequestMagicLink(c *gin.Context) {
-	// to be implemented
-
-}
-
-func VerifyMagicLink(c *gin.Context) {
-	// to be implemented
-
-}

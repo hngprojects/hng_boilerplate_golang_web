@@ -84,7 +84,7 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 			}
 		}
 
-		if !ok && !authorizedRole && len(inputRole) > 0 {
+		if !authorizedRole && len(inputRole) > 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
 			return
 		}

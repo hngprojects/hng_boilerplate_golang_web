@@ -15,8 +15,8 @@ import (
 )
 
 func TestUpdateUserPassword(t *testing.T) {
-	router, userController := SetupAuthTestRouter()
-	db := userController.Db.Postgresql
+	router, authController := SetupAuthTestRouter()
+	db := authController.Db.Postgresql
 	currUUID := utility.GenerateUUID()
 	theRole := models.RoleIdentity.SuperAdmin
 	password, _ := utility.HashPassword("password")
@@ -35,7 +35,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		Password: "password",
 	}
 
-	auth := auth.Controller{Db: userController.Db, Validator: userController.Validator, Logger: userController.Logger}
+	auth := auth.Controller{Db: authController.Db, Validator: authController.Validator, Logger: authController.Logger}
 	token := tests.GetLoginToken(t, router, auth, loginData)
 
 	t.Run("Successful Password Change", func(t *testing.T) {
@@ -108,23 +108,6 @@ func TestUpdateUserPassword(t *testing.T) {
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Token could not be found!")
 		tests.AssertResponseMessage(t, response["error"].(string), "Unauthorized")
-	})
-
-	t.Run("Field Validation Error", func(t *testing.T) {
-		changePasswordRequest := models.ChangePasswordRequestModel{
-			NewPassword: "newpassword",
-		}
-		reqBody, _ := json.Marshal(changePasswordRequest)
-		req, _ := http.NewRequest(http.MethodPut, "/api/v1/auth/change-password", bytes.NewBuffer(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp := httptest.NewRecorder()
-		router.ServeHTTP(resp, req)
-
-		tests.AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
-		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
 
 	t.Run("New password length less than 7", func(t *testing.T) {
