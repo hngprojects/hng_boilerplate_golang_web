@@ -11,6 +11,8 @@ type Configuration struct {
 	TestDatabase Database
 	App          App
 	IPStack      IPStack
+	Oauth        OauthFields
+	Mail         MAIL
 }
 
 type BaseConfig struct {
@@ -21,9 +23,11 @@ type BaseConfig struct {
 	TRUSTED_PROXIES                  string  `mapstructure:"TRUSTED_PROXIES"`
 	EXEMPT_FROM_THROTTLE             string  `mapstructure:"EXEMPT_FROM_THROTTLE"`
 
-	APP_NAME string `mapstructure:"APP_NAME"`
-	APP_MODE string `mapstructure:"APP_MODE"`
-	APP_URL  string `mapstructure:"APP_URL"`
+	APP_NAME                string `mapstructure:"APP_NAME"`
+	APP_MODE                string `mapstructure:"APP_MODE"`
+	APP_URL                 string `mapstructure:"APP_URL"`
+	MAGIC_LINK_DURATION     int    `mapstructure:"MAGIC_LINK_DURATION"`
+	RESET_PASSWORD_DURATION int    `mapstructure:"RESET_PASSWORD_DURATION"`
 
 	DB_HOST       string `mapstructure:"DB_HOST"`
 	DB_PORT       string `mapstructure:"DB_PORT"`
@@ -47,6 +51,15 @@ type BaseConfig struct {
 
 	IPSTACK_KEY      string `mapstructure:"IPSTACK_KEY"`
 	IPSTACK_BASE_URL string `mapstructure:"IPSTACK_BASE_URL"`
+
+	GOOGLE_CLIENT_ID       string `mapstructure:"GOOGLE_CLIENT_ID"`
+	GOOGLE_CLIENT_SECRET   string `mapstructure:"GOOGLE_CLIENT_SECRET"`
+	FACEBOOK_CLIENT_ID     string `mapstructure:"FACEBOOK_CLIENT_ID"`
+	FACEBOOK_CLIENT_SECRET string `mapstructure:"FACEBOOK_CLIENT_SECRET"`
+	SESSION_SECRET         string `mapstructure:"SESSION_SECRET"`
+
+	MAIL_DOMAIN string `mapstructure:"MAIL_DOMAIN"`
+	MAIL_APIKEY string `mapstructure:"MAIL_APIKEY"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -54,7 +67,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 	exemptFromThrottle := []string{}
 	json.Unmarshal([]byte(config.TRUSTED_PROXIES), &trustedProxies)
 	json.Unmarshal([]byte(config.EXEMPT_FROM_THROTTLE), &exemptFromThrottle)
-	
+
 	if config.SERVER_PORT == "" {
 		config.SERVER_PORT = os.Getenv("PORT")
 	}
@@ -68,9 +81,11 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			ExemptFromThrottle:        exemptFromThrottle,
 		},
 		App: App{
-			Name: config.APP_NAME,
-			Mode: config.APP_MODE,
-			Url:  config.APP_URL,
+			Name:                  config.APP_NAME,
+			Mode:                  config.APP_MODE,
+			Url:                   config.APP_URL,
+			MagicLinkDuration:     config.MAGIC_LINK_DURATION,
+			ResetPasswordDuration: config.RESET_PASSWORD_DURATION,
 		},
 		Database: Database{
 			DB_HOST:       config.DB_HOST,
@@ -98,6 +113,19 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 		IPStack: IPStack{
 			Key:     config.IPSTACK_KEY,
 			BaseUrl: config.IPSTACK_BASE_URL,
+		},
+
+		Oauth: OauthFields{
+			GOOGLE_CLIENT_ID:       config.GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET:   config.GOOGLE_CLIENT_SECRET,
+			FACEBOOK_CLIENT_ID:     config.FACEBOOK_CLIENT_ID,
+			FACEBOOK_CLIENT_SECRET: config.FACEBOOK_CLIENT_SECRET,
+			SESSION_SECRET:         config.SESSION_SECRET,
+		},
+
+		Mail: MAIL{
+			Domain: config.MAIL_DOMAIN,
+			APIKey: config.MAIL_APIKEY,
 		},
 	}
 }

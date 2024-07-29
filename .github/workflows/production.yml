@@ -9,21 +9,8 @@ on:
       - main
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set Golang
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.22.1"
-      - name: Build the application
-        run: go build -o production_app
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
     env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
@@ -46,14 +33,27 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Set Golang
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
       - name: Create app config file
         run: cp app-sample.env app.env
+      - name: Build the application
+        run: go build -o production_app
+      - name: Run the application
+        run: nohup ./production_app > /dev/null 2>&1 &
+      - name: Wait for application to start
+        run: sleep 30s
+      - name: Test for reachability
+        run: curl http://localhost:8019
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
   deploy:
     runs-on: ubuntu-latest
-    needs: test
+    needs: build_and_test
+    if: github.event_name == 'push'
     env:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -63,8 +63,16 @@ jobs:
       DB_NAME: "production_db"
       USERNAME: "production_user"
       APP_NAME: "production"
-      APP_URL: "http://localhost:9000"
-
+      APP_URL: "https://api-golang.boilerplate.hng.tech"
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
+      FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
     steps:
       - name: SSH into server and deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -87,4 +95,19 @@ jobs:
               git clone -b main https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh production https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
+            bash ./scripts/deploy_app.sh production https://github.com/${{ github.repository}} 
+              SERVER_PORT=${{ env.SERVER_PORT }} \
+              DB_NAME=${{ env.DB_NAME }} \
+              USERNAME=${{ env.USERNAME }} \
+              APP_NAME=${{ env.APP_NAME }} \
+              APP_URL=${{ env.APP_URL }} \
+              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ env.SESSION_SECRET }} \
+              MAIL_SERVER=${{ env.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ env.MAIL_PORT }} \
+              MIGRATE=true

@@ -6,10 +6,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
 
-func GetUser(userIDStr string, db *gorm.DB) (models.User, error) {
-	var userResp models.User
+func GetUser(userIDStr string, db *gorm.DB) ([]models.User, error) {
+	var (
+		user models.User
+		userResp []models.User
+	)
 
-	userResp, err := userResp.GetUserByID(db, userIDStr)
+
+	userResp, err := user.GetSeedUsers(db)
 	if err != nil {
 		return userResp, err
 	}

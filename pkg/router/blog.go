@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/blog"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -16,11 +17,11 @@ func Blog(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	blogs := blog.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize())
+	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 
 	{
-		blogsUrl.POST("/blogs", middleware.RequireSuperAdmin(), blogs.Post)
-		blogsUrl.DELETE("/blogs/:id", middleware.RequireSuperAdmin(), blogs.Delete)
+		blogsUrl.POST("/blogs", blogs.Post)
+		blogsUrl.DELETE("/blogs/:id", blogs.Delete)
 	}
 
 	return r
