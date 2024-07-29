@@ -63,7 +63,7 @@ jobs:
       DB_NAME: "development_db"
       USERNAME: "development_user"
       APP_NAME: "development"
-      APP_URL: "http://deployment.api-golang.boilerplate.hng.tech/"
+      APP_URL: "https://deployment.api-golang.boilerplate.hng.tech/"
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
@@ -97,18 +97,18 @@ jobs:
             fi
 
             bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} \
-            SERVER_PORT=${{ env.SERVER_PORT }} \
-            DB_NAME=${{ env.DB_NAME }} \
-            USERNAME=${{ env.USERNAME }} \
-            APP_NAME=${{ env.APP_NAME }} \
-            APP_URL=${{ env.APP_URL }} \
-            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
-            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
-            FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
-            FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
-            SESSION_SECRET=${{ env.SESSION_SECRET }} \
-            MAIL_SERVER=${{ env.MAIL_SERVER }} \
-            MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-            MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-            MAIL_PORT=${{ env.MAIL_PORT }} \
-            MIGRATE=true
+              SERVER_PORT=${{ env.SERVER_PORT }} \
+              DB_NAME=${{ env.DB_NAME }} \
+              USERNAME=${{ env.USERNAME }} \
+              APP_NAME=${{ env.APP_NAME }} \
+              APP_URL=${{ env.APP_URL }} \
+              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ env.SESSION_SECRET }} \
+              MAIL_SERVER=${{ env.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ env.MAIL_PORT }} \
+              MIGRATE=true
