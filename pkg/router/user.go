@@ -18,10 +18,15 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	user := user.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
+	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	adminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 	{
-		userUrl.POST("/users/:user_id", user.GetUser)
-		userUrl.PUT("/users/:user_id/roles/:role_id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), user.AssignRoleToUser)
+		userUrl.GET("/users/:user_id", user.GetAUser)
+		userUrl.DELETE("/users/:user_id", user.DeleteAUser)
+		userUrl.PUT("/users/:user_id", user.UpdateAUser)
+		userUrl.GET("/users/:user_id/organisations", user.GetAUserOrganisation)
 	}
+	adminUrl.PUT("/users/:user_id/roles/:role_id", user.AssignRoleToUser)
+
 	return r
 }

@@ -28,8 +28,12 @@ func SetupAuthTestRouter() (*gin.Engine, *auth.Controller) {
 	return r, authController
 }
 
-func SetupAuthRoutes(r *gin.Engine, userController *auth.Controller) {
+func SetupAuthRoutes(r *gin.Engine, authController *auth.Controller) {
 	r.PUT("/api/v1/auth/change-password",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
-		userController.ChangePassword)
+		middleware.Authorize(authController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		authController.ChangePassword)
+	r.POST("/api/v1/auth/password-reset", authController.ResetPassword)
+	r.POST("/api/v1/auth/password-reset/verify", authController.VerifyResetToken)
+	r.POST("/api/v1/auth/magick-link", authController.RequestMagicLink)
+	r.POST("/api/v1/auth/magick-link/verify", authController.VerifyMagicLink)
 }

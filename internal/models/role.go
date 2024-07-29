@@ -62,3 +62,14 @@ func (r *Role) UpdateUserRole(db *gorm.DB, userId string, roleId int) (*User, er
 
 	return &user, nil
 }
+
+func GetRoleName(roleId RoleId) RoleName {
+	switch roleId {
+	case RoleIdentity.User:
+		return UserRoleName
+	case RoleIdentity.SuperAdmin:
+		return AdminRoleName
+	default:
+		return "unknown"
+	}
+}
