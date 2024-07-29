@@ -43,12 +43,12 @@ func UpdateUserPassword(c *gin.Context, req models.ChangePasswordRequestModel, d
 		return nil, http.StatusConflict, errors.New("new password cannot be the same as the old password")
 	}
 
-	newPassword, err := utility.HashPassword(req.NewPassword)
+	hashedPassword, err := utility.HashPassword(req.NewPassword)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
 
-	userDataExist.Password = newPassword
+	userDataExist.Password = hashedPassword
 	err = userDataExist.Update(db)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
