@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -37,29 +36,10 @@ func (base *Controller) PostInvite(c *gin.Context) {
 		return
 	}
 
-	claims, exists := c.Get("userClaims")
-	userClaims := claims.(jwt.MapClaims)
-	userId := userClaims["user_id"].(string)
-
-	if !exists {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-
-	org, statusCode, msg, err := invite.CheckerPostInvite(base.Db, inviteReq, userId)
+	org, err := invite.CheckerPostInvite(c, base.Db, inviteReq)
 	if err != nil {
-		rd := utility.BuildErrorResponse(statusCode, "error", msg, err, nil)
-		c.JSON(statusCode, rd)
 		return
 	}
 
-	statusCode, msg, invitations := invite.IteratorPostInvite(c, inviteReq, base.Db, base.Logger, org)
-	if statusCode != http.StatusCreated {
-		rd := utility.BuildErrorResponse(statusCode, "error", msg, nil, invitations)
-		c.JSON(statusCode, rd)
-		return
-	}
-	rd := utility.BuildSuccessResponse(statusCode, msg, invitations)
-	c.JSON(statusCode, rd)
+	invite.IteratorPostInvite(c, inviteReq, base.Db, base.Logger , org)
 }
