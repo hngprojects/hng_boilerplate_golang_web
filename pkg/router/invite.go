@@ -20,10 +20,17 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 
 	inviteUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
+		{
+			inviteUrl.POST("/invite/create", invite.CreateInvite)
+			inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), invite.PostInvite)
+			inviteUrl.POST("/invite/accept", invite.PostAcceptInvite)
+		}
 
-		inviteUrl.POST("/invite/create", invite.CreateInvite)
-		inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), invite.PostInvite)
-		inviteUrl.GET("/organisation/invitations", invite.GetInvites)
+
+		{
+			inviteUrl.GET("/organisation/invitations", invite.GetInvites)
+			inviteUrl.GET("/invite/accept/:t", invite.GetAcceptInvite)
+		}
 
 	}
 	return r
