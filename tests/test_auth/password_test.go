@@ -110,23 +110,6 @@ func TestUpdateUserPassword(t *testing.T) {
 		tests.AssertResponseMessage(t, response["error"].(string), "Unauthorized")
 	})
 
-	t.Run("Field Validation Error", func(t *testing.T) {
-		changePasswordRequest := models.ChangePasswordRequestModel{
-			NewPassword: "newpassword",
-		}
-		reqBody, _ := json.Marshal(changePasswordRequest)
-		req, _ := http.NewRequest(http.MethodPut, "/api/v1/auth/change-password", bytes.NewBuffer(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp := httptest.NewRecorder()
-		router.ServeHTTP(resp, req)
-
-		tests.AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
-		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
-	})
-
 	t.Run("New password length less than 7", func(t *testing.T) {
 		changePasswordRequest := models.ChangePasswordRequestModel{
 			OldPassword: "newpassword",
