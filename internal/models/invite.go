@@ -40,8 +40,8 @@ type InvitationCreateReq struct {
 
 func (i *Invitation) CreateInvitation(db *gorm.DB) error {
 	//set the expiration time to 24 hours
-	i.ExpiresAt = time.Now().Add(time.Hour * 24)
-	
+	i.ExpiresAt = time.Now().Add(24 * time.Hour)
+
 	err := postgresql.CreateOneRecord(db, &i)
 	if err != nil {
 		return err
@@ -58,4 +58,8 @@ func (i *Invitation) GetInvitationsByID(db *gorm.DB, user_id string) ([]Invitati
 		return nil, err
 	}
 	return invitations, nil
+}
+
+type InvitationAcceptReq struct {
+	InvitationLink string `json:"invitation_link" validate:"required"`
 }
