@@ -63,7 +63,16 @@ jobs:
       DB_NAME: "staging_db"
       USERNAME: "staging_user"
       APP_NAME: "staging"
-      APP_URL: "http://localhost:8000"
+      APP_URL: "https://staging.api-golang.boilerplate.hng.tech"
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
+      FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
     steps:
       - name: SSH into server and deploy
@@ -87,4 +96,19 @@ jobs:
               git clone -b staging https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }} MIGRATE=true
+            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}}
+              SERVER_PORT=${{ env.SERVER_PORT }} \
+              DB_NAME=${{ env.DB_NAME }} \
+              USERNAME=${{ env.USERNAME }} \
+              APP_NAME=${{ env.APP_NAME }} \
+              APP_URL=${{ env.APP_URL }} \
+              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ env.SESSION_SECRET }} \
+              MAIL_SERVER=${{ env.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ env.MAIL_PORT }} \
+              MIGRATE=true
