@@ -10,15 +10,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func TestWailistSignup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger := Setup()
+	logger := utility.NewLogger()
+	config := config.Setup(logger, "../app")
+	postgresql.ConnectToDatabase(logger, config.TestDatabase)
 	validate := validator.New()
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
