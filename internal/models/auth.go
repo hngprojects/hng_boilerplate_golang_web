@@ -4,8 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
+
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 type PasswordReset struct {
@@ -46,6 +48,24 @@ type ForgotPasswordRequestModel struct {
 type ResetPasswordRequestModel struct {
 	Token       string `json:"token" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=7"`
+}
+
+type GoogleRequestModel struct {
+	Token string `json:"id_token" validate:"required"`
+}
+
+type GoogleClaims struct {
+	Iss           string `json:"iss"`
+	Azp           string `json:"azp"`
+	Aud           string `json:"aud"`
+	Sub           string `json:"sub"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	AtHash        string `json:"at_hash"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	GivenName     string `json:"given_name"`
+	jwt.RegisteredClaims
 }
 
 func (p *PasswordReset) CreatePasswordReset(db *gorm.DB) error {
