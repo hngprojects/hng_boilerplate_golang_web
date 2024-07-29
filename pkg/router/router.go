@@ -41,6 +41,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Organisation(r, ApiVersion, validator, db, logger)
 	Newsletter(r, ApiVersion, validator, db, logger)
 	Auth(r, ApiVersion, validator, db, logger)
+	JobPost(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
