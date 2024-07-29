@@ -24,8 +24,7 @@ func InvitationLinkGenerator(c *gin.Context, base *storage.Database, inviteReq m
 		return "", err
 	}
 
-	//generate invitation link
-	invitationLink := GenerateInvitationLink("http://localhost:8019/api/v1", token)
+	invitationLink := GenerateInvitationLink("http://localhost:8019", token)
 
 	return invitationLink, nil
 }
