@@ -11,6 +11,7 @@ type Configuration struct {
 	TestDatabase Database
 	App          App
 	IPStack      IPStack
+	Oauth        OauthFields
 }
 
 type BaseConfig struct {
@@ -49,6 +50,12 @@ type BaseConfig struct {
 
 	IPSTACK_KEY      string `mapstructure:"IPSTACK_KEY"`
 	IPSTACK_BASE_URL string `mapstructure:"IPSTACK_BASE_URL"`
+
+	GOOGLE_CLIENT_ID       string `mapstructure:"GOOGLE_CLIENT_ID"`
+	GOOGLE_CLIENT_SECRET   string `mapstructure:"GOOGLE_CLIENT_SECRET"`
+	FACEBOOK_CLIENT_ID     string `mapstructure:"FACEBOOK_CLIENT_ID"`
+	FACEBOOK_CLIENT_SECRET string `mapstructure:"FACEBOOK_CLIENT_SECRET"`
+	SESSION_SECRET         string `mapstructure:"SESSION_SECRET"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -102,6 +109,14 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 		IPStack: IPStack{
 			Key:     config.IPSTACK_KEY,
 			BaseUrl: config.IPSTACK_BASE_URL,
+		},
+
+		Oauth: OauthFields{
+			GOOGLE_CLIENT_ID:       config.GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET:   config.GOOGLE_CLIENT_SECRET,
+			FACEBOOK_CLIENT_ID:     config.FACEBOOK_CLIENT_ID,
+			FACEBOOK_CLIENT_SECRET: config.FACEBOOK_CLIENT_SECRET,
+			SESSION_SECRET:         config.SESSION_SECRET,
 		},
 	}
 }

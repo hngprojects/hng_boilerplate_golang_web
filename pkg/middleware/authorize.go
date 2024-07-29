@@ -84,8 +84,8 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 			}
 		}
 
-		if !ok && !authorizedRole && len(inputRole) > 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+		if !authorizedRole && len(inputRole) > 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "role not authorized!", "Unauthorized", nil))
 			return
 		}
 
@@ -93,7 +93,7 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 
 		authoriseStatus, ok := claims["authorised"].(bool) //check if token is authorised for middleware
 		if !ok && !authoriseStatus {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "status not authorized!", "Unauthorized", nil))
 			return
 		}
 
