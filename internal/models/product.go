@@ -28,6 +28,12 @@ type CreateProductRequestModel struct {
 type DeleteProductRequestModel struct {
 	ProductID string `json:"product_id" validate:"required"`
 }
+type UpdateProductRequestModel struct {
+	ProductID   string  `json:"product_id" validate:"required"`
+	Name        string  `json:"name" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Price       float64 `json:"price" validate:"required"`
+}
 
 func (u *Product) CreateProduct(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &u)

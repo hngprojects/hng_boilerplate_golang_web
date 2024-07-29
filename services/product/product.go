@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -91,6 +92,37 @@ func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
 		"categories":  product.Category,
 		"created_at":  product.CreatedAt,
 		"updated_at":  product.UpdatedAt,
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	log.Printf("Received update request: %+v", req)
+	var product models.Product
+	if err := db.First(&product, "id = ?", req.ProductID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, http.StatusNotFound, errors.New("product not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+
+	if product.OwnerID != ownerID {
+		return nil, http.StatusForbidden, errors.New("you are not authorized to update this product")
+	}
+
+	product.Name = req.Name
+	product.Description = req.Description
+	product.Price = req.Price
+
+	if err := db.Save(&product).Error; err != nil {
+		log.Printf("Error saving product: %v", err) // Add this line
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"message": "Product updated successfully",
 	}
 	return responseData, http.StatusOK, nil
 }
