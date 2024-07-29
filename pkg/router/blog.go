@@ -20,8 +20,8 @@ func Blog(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 
 	{
-		blogsUrl.POST("/blogs", blogs.Post)
-		blogsUrl.DELETE("/blogs/:id", blogs.Delete)
+		blogsUrl.POST("/blogs", blogs.CreateBlog)
+		blogsUrl.DELETE("/blogs/:id", blogs.DeleteBlog)
 	}
 
 	return r

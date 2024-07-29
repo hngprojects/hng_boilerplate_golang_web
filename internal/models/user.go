@@ -17,6 +17,7 @@ type User struct {
 	Profile       Profile        `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	Organisations []Organisation `gorm:"many2many:user_organisations;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product      `gorm:"foreignKey:OwnerID" json:"products"`
+	Blogs         []Blog         `gorm:"foreignKey:AuthorID" json:"blogs"`
 	CreatedAt     time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
 	Role          int            `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"role"`

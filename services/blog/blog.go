@@ -3,24 +3,22 @@ package service
 import (
 	"errors"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
-func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (*models.Blog, error) {
-	var existingBlog models.Blog
+func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (gin.H, error) {
+	var user models.User
 	blog := models.Blog{
 		ID:       utility.GenerateUUID(),
 		Title:    req.Title,
 		Content:  req.Content,
 		AuthorID: userId,
-		Tags:     req.Tags,
-		Images:   req.ImageURLs,
-	}
-
-	if err := db.Where("title = ?", &blog.Title).First(&existingBlog).Error; err == nil {
-		return nil, errors.New("blog with this title already exists")
+		Tags:     pq.StringArray(req.Tags),
+		Images:   pq.StringArray(req.ImageURLs),
 	}
 
 	err := blog.Create(db)
@@ -29,19 +27,45 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (*mode
 		return nil, err
 	}
 
-	return &blog, nil
+	user, err = user.GetUserByID(db, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	responseData := gin.H{
+		"blog_id":    blog.ID,
+		"title":      blog.Title,
+		"content":    blog.Content,
+		"image_urls": blog.Images,
+		"tags":       blog.Tags,
+		"author":     user.Name,
+		"created_at": blog.CreatedAt,
+	}
+
+	return responseData, nil
 
 }
 
-func DeleteBlog(blogID string, db *gorm.DB) error {
-	var blog models.Blog
-	if err := db.First(&blog, "id = ?", blogID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+func DeleteBlog(blogId string, db *gorm.DB) error {
+	blog, err := CheckBlogExists(blogId, db)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("blog not found")
 		}
 		return err
 	}
 
 	return blog.Delete(db)
+}
 
+func CheckBlogExists(blogId string, db *gorm.DB) (models.Blog, error) {
+	var blog models.Blog
+
+	blog, err := blog.GetBlogById(db, blogId)
+	if err != nil {
+		return blog, err
+	}
+
+	return blog, nil
 }
