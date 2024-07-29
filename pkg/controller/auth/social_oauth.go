@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -12,23 +11,28 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func (base *Controller) CompleteUserAuth(c *gin.Context) {
+func (base *Controller) GoogleLogin(c *gin.Context) {
 
-	userResp, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	var (
+		req = models.GoogleRequestModel{}
+	)
+
+	err := c.ShouldBind(&req)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusServiceUnavailable, "error", err.Error(), err, nil)
-		c.JSON(http.StatusServiceUnavailable, rd)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	userReq := models.CreateUserRequestModel{
-		UserName:  userResp.Name,
-		Email:     userResp.Email,
-		FirstName: userResp.FirstName,
-		LastName:  userResp.LastName,
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed",
+			utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
 	}
 
-	respData, code, err := auth.CreateProviderUser(userReq, base.Db.Postgresql)
+	respData, code, err := auth.CreateGoogleUser(req, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, respData)
 		c.JSON(code, rd)
@@ -39,37 +43,6 @@ func (base *Controller) CompleteUserAuth(c *gin.Context) {
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user sign in successfully", respData)
 	c.JSON(http.StatusOK, rd)
-
-}
-
-func (base *Controller) ProviderLogin(c *gin.Context) {
-
-	var userResp goth.User
-
-	userResp, err := gothic.CompleteUserAuth(c.Writer, c.Request)
-	if err == nil {
-
-		userReq := models.CreateUserRequestModel{
-			UserName:  userResp.Name,
-			Email:     userResp.Email,
-			FirstName: userResp.FirstName,
-			LastName:  userResp.LastName,
-		}
-
-		respData, code, err := auth.CreateProviderUser(userReq, base.Db.Postgresql)
-		if err != nil {
-			rd := utility.BuildErrorResponse(code, "error", err.Error(), err, respData)
-			c.JSON(code, rd)
-			return
-		}
-
-		base.Logger.Info("user sign in successfully")
-
-		rd := utility.BuildSuccessResponse(http.StatusOK, "user sign in successfully", respData)
-		c.JSON(http.StatusOK, rd)
-	} else {
-		gothic.BeginAuthHandler(c.Writer, c.Request)
-	}
 
 }
 

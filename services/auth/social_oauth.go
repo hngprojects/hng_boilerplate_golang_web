@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -16,21 +17,33 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func CreateProviderUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, error) {
+func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, error) {
+
+	var userClaims models.GoogleClaims
+	var reqUser models.CreateUserRequestModel
+
+	tokenString := req.Token
+
+	// Parse the token
+
+	_, err := jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
+		// Provide the key for HMAC verification (replace with your actual key)
+		return []byte(""), nil
+	})
 
 	var (
-		email        = strings.ToLower(req.Email)
-		firstName    = strings.Title(strings.ToLower(req.FirstName))
-		lastName     = strings.Title(strings.ToLower(req.LastName))
-		username     = strings.ToLower(req.UserName)
-		phoneNumber  = req.PhoneNumber
-		password     = req.Password
+		email        = strings.ToLower(userClaims.Email)
+		username     = strings.ToLower(userClaims.Name)
 		responseData gin.H
 		user         models.User
 	)
 
+	reqUser = models.CreateUserRequestModel{
+		Email: email,
+	}
+
 	// check if user already exists
-	req, err := ValidateCreateUserRequest(req, db)
+	_, err = ValidateCreateUserRequest(reqUser, db)
 	if err != nil && errors.Is(err, errors.New("user already exists with the given email")) {
 
 		exists := postgresql.CheckExists(db, &user, "email = ?", email)
@@ -41,16 +54,13 @@ func CreateProviderUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, 
 	} else {
 
 		user = models.User{
-			ID:       utility.GenerateUUID(),
-			Name:     username,
-			Email:    email,
-			Password: password,
-			Role:     int(models.RoleIdentity.User),
+			ID:    utility.GenerateUUID(),
+			Name:  username,
+			Email: email,
+			Role:  int(models.RoleIdentity.User),
 			Profile: models.Profile{
 				ID:        utility.GenerateUUID(),
-				FirstName: firstName,
-				LastName:  lastName,
-				Phone:     phoneNumber,
+				AvatarURL: userClaims.Picture,
 			},
 		}
 		err := user.CreateUser(db)
@@ -78,13 +88,15 @@ func CreateProviderUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, 
 	}
 
 	responseData = gin.H{
-		"email":        user.Email,
-		"username":     user.Name,
-		"first_name":   user.Profile.FirstName,
-		"last_name":    user.Profile.LastName,
-		"phone":        user.Profile.Phone,
-		"role":         models.UserRoleName,
-		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"email": user.Email,
+		"name":  user.Name,
+		"id":    user.ID,
+		"role":  models.UserRoleName,
+		"profile": map[string]string{
+			"first_name": user.Name,
+			"avatar_url": user.Profile.AvatarURL,
+			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+		},
 		"access_token": tokenData.AccessToken,
 	}
 
