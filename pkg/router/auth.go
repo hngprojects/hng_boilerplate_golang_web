@@ -35,5 +35,12 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		authUrlSec.POST("/logout", auth.LogoutUser)
 		authUrlSec.PUT("/change-password", auth.ChangePassword)
 	}
+
+	authSocial := r.Group(fmt.Sprintf("%v/auth/social", ApiVersion))
+	{
+		authSocial.GET("/:provider", auth.ProviderLogin)
+		authSocial.GET("/:provider/callback", auth.CompleteUserAuth)
+		authSocial.GET("/logout/:provider", auth.ProviderLogout)
+	}
 	return r
 }

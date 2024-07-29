@@ -10,6 +10,11 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
+type UserOrganisation struct {
+	UserID         string `gorm:"type:uuid;not null" json:"user_id"`
+	OrganisationID string `gorm:"type:uuid;not null" json:"organisation_id"`
+}
+
 func SetupUsersTestRouter() (*gin.Engine, *user.Controller) {
 	gin.SetMode(gin.TestMode)
 
@@ -32,4 +37,16 @@ func SetupUsersRoutes(r *gin.Engine, userController *user.Controller) {
 	r.PUT("/api/v1/users/:user_id/roles/:role_id",
 		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
 		userController.AssignRoleToUser)
+	r.GET("/api/v1/users/:user_id",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		userController.GetAUser)
+	r.DELETE("/api/v1/users/:user_id",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		userController.DeleteAUser)
+	r.PUT("/api/v1/users/:user_id",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		userController.UpdateAUser)
+	r.GET("/api/v1/users/:user_id/organisations",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		userController.GetAUserOrganisation)
 }

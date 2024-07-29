@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -31,14 +32,16 @@ type CreateUserRequestModel struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
+type UpdateUserRequestModel struct {
+	FirstName   string `json:"first_name" validate:"required"`
+	LastName    string `json:"last_name" validate:"required"`
+	UserName    string `json:"username" validate:"required"`
+	PhoneNumber string `json:"phone_number"`
+}
+
 type LoginRequestModel struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
-}
-
-type ChangePasswordRequestModel struct {
-	OldPassword string `json:"old_password" validate:"required"`
-	NewPassword string `json:"new_password" validate:"required,min=7"`
 }
 
 func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
@@ -65,10 +68,13 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	return user, nil
 }
 
-func (u *User) GetUserByEmail(db *gorm.DB, email string) (User, error) {
+func (u *User) GetUserByEmail(db *gorm.DB, userEmail string) (User, error) {
 	var user User
 
-	if err := db.Preload("Profile").Preload("Products").Preload("Organisations").Where("email = ?", email).First(&user).Error; err != nil {
+	query := db.Where("email = ?", userEmail)
+	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+	if err := query.First(&user).Error; err != nil {
 		return user, err
 	}
 
@@ -104,7 +110,64 @@ func (u *User) Update(db *gorm.DB) error {
 	return err
 }
 
-
 func (u *User) CheckUserIsAdmin(db *gorm.DB) bool {
 	return u.Role == int(RoleIdentity.SuperAdmin)
+}
+
+func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User, error) {
+
+	var (
+		ErrNotFound = errors.New("user not found")
+		user        = User{}
+	)
+
+	var isOwner bool
+	err := db.Model(&Organisation{}).
+		Select("count(*) > 0").
+		Where("owner_id = ? AND id IN (SELECT organisation_id FROM user_organisations WHERE user_id = ?)", requesterID, userID).
+		Find(&isOwner).
+		Error
+	if err != nil {
+		return user, err
+	}
+
+	if isOwner {
+		query := db.Model(&User{}).
+			Joins("INNER JOIN user_organisations uo ON users.id = uo.user_id").
+			Where("uo.organisation_id IN (SELECT organisation_id FROM user_organisations WHERE user_id = ?)", userID)
+		query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+		if err := query.First(&user).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return user, ErrNotFound
+			}
+			return user, err
+		}
+		return user, nil
+	}
+
+	query := db.Model(&User{}).
+		Joins("INNER JOIN user_organisations uo ON users.id = uo.user_id").
+		Where("users.id = ? AND users.id = ?", userID, requesterID)
+	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+
+	if err := query.First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return user, ErrNotFound
+		}
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (u *User) DeleteAUser(db *gorm.DB) error {
+
+	err := postgresql.DeleteRecordFromDb(db, u)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

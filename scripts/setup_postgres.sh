@@ -35,6 +35,9 @@ for i in ${!DATABASES[@]}; do
 
     -- Grant all privileges on the database '$DB_NAME' to the user '$DB_USER'
     GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+
+    -- Grant all privileges on the public schema of '$DB_NAME' to the user '$DB_USER'
+    GRANT ALL ON SCHEMA public to $DB_USER;
 EOF
   echo "Database '$DB_NAME' and user '$DB_USER' created with full access."
 done
