@@ -32,7 +32,7 @@ func SetupOauth(logger *utility.Logger, configOauth config.OauthFields) {
 	)
 
 	maxAge := 86400 * 30 // 30 days
-	isProd := false      // Set to true when serving over HTTPS
+	isProd := true     // Set to true when serving over HTTPS
 
 	store := sessions.NewCookieStore([]byte(configOauth.SESSION_SECRET))
 	store.MaxAge(maxAge)
