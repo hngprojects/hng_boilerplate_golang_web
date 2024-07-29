@@ -37,6 +37,21 @@ type CreateOrgRequestModel struct {
 	Country     string `json:"country" validate:"required"`
 }
 
+type UpdateOrgRequestModel struct {
+	Name        string `json:"name"`
+	Description string `json:"description" `
+	Email       string `json:"email"`
+	State       string `json:"state"`
+	Industry    string `json:"industry"`
+	Type        string `json:"type"`
+	Address     string `json:"address"`
+	Country     string `json:"country"`
+}
+
+type AddUserToOrgRequestModel struct {
+	UserId string `json:"user_id" validate:"required"`
+}
+
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &c)
 	if err != nil {
