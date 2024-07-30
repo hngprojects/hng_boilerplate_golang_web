@@ -53,7 +53,8 @@ func TestAddToTimezone(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		timezone := models.Timezone{
-			Name: fmt.Sprintf("UTC-%s", utility.RandomString(10)),
+			Identifier: fmt.Sprintf("UTC-%s", utility.RandomString(10)),
+			Offset:     fmt.Sprintf("-002-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(timezone)
 
@@ -79,7 +80,8 @@ func TestAddToTimezone(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		timezone := models.Timezone{
-			Name: "",
+			Identifier: "",
+			Offset:     fmt.Sprintf("+005-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(timezone)
 
@@ -106,12 +108,14 @@ func TestAddToTimezone(t *testing.T) {
 		theRandom := utility.RandomString(6)
 
 		timezone := models.Timezone{
-			Name: fmt.Sprintf("UTC-%s", theRandom),
+			Identifier: fmt.Sprintf("UTC-%s", theRandom),
+			Offset:     fmt.Sprintf("+001-%s", utility.RandomString(5)),
 		}
 		authController.Db.Postgresql.Create(&timezone)
 
 		duplicateTimezone := models.Timezone{
-			Name: fmt.Sprintf("UTC-%s", theRandom),
+			Identifier: fmt.Sprintf("UTC-%s", theRandom),
+			Offset:     fmt.Sprintf("+001-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(duplicateTimezone)
 
@@ -129,7 +133,8 @@ func TestAddToTimezone(t *testing.T) {
 		router, _ := setup()
 
 		timezone := models.Timezone{
-			Name: fmt.Sprintf("GMT-%s", utility.RandomString(18)),
+			Identifier: fmt.Sprintf("GMT-%s", utility.RandomString(18)),
+			Offset:     fmt.Sprintf("-001-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(timezone)
 

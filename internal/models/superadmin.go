@@ -10,23 +10,25 @@ import (
 
 type Language struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"language_id"`
-	Name      string         `gorm:"type:varchar(70);unique;not null" json:"name" validate:"required"`
+	Name      string         `gorm:"type:varchar(40);unique;not null" json:"name" validate:"required"`
+	Code      string         `gorm:"type:varchar(10);unique;not null" json:"code" validate:"required"`
 	CreatedAt time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type Timezone struct {
-	ID        string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
-	Name      string         `gorm:"type:varchar(70);unique;not null" json:"name" validate:"required"`
-	CreatedAt time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID         string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
+	Identifier string         `gorm:"type:varchar(40);unique;not null" json:"identifier" validate:"required"`
+	Offset     string         `gorm:"type:varchar(10);unique;not null" json:"offset" validate:"required"`
+	CreatedAt  time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type Region struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"region_id"`
-	Name      string         `gorm:"type:varchar(70);unique;not null" json:"name" validate:"required"`
+	Name      string         `gorm:"type:varchar(40);unique;not null" json:"name" validate:"required"`
 	Code      string         `gorm:"type:varchar(10);unique;not null" json:"code" validate:"required"`
 	CreatedAt time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
