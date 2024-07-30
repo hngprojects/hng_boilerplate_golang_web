@@ -4,7 +4,16 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
+
+type JobPostSummary struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Location    string `json:"location"`
+	Salary      string `json:"salary"`
+}
 
 func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, error) {
 		jobpost := models.JobPost{
@@ -30,5 +39,38 @@ func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, 
 		return models.JobPost{}, err
 	}
 
+	return jobpost, nil
+}
+
+func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgresql.PaginationResponse, error) {
+	jobpost := models.JobPost{}
+	jobPosts, paginationResponse, err := jobpost.FetchAllJobPost(db, c)
+
+	if err != nil {
+		return nil, paginationResponse, err
+	}
+
+	var jobPostSummaries []JobPostSummary
+	for _, job := range jobPosts {
+		summary := JobPostSummary{
+			Title:       job.Title,
+			Description: job.Description,
+			Location:    job.Location,
+			Salary:      job.Salary,
+		}
+		jobPostSummaries = append(jobPostSummaries, summary)
+	}
+
+	return jobPostSummaries, paginationResponse, nil
+}
+
+// To be removed 
+func FetchJobPostByID(db *gorm.DB, id string) (models.JobPost, error) {
+	jobpost := models.JobPost{}
+	jobpost.ID = id
+	err := jobpost.FetchJobPostByID(db)
+	if err != nil {
+		return models.JobPost{}, err
+	}
 	return jobpost, nil
 }

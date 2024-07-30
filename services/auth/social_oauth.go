@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -36,7 +35,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 		user         models.User
 	)
 
-	if err != nil && errors.Is(err, errors.New("key is of invalid type")) {
+	if email == "" || username == "" {
 		fmt.Println(err)
 		return responseData, http.StatusNotFound, fmt.Errorf("token decode failed")
 	}
