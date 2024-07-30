@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/subosito/gotenv"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
@@ -16,13 +15,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
-
-func init() {
-	err := gotenv.Load("app.env")
-	if err != nil {
-		log.Fatal("Error loading app.env file")
-	}
-}
 
 func main() {
 	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
