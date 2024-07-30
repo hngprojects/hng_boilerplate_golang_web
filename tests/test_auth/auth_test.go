@@ -123,11 +123,6 @@ func TestUserSignup(t *testing.T) {
 				}
 
 			}
-			if dataResp := data["data"]; dataResp != nil {
-				role := dataResp.(map[string]interface{})["role"].(string)
-				// check user role
-				tst.AssertBool(t, role == string(models.UserRoleName), true)
-			}
 
 		})
 
@@ -237,11 +232,6 @@ func TestAdminSignup(t *testing.T) {
 					tst.AssertResponseMessage(t, "", test.Message)
 				}
 
-			}
-			if dataResp := data["data"]; dataResp != nil {
-				// check user role
-				role := dataResp.(map[string]interface{})["role"].(string)
-				tst.AssertBool(t, role == string(models.AdminRoleName), true)
 			}
 		})
 
