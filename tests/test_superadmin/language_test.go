@@ -54,6 +54,7 @@ func TestAddToLanguage(t *testing.T) {
 
 		language := models.Language{
 			Name: fmt.Sprintf("English-%s", utility.RandomString(10)),
+			Code: fmt.Sprintf("en-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(language)
 
@@ -80,6 +81,7 @@ func TestAddToLanguage(t *testing.T) {
 
 		language := models.Language{
 			Name: "",
+			Code: fmt.Sprintf("en-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(language)
 
@@ -107,11 +109,13 @@ func TestAddToLanguage(t *testing.T) {
 
 		language := models.Language{
 			Name: fmt.Sprintf("English-%s", theRandom),
+			Code: fmt.Sprintf("NA-%s", utility.RandomString(5)),
 		}
 		authController.Db.Postgresql.Create(&language)
 
 		duplicateLanguage := models.Language{
 			Name: fmt.Sprintf("English-%s", theRandom),
+			Code: fmt.Sprintf("NA-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(duplicateLanguage)
 
@@ -130,6 +134,7 @@ func TestAddToLanguage(t *testing.T) {
 
 		language := models.Language{
 			Name: fmt.Sprintf("Spanish-%s", utility.RandomString(8)),
+			Code: fmt.Sprintf("sp-%s", utility.RandomString(5)),
 		}
 		jsonBody, _ := json.Marshal(language)
 
