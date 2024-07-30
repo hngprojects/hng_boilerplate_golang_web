@@ -118,7 +118,7 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
 	}
 
-	if err := query.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
+	if err := db.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed faq
 			for _, faq := range faqs {
