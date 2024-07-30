@@ -23,6 +23,12 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Name: "Appliances"},
 	}
 
+	faqs := []models.FAQ{
+		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is..."},
+		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are..."},
+		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
+	}
+
 	// Create users
 	user1 := models.User{
 		ID:       Userid1,
@@ -86,6 +92,11 @@ func SeedDatabase(db *gorm.DB) {
 			// Seed categories
 			for _, category := range categories {
 				postgresql.CreateOneRecord(db, &category)
+			}
+
+			// Seed faq
+			for _, faq := range faqs {
+				postgresql.CreateOneRecord(db, &faq)
 			}
 
 			fmt.Println("Users, organisations and categories seeded.")
