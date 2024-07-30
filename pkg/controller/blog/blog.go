@@ -49,7 +49,7 @@ func (base *Controller) CreateBlog(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := service.CreateBlog(blogReq, base.Db.Postgresql, userId)
+	err := service.CreateBlog(blogReq, base.Db.Postgresql, userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -58,7 +58,7 @@ func (base *Controller) CreateBlog(c *gin.Context) {
 	}
 
 	base.Logger.Info("Blog created successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "blog created successfully", respData)
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "blog created successfully", nil)
 
 	c.JSON(http.StatusCreated, rd)
 

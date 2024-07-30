@@ -7,7 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -15,6 +15,20 @@ type Controller struct {
 	DB        *storage.Database
 	Logger    *utility.Logger
 	Validator *validator.Validate
+}
+
+func (base *Controller) GetWaitLists(c *gin.Context) {
+
+	waitlistData, paginationResponse, code, err := service.GetWaitLists(c, base.DB.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Waitlist retrieved successfully", waitlistData, paginationResponse)
+	c.JSON(http.StatusOK, rd)
+
 }
 
 func (base *Controller) Create(c *gin.Context) {
@@ -36,7 +50,7 @@ func (base *Controller) Create(c *gin.Context) {
 		return
 	}
 
-	data, code, err := waitlist.SignupWaitlistUserService(base.DB.Postgresql, req)
+	data, code, err := service.SignupWaitlistUserService(base.DB.Postgresql, req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)

@@ -25,6 +25,16 @@ type CreateProductRequestModel struct {
 	Price       float64 `json:"price" validate:"required"`
 }
 
+type DeleteProductRequestModel struct {
+	ProductID string `json:"product_id" validate:"required"`
+}
+type UpdateProductRequestModel struct {
+	ProductID   string  `json:"product_id" validate:"required"`
+	Name        string  `json:"name" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Price       float64 `json:"price" validate:"required"`
+}
+
 func (u *Product) CreateProduct(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &u)
 	if err != nil {
@@ -41,4 +51,22 @@ func (p *Product) AddProductToCategory(db *gorm.DB, categories []interface{}) er
 		return err
 	}
 	return nil
+}
+
+func (p *Product) DeleteProduct(db *gorm.DB) error {
+	err := postgresql.DeleteRecordFromDb(db, p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Product) GetProduct(db *gorm.DB, id string) (Product, error) {
+	var product Product
+	err := db.Preload("Category").Model(p).First(&product, "id = ?", id).Error
+	if err != nil {
+		return Product{}, err
+	}
+
+	return product, nil
 }

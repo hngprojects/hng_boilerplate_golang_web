@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
 	requestToken := utility.GenerateUUID()
 	magic := models.MagicLink{
 		ID:        utility.GenerateUUID(),
-		Email:     userEmail,
+		Email:     strings.ToLower(userEmail),
 		Token:     requestToken,
 		ExpiresAt: time.Now().Add(time.Duration(config.App.MagicLinkDuration) * time.Minute),
 	}

@@ -20,6 +20,20 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+func (base *Controller) GetAllUsers(c *gin.Context) {
+
+	usersData, paginationResponse, code, err := service.GetAllUsers(c, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Users retrieved successfully", usersData, paginationResponse)
+	c.JSON(http.StatusOK, rd)
+
+}
+
 func (base *Controller) GetAUser(c *gin.Context) {
 
 	var (

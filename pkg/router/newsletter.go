@@ -6,7 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -18,6 +20,8 @@ func Newsletter(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 	newsLetterUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
 		newsLetterUrl.POST("/newsletter", newsLetter.SubscribeNewsLetter)
+		newsLetterUrl.GET("/newsletter", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetNewsLetters)
+		newsLetterUrl.DELETE("/newsletter/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.DeleteNewsLetter)
 	}
 	return r
 }

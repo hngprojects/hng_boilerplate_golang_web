@@ -3,14 +3,14 @@ package service
 import (
 	"errors"
 
-	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
-func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (gin.H, error) {
+
+func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) error {
 	var user models.User
 	blog := models.Blog{
 		ID:       utility.GenerateUUID(),
@@ -24,26 +24,16 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (gin.H
 	err := blog.Create(db)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	user, err = user.GetUserByID(db, userId)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	responseData := gin.H{
-		"blog_id":    blog.ID,
-		"title":      blog.Title,
-		"content":    blog.Content,
-		"image_urls": blog.Images,
-		"tags":       blog.Tags,
-		"author":     user.Name,
-		"created_at": blog.CreatedAt,
-	}
-
-	return responseData, nil
+	return nil
 
 }
 
