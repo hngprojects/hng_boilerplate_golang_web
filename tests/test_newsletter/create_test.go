@@ -8,40 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/newsletter"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func setupNewsLetterTestRouter() (*gin.Engine, *newsletter.Controller) {
-	gin.SetMode(gin.TestMode)
-
-	logger := tst.Setup()
-	db := storage.Connection()
-	validator := validator.New()
-
-	newsController := &newsletter.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
-	}
-
-	r := gin.Default()
-	SetupNewsLetterRoutes(r, newsController)
-	return r, newsController
-}
-
-func SetupNewsLetterRoutes(r *gin.Engine, newsController *newsletter.Controller) {
-	r.POST("/api/v1/newsletter", newsController.SubscribeNewsLetter)
-}
-
 func TestE2ENewsletterSubscription(t *testing.T) {
-	router, _ := setupNewsLetterTestRouter()
+	router, _ := SetupNewsLetterTestRouter()
 
 	// Test POST /newsletter
 	currUUID := utility.GenerateUUID()
@@ -69,7 +42,7 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 }
 
 func TestPostNewsletter_ValidateEmail(t *testing.T) {
-	router, _ := setupNewsLetterTestRouter()
+	router, _ := SetupNewsLetterTestRouter()
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
@@ -89,7 +62,7 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 }
 
 func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
-	router, newsController := setupNewsLetterTestRouter()
+	router, newsController := SetupNewsLetterTestRouter()
 
 	currUUID := utility.GenerateUUID()
 
@@ -113,7 +86,7 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 }
 
 func TestPostNewsletter_SaveData(t *testing.T) {
-	router, newsController := setupNewsLetterTestRouter()
+	router, newsController := SetupNewsLetterTestRouter()
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
@@ -139,7 +112,7 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 }
 
 func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
-	router, _ := setupNewsLetterTestRouter()
+	router, _ := SetupNewsLetterTestRouter()
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{

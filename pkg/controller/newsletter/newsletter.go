@@ -19,6 +19,37 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+func (base *Controller) GetNewsLetters(c *gin.Context) {
+
+	newslettersData, paginationResponse, code, err := service.GetNewsletters(c, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Newsletters email retrieved successfully", newslettersData, paginationResponse)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) DeleteNewsLetter(c *gin.Context) {
+
+	var (
+		reqID = c.Param("id")
+	)
+
+	code, err := service.DeleteNewsLetter(reqID, base.Db.Postgresql, c)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Newsletter email deleted successfully", nil)
+	c.JSON(http.StatusOK, rd)
+}
+
 func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 	var (
 		req = models.NewsLetter{}
@@ -41,12 +72,12 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 
 	err = service.NewsLetterSubscribe(&req, base.Db.Postgresql)
 	if err != nil {
-		if err == service.ErrEmailAlreadySubscribed {
+		if err == models.ErrEmailAlreadySubscribed {
 			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "Email already subscribed", nil, nil)
 			c.JSON(http.StatusConflict, rd)
 		} else {
-			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to subscribe", err, nil)
-			c.JSON(http.StatusInternalServerError, rd)
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to subscribe", err, nil)
+			c.JSON(http.StatusBadRequest, rd)
 		}
 		return
 	}
