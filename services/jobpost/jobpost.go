@@ -64,7 +64,6 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgr
 	return jobPostSummaries, paginationResponse, nil
 }
 
-// To be removed 
 func FetchJobPostByID(db *gorm.DB, id string) (models.JobPost, error) {
 	jobpost := models.JobPost{}
 	jobpost.ID = id
@@ -73,4 +72,21 @@ func FetchJobPostByID(db *gorm.DB, id string) (models.JobPost, error) {
 		return models.JobPost{}, err
 	}
 	return jobpost, nil
+}
+
+func UpdateJobPost(db *gorm.DB, jobPost models.JobPost, ID string) (models.JobPost, error) {
+	updatedJobPost, err := jobPost.UpdateJobPostByID(db, ID)
+	if err != nil {
+		return models.JobPost{}, err
+	}
+	return updatedJobPost, nil
+}
+
+func DeleteJobPostByID(db *gorm.DB, ID string) error {
+	jobPost := models.JobPost{ID: ID}
+	err := jobPost.DeleteJobPostByID(db, ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -150,6 +150,7 @@ func TestBlogDelete(t *testing.T)  {
 			Name:         "Successful Deletion of Blog",
 			BlogID :        blogId,
 			ExpectedCode: http.StatusAccepted,
+			Message: "blog successfully deleted",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
@@ -229,3 +230,193 @@ func TestBlogDelete(t *testing.T)  {
 	}
 
 }
+
+func TestGetBlogById(t *testing.T){
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+
+	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+
+	tests := []struct {
+		Name         string
+		BlogID        string
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name:         "Successful Retrieval of Blog",
+			BlogID :        blogId,
+			ExpectedCode: http.StatusOK,
+			Message: "blog retrieved successfully",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Invalid Blog ID Format",
+			BlogID:        "invalid-id-erttt",
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "invalid blog id format",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "Blog Not Found",
+			BlogID:        utility.GenerateUUID(),
+			ExpectedCode: http.StatusNotFound,
+			Message:      "blog not found",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "User Not Authorized to Delete blog",
+			BlogID:        blogId,
+			ExpectedCode: http.StatusUnauthorized,
+			Message:      "Token could not be found!",
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		r := gin.Default()
+
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		{
+			blogUrl.GET("/blogs/:id", blog.GetBlogById)
+		}
+
+		t.Run(test.Name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet,fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
+
+			data := tst.ParseResponse(rr)
+
+			code := int(data["status_code"].(float64))
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
+
+			if test.Message != "" {
+				message := data["message"]
+				if message != nil {
+					tst.AssertResponseMessage(t, message.(string), test.Message)
+				} else {
+					tst.AssertResponseMessage(t, "", test.Message)
+				}
+
+			}
+
+		})
+
+	}
+
+
+}
+
+
+func TestGetBlogs(t *testing.T){
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+
+	_, token := initialise(currUUID, t, r, db, user, blog, true)
+
+	tests := []struct {
+		Name         string
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name:         "Successful Retrieval of Blogs",
+			ExpectedCode: http.StatusOK,
+			Message: "blogs retrieved successfully",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name:         "User Not Authorized to Retrieve blogs",
+			ExpectedCode: http.StatusUnauthorized,
+			Message:      "Token could not be found!",
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		r := gin.Default()
+
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		{
+			blogUrl.GET("/blogs", blog.GetBlogs)
+		}
+
+		t.Run(test.Name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet,"/api/v1/blogs", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
+
+			data := tst.ParseResponse(rr)
+
+			code := int(data["status_code"].(float64))
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
+
+			if test.Message != "" {
+				message := data["message"]
+				if message != nil {
+					tst.AssertResponseMessage(t, message.(string), test.Message)
+				} else {
+					tst.AssertResponseMessage(t, "", test.Message)
+				}
+
+			}
+
+		})
+
+	}
+
+}
+
