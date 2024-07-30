@@ -18,6 +18,8 @@ func JobPost(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	jobPostUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
 		jobPostUrl.POST("/jobs", middleware.Authorize(db.Postgresql), controller.CreateJobPost)
+		jobPostUrl.GET("/jobs", controller.FetchAllJobPost)
+		jobPostUrl.GET("/jobs/:job_id", controller.FetchJobPostByID)
 	}
 	return r
 }
