@@ -112,6 +112,25 @@ func SeedDatabase(db *gorm.DB) {
 		fmt.Println("Users already exist, skipping seeding.")
 	}
 
+	faqs := []models.FAQ{
+		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is..."},
+		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are..."},
+		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
+	}
+
+	if err := db.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Seed faq
+			for _, faq := range faqs {
+				postgresql.CreateOneRecord(db, &faq)
+			}
+		} else {
+			fmt.Println("An error occurred: ", err)
+		}
+	} else {
+		fmt.Println("FAQ already exist, skipping seeding.")
+	}
+
 }
 
 func SeedTestDatabase(db *gorm.DB) {
