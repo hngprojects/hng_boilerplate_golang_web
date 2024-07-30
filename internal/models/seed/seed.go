@@ -23,12 +23,6 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Name: "Appliances"},
 	}
 
-	faqs := []models.FAQ{
-		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is..."},
-		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are..."},
-		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
-	}
-
 	// Create users
 	user1 := models.User{
 		ID:       Userid1,
@@ -94,11 +88,6 @@ func SeedDatabase(db *gorm.DB) {
 				postgresql.CreateOneRecord(db, &category)
 			}
 
-			// Seed faq
-			for _, faq := range faqs {
-				postgresql.CreateOneRecord(db, &faq)
-			}
-
 			fmt.Println("Users, organisations and categories seeded.")
 
 			// // Add users to organisations
@@ -121,6 +110,25 @@ func SeedDatabase(db *gorm.DB) {
 		}
 	} else {
 		fmt.Println("Users already exist, skipping seeding.")
+	}
+
+	faqs := []models.FAQ{
+		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is..."},
+		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are..."},
+		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
+	}
+
+	if err := query.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Seed faq
+			for _, faq := range faqs {
+				postgresql.CreateOneRecord(db, &faq)
+			}
+		} else {
+			fmt.Println("An error occurred: ", err)
+		}
+	} else {
+		fmt.Println("FAQ already exist, skipping seeding.")
 	}
 
 }
