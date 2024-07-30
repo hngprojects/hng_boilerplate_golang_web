@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -84,7 +85,7 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 	resetToken := utility.GenerateUUID()
 	reset := models.PasswordReset{
 		ID:        utility.GenerateUUID(),
-		Email:     userEmail,
+		Email:     strings.ToLower(userEmail),
 		Token:     resetToken,
 		ExpiresAt: time.Now().Add(time.Duration(config.App.ResetPasswordDuration) * time.Minute),
 	}

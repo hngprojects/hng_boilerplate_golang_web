@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
@@ -58,4 +59,25 @@ func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+func (n *WaitlistUser) FetchAllWaitList(db *gorm.DB, c *gin.Context) ([]WaitlistUser, postgresql.PaginationResponse, error) {
+	var waitLists []WaitlistUser
+
+	pagination := postgresql.GetPagination(c)
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
+		db,
+		"created_at",
+		"desc",
+		pagination,
+		&waitLists,
+		nil,
+	)
+
+	if err != nil {
+		return nil, paginationResponse, err
+	}
+
+	return waitLists, paginationResponse, nil
 }
