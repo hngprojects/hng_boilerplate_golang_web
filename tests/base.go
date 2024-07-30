@@ -85,7 +85,7 @@ func SignupUser(t *testing.T, r *gin.Engine, auth auth.Controller, userSignUpDat
 
 	r.POST(signupPath, auth.CreateUser)
 
-	if admin{
+	if admin {
 		signupPath = "/api/v1/auth/admin/signup"
 		signupURI = url.URL{Path: signupPath}
 		r.POST(signupPath, auth.CreateAdmin)
@@ -161,4 +161,3 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org o
 	orgID := dataM["id"].(string)
 	return orgID
 }
-
