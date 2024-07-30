@@ -2,7 +2,7 @@ package models
 
 import (
 	"time"
-
+	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"gorm.io/gorm"
 )
@@ -51,4 +51,35 @@ func (j *JobPost) CreateJobPost(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func (j *JobPost) FetchAllJobPost(db *gorm.DB, c *gin.Context) ([]JobPost, postgresql.PaginationResponse, error) {
+	var jobPosts []JobPost
+
+	pagination := postgresql.GetPagination(c)
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
+		db,
+		"created_at", 
+		"desc",       
+		pagination,   
+		&jobPosts,  
+		nil,          
+	)
+
+	if err != nil {
+		return nil, paginationResponse, err
+	}
+	
+	return jobPosts, paginationResponse, nil
+}
+
+func (j *JobPost) FetchJobPostByID(db *gorm.DB ) error {
+	err := postgresql.SelectFirstFromDb(db, &j);
+
+		if err != nil {
+		return  err
+	}
+
+	return  nil
 }
