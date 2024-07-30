@@ -61,6 +61,7 @@ func TestProductCreate(t *testing.T) {
 				Name:        "Nike SB",
 				Description: "One of the best, common and cloned nike product of all time",
 				Price:       190.33,
+				Category:    "Fashion",
 			},
 			ExpectedCode: http.StatusCreated,
 			Message:      "Product created successfully",
@@ -170,6 +171,7 @@ func TestProductGet(t *testing.T) {
 		Name:        "Nike SB",
 		Description: "One of the best, common and cloned nike product of all time",
 		Price:       190.33,
+		Category:    "Fashion",
 	}
 
 	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
@@ -288,6 +290,7 @@ func TestProductUpdate(t *testing.T) {
 		Name:        "Nike SB",
 		Description: "One of the best, common and cloned nike product of all time",
 		Price:       190.33,
+		Category:    "Fashion",
 	}
 	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
