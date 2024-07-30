@@ -1,7 +1,6 @@
 package product
 
 import (
-	"log"
 	"net/http"
 	"regexp"
 
@@ -27,7 +26,6 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 	var (
 		req = models.CreateProductRequestModel{}
 	)
-	log.Println(req.Category)
 
 	err := c.ShouldBind(&req)
 	if err != nil {
