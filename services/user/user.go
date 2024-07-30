@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 func GetUser(userIDStr string, db *gorm.DB) (models.User, int, error) {
@@ -200,4 +201,22 @@ func UpdateAUser(userData models.UpdateUserRequestModel, userIDStr string, db *g
 	}
 
 	return &targetUser, http.StatusOK, nil
+}
+
+func GetAllUsers(c *gin.Context, db *gorm.DB) ([]models.User, *postgresql.PaginationResponse, int, error) {
+
+	var users []models.User
+	pagination := postgresql.GetPagination(c)
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(db, "created_at", "desc", pagination, &users, "deleted_at IS NULL")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return users, nil, http.StatusNoContent, nil
+		}
+		return users, nil, http.StatusBadRequest, err
+
+	}
+
+	return users, &paginationResponse, http.StatusOK, nil
+
 }

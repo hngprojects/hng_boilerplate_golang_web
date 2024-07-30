@@ -1,4 +1,4 @@
-package tests
+package test_waitlist
 
 import (
 	"bytes"
