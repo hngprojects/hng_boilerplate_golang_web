@@ -89,12 +89,11 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	}
 
 	responseData = gin.H{
-		"email": user.Email,
-		"name":  user.Name,
-		"id":    user.ID,
-		"role":  models.UserRoleName,
-		"profile": map[string]string{
-			"first_name": user.Name,
+		"user": map[string]string{
+			"id":         user.ID,
+			"email":      user.Email,
+			"fullname":   user.Name,
+			"role":       string(models.UserRoleName),
 			"avatar_url": user.Profile.AvatarURL,
 			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
 		},
