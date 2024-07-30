@@ -21,8 +21,6 @@ func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (
 	user := models.User{}
 	profile := models.Profile{}
 
-	// Check if the user email is valid or already exists
-
 	if req.Email != "" {
 		req.Email = strings.ToLower(req.Email)
 		formattedMail, checkBool := utility.EmailValid(req.Email)
@@ -35,8 +33,6 @@ func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (
 			return req, errors.New("user already exists with the given email")
 		}
 	}
-
-	// Check if the user phone is valid, then format and check if already exists
 
 	if req.PhoneNumber != "" {
 		req.PhoneNumber = strings.ToLower(req.PhoneNumber)
@@ -118,13 +114,18 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 	}
 
 	responseData = gin.H{
-		"email":        user.Email,
-		"username":     user.Name,
-		"first_name":   user.Profile.FirstName,
-		"last_name":    user.Profile.LastName,
-		"phone":        user.Profile.Phone,
-		"role":         models.UserRoleName,
-		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"user": map[string]string{
+			"email":      user.Email,
+			"username":   user.Name,
+			"first_name": user.Profile.FirstName,
+			"last_name":  user.Profile.LastName,
+			"fullname":   user.Profile.FirstName + " " + user.Profile.LastName,
+			"phone":      user.Profile.Phone,
+			"role":       strconv.Itoa(user.Role),
+			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+			"created_at": strconv.Itoa(int(user.CreatedAt.Unix())),
+			"updated_at": strconv.Itoa(int(user.UpdatedAt.Unix())),
+		},
 		"access_token": tokenData.AccessToken,
 	}
 
@@ -186,16 +187,19 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 	}
 
 	responseData = gin.H{
-		"email":        user.Email,
-		"username":     user.Name,
-		"first_name":   user.Profile.FirstName,
-		"last_name":    user.Profile.LastName,
-		"phone":        user.Profile.Phone,
-		"role":         models.AdminRoleName,
-		"expires_in":   tokenData.ExpiresAt.Unix(),
+		"user": map[string]string{
+			"email":      user.Email,
+			"username":   user.Name,
+			"first_name": user.Profile.FirstName,
+			"last_name":  user.Profile.LastName,
+			"fullname":   user.Profile.FirstName + " " + user.Profile.LastName,
+			"phone":      user.Profile.Phone,
+			"role":       strconv.Itoa(user.Role),
+			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+			"created_at": strconv.Itoa(int(user.CreatedAt.Unix())),
+			"updated_at": strconv.Itoa(int(user.UpdatedAt.Unix())),
+		},
 		"access_token": tokenData.AccessToken,
-		"created_at":   user.CreatedAt,
-		"updated_at":   user.UpdatedAt,
 	}
 
 	return responseData, http.StatusCreated, nil
@@ -242,16 +246,20 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 	}
 
 	responseData = gin.H{
-		"email":        userData.Email,
-		"username":     userData.Name,
-		"first_name":   userData.Profile.FirstName,
-		"last_name":    userData.Profile.LastName,
-		"phone":        userData.Profile.Phone,
-		"role":         userData.Role,
-		"expires_in":   tokenData.ExpiresAt.Unix(),
+
+		"user": map[string]string{
+			"email":      userData.Email,
+			"username":   userData.Name,
+			"first_name": userData.Profile.FirstName,
+			"last_name":  userData.Profile.LastName,
+			"fullname":   userData.Profile.FirstName + " " + userData.Profile.LastName,
+			"phone":      userData.Profile.Phone,
+			"role":       strconv.Itoa(userData.Role),
+			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+			"created_at": strconv.Itoa(int(userData.CreatedAt.Unix())),
+			"updated_at": strconv.Itoa(int(userData.UpdatedAt.Unix())),
+		},
 		"access_token": tokenData.AccessToken,
-		"created_at":   userData.CreatedAt,
-		"updated_at":   userData.UpdatedAt,
 	}
 
 	return responseData, http.StatusOK, nil
