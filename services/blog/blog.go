@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -9,8 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type CreateResponse struct {
+	BlogID    string         `json:"id"`
+	Title     string         `json:"title"`
+	Content   string         `json:"content"`
+	ImageURLs pq.StringArray `json:"image_urls"`
+	Tags      pq.StringArray `json:"tags"`
+	Author    string         `json:"author"`
+	CreatedAt time.Time      `json:"created_at"`
+}
 
-func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) error {
+func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (CreateResponse, error) {
 	var user models.User
 	blog := models.Blog{
 		ID:       utility.GenerateUUID(),
@@ -24,17 +34,26 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) error 
 	err := blog.Create(db)
 
 	if err != nil {
-		return err
+		return CreateResponse{}, err
 	}
 
 	user, err = user.GetUserByID(db, userId)
 
 	if err != nil {
-		return err
+		return CreateResponse{}, err
 	}
 
-	return nil
+	createResponse := CreateResponse{
+		BlogID:    blog.ID,
+		Title:     blog.Title,
+		Content:   blog.Content,
+		ImageURLs: blog.Images,
+		Tags:      blog.Tags,
+		Author:    user.Name,
+		CreatedAt: blog.CreatedAt,
+	}
 
+	return createResponse, nil
 }
 
 func DeleteBlog(blogId string, db *gorm.DB) error {

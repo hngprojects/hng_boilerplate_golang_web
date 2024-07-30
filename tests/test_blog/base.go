@@ -72,6 +72,6 @@ func CreateBlog(t *testing.T, r *gin.Engine, db *storage.Database, blog blog.Con
 	//get the response
 	data := tst.ParseResponse(rr)
 	dataM := data["data"].(map[string]interface{})
-	blogID := dataM["blog_id"].(string)
+	blogID := dataM["id"].(string)
 	return blogID
 }
