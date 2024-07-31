@@ -168,3 +168,17 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 
 	ctx.JSON(code, rd)
 }
+
+func (base *Controller) GetAllProducts(ctx *gin.Context) {
+	respData, code, err := product.GetAllProducts(base.Db.Postgresql, ctx)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
+		ctx.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Products found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Products found successfully", respData)
+
+	ctx.JSON(code, rd)
+}
