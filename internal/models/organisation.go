@@ -2,10 +2,12 @@ package models
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	"gorm.io/gorm"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
@@ -37,6 +39,28 @@ type CreateOrgRequestModel struct {
 	Country     string `json:"country" validate:"required"`
 }
 
+type UpdateOrgRequestModel struct {
+	Name        string `json:"name"`
+	Description string `json:"description" `
+	Email       string `json:"email"`
+	State       string `json:"state"`
+	Industry    string `json:"industry"`
+	Type        string `json:"type"`
+	Address     string `json:"address"`
+	Country     string `json:"country"`
+}
+
+type UserInOrgResponse struct {
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Name        string `json:"name"`
+}
+
+type AddUserToOrgRequestModel struct {
+	UserId string `json:"user_id" validate:"required"`
+}
+
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &c)
 	if err != nil {
@@ -53,8 +77,8 @@ func (c *Organisation) Delete(db *gorm.DB) error {
 	return nil
 }
 
-func (c *Organisation) Update(db *gorm.DB) (*Organisation, error) {
-	result, err := postgresql.SaveAllFields(db, c)
+func (c *Organisation) Update(db *gorm.DB, req UpdateOrgRequestModel, orgId string) (*Organisation, error) {
+	result, err := postgresql.UpdateFields(db, &c, req, orgId)
 	if err != nil {
 		return nil, err
 	}
@@ -148,4 +172,71 @@ func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterI
 
 	return organisations, nil
 
+}
+
+func (o *Organisation) GetUsersInOrganisation(c *gin.Context, db *gorm.DB, orgId string) ([]UserInOrgResponse, postgresql.PaginationResponse, error) {
+	var users []UserInOrgResponse
+	pagination := postgresql.GetPagination(c)
+
+	offset := (pagination.Page - 1) * pagination.Limit
+
+	if err := db.Table("users").
+		Select("users.id, users.email, profiles.phone as phone_number , users.name").
+		Joins("JOIN user_organisations ON user_organisations.user_id = users.id").
+		Joins("JOIN profiles ON profiles.userid = users.id").
+		Where("user_organisations.organisation_id = ?", orgId).
+		Offset(offset).
+		Limit(pagination.Limit).
+		Find(&users).Error; err != nil {
+		return nil, postgresql.PaginationResponse{}, err
+	}
+
+	var totalUsers int64
+	if err := db.Table("users").
+		Joins("JOIN user_organisations ON user_organisations.user_id = users.id").
+		Joins("JOIN profiles ON profiles.userid = users.id").
+		Where("user_organisations.organisation_id = ?", orgId).
+		Count(&totalUsers).Error; err != nil {
+		return nil, postgresql.PaginationResponse{}, err
+	}
+
+	totalPages := int(math.Ceil(float64(totalUsers) / float64(pagination.Limit)))
+	paginationResponse := postgresql.PaginationResponse{
+		CurrentPage:     pagination.Page,
+		PageCount:       pagination.Limit,
+		TotalPagesCount: totalPages,
+	}
+
+	return users, paginationResponse, nil
+}
+
+func (o *Organisation) CheckOrgExists(orgId string, db *gorm.DB) (Organisation, error) {
+	org, err := o.GetOrgByID(db, orgId)
+	if err != nil {
+		return org, err
+	}
+
+	return org, nil
+}
+
+func (o *Organisation) CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {
+	var user User
+
+	_, err := o.GetOrgByID(db, orgId)
+	if err != nil {
+		return false, err
+	}
+
+	user, err = user.GetUserByID(db, userId)
+	if err != nil {
+		return false, err
+	}
+
+	for _, org := range user.Organisations {
+		if org.ID == orgId {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

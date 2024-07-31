@@ -119,7 +119,7 @@ func (base *Controller) GetOrganisation(c *gin.Context) {
 
 func (base *Controller) UpdateOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
-	var updateReq models.CreateOrgRequestModel
+	var updateReq models.UpdateOrgRequestModel
 
 	if _, err := uuid.Parse(orgId); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid organisation id format", "failed to update organisation", nil)
@@ -140,12 +140,6 @@ func (base *Controller) UpdateOrganisation(c *gin.Context) {
 	if err := c.ShouldBind(&updateReq); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-
-	if err := base.Validator.Struct(&updateReq); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
-		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
 
@@ -211,4 +205,102 @@ func (base *Controller) DeleteOrganisation(c *gin.Context) {
 	base.Logger.Info("organisation deleted successfully")
 	rd := utility.BuildSuccessResponse(http.StatusNoContent, "", nil)
 	c.JSON(http.StatusNoContent, rd)
+}
+
+func (base *Controller) AddUserToOrganisation(c *gin.Context) {
+	orgId := c.Param("org_id")
+
+	var req models.AddUserToOrgRequestModel
+	if err := c.ShouldBind(&req); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	if _, err := uuid.Parse(orgId); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid organisation id format", "failed to update organisation", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err := base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
+	}
+
+	err = service.AddUserToOrganisation(orgId, req, base.Db.Postgresql)
+
+	if err != nil {
+		switch err.Error() {
+		case "organisation not found":
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to add user to organisation", nil)
+			c.JSON(http.StatusNotFound, rd)
+		case "user not found":
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to add user to organisation", nil)
+			c.JSON(http.StatusNotFound, rd)
+		case "user already added to organisation":
+			rd := utility.BuildErrorResponse(http.StatusConflict, "error", err.Error(), "failed to add user to organisation", nil)
+			c.JSON(http.StatusNotFound, rd)
+		default:
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to add user to organisation", err.Error(), nil)
+			c.JSON(http.StatusInternalServerError, rd)
+		}
+		return
+	}
+
+	base.Logger.Info("user added to organisation successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "user added to organisation successfully", nil)
+
+	c.JSON(http.StatusOK, rd)
+}
+
+func (base *Controller) GetUsersInOrganisation(c *gin.Context) {
+	orgId := c.Param("org_id")
+
+	if _, err := uuid.Parse(orgId); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid organisation id format", "failed to retrieve users", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", "failed to retrieve users", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
+	users, paginationResponse, err := service.GetUsersInOrganisation(orgId, userId, base.Db.Postgresql, c)
+
+	if err != nil {
+		switch err.Error() {
+		case "organisation not found":
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to retrieve users", nil)
+			c.JSON(http.StatusNotFound, rd)
+		case "user does not have access to the organisation":
+			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to retrieve users", nil)
+			c.JSON(http.StatusNotFound, rd)
+		default:
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to retrieve users", err.Error(), nil)
+			c.JSON(http.StatusInternalServerError, rd)
+		}
+		return
+	}
+
+	paginationData := map[string]interface{}{
+		"current_page": paginationResponse.CurrentPage,
+		"total_pages":  paginationResponse.TotalPagesCount,
+		"page_size":    paginationResponse.PageCount,
+		"total_items":  len(users),
+	}
+
+	base.Logger.Info("users retrieved successfully")
+	response := utility.BuildSuccessResponse(http.StatusOK, "users retrieved successfully", users, paginationData)
+
+	c.JSON(http.StatusOK, response)
 }

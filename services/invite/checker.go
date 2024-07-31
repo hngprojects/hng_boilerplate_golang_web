@@ -11,7 +11,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/organisation"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -20,7 +19,8 @@ type mapper map[string]interface{}
 
 func CheckerValidator(base *storage.Database, inviteReq models.InvitationCreateReq, userId string, logger *utility.Logger) (models.Organisation, int, string, error) {
 	//check if organisation exists
-	orgResp, err := organisation.CheckOrgExists(inviteReq.OrganisationID, base.Postgresql)
+	var org models.Organisation
+	orgResp, err := org.CheckOrgExists(inviteReq.OrganisationID, base.Postgresql)
 	if err != nil {
 		return orgResp, http.StatusNotFound, "Invalid Organisation ID", err
 	}
@@ -55,7 +55,7 @@ func CheckerPostInvite(base *storage.Database, inviteReq models.InvitationReques
 	}
 
 	// Check if org_id exists and return organization
-	orgResp, err := organisation.CheckOrgExists(orgId.String(), base.Postgresql)
+	orgResp, err := org.CheckOrgExists(orgId.String(), base.Postgresql)
 	if err != nil {
 		return org, http.StatusNotFound, "organisation not found", err
 	}
@@ -74,7 +74,7 @@ func CheckerPostInvite(base *storage.Database, inviteReq models.InvitationReques
 	}
 
 	// Check if user is a member of the organization
-	isMember, err := organisation.CheckUserIsMemberOfOrg(userId, orgResp.ID, base.Postgresql)
+	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgResp.ID, base.Postgresql)
 	if err != nil {
 		return org, http.StatusNotFound, "User not a member of the organization", err
 	}
@@ -92,7 +92,6 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 	if len(inviteReq.Emails) == 0 {
 		return http.StatusBadRequest, "No emails provided", nil
 	}
-
 
 	// Loop through emails and create invitation
 	for _, email := range inviteReq.Emails {
@@ -167,7 +166,6 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 		})
 	}
 
-	
 	if len(inviteErrors) > 0 {
 		rd := utility.BuildSuccessResponse(
 			http.StatusOK,
@@ -175,10 +173,10 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 			invitations,
 		)
 		c.JSON(http.StatusOK, rd)
-		
+
 		return http.StatusBadRequest, fmt.Sprintf("%d invitations failed", len(inviteErrors)), inviteErrors
 	}
-	
+
 	return http.StatusCreated, "Invitation(s) sent successfully", invitations
 }
 
