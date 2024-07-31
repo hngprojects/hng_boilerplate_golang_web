@@ -36,7 +36,6 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	)
 
 	if email == "" || username == "" {
-		fmt.Println(err)
 		return responseData, http.StatusNotFound, fmt.Errorf("token decode failed")
 	}
 

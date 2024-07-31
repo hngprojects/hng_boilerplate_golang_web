@@ -21,10 +21,9 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		description  = req.Description
 		price        = req.Price
 		responseData gin.H
+		categoryName = req.Category
 	)
-
 	owner_id, _ := middleware.GetIdFromToken(c)
-
 	product := models.Product{
 		ID:          utility.GenerateUUID(),
 		Name:        name,
@@ -32,9 +31,32 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		Price:       price,
 		OwnerID:     owner_id,
 	}
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	err := product.CreateProduct(db)
-	if err != nil {
+	if err := tx.Create(&product).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+	var category models.Category
+	if err := tx.Where("name = ?", categoryName).FirstOrCreate(&category, models.Category{
+		ID:   utility.GenerateUUID(),
+		Name: categoryName,
+	}).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Model(&product).Association("Category").Append(&category); err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -43,6 +65,7 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		"description": product.Description,
 		"price":       product.Price,
 		"owner_id":    product.OwnerID,
+		"category":    category.Name,
 		"product_id":  product.ID,
 	}
 	return responseData, http.StatusCreated, nil
