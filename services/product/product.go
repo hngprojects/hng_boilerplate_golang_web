@@ -176,7 +176,6 @@ func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gi
 
 	offset := (page - 1) * pageSize
 
-	// Find category by name
 	if err := db.Where("name = ?", categoryName).First(&category).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("category not found")
@@ -184,12 +183,10 @@ func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gi
 		return nil, http.StatusInternalServerError, err
 	}
 
-	// Get paginated products in category
 	if err := db.Model(&category).Offset(offset).Limit(pageSize).Association("Products").Find(&products); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
-	// Debug information
 	fmt.Printf("Category ID: %v\n", category.ID)
 	fmt.Printf("Number of products found: %d\n", len(products))
 
@@ -200,6 +197,27 @@ func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gi
 		"pageSize":   pageSize,
 		"totalPages": int(math.Ceil(float64(len(category.Products)) / float64(pageSize))),
 		"totalItems": len(category.Products),
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+	var products []models.Product
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	offset := (page - 1) * pageSize
+
+	if err := db.Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"products":   products,
+		"page":       page,
+		"pageSize":   pageSize,
+		"totalPages": int(math.Ceil(float64(len(products)) / float64(pageSize))),
+		"totalItems": len(products),
 	}
 	return responseData, http.StatusOK, nil
 }
