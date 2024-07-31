@@ -115,6 +115,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 
 	responseData = gin.H{
 		"user": map[string]string{
+			"id":         user.ID,
 			"email":      user.Email,
 			"username":   user.Name,
 			"first_name": user.Profile.FirstName,
@@ -188,6 +189,7 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 
 	responseData = gin.H{
 		"user": map[string]string{
+			"id":         user.ID,
 			"email":      user.Email,
 			"username":   user.Name,
 			"first_name": user.Profile.FirstName,
@@ -248,6 +250,7 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 	responseData = gin.H{
 
 		"user": map[string]string{
+			"id":         userData.ID,
 			"email":      userData.Email,
 			"username":   userData.Name,
 			"first_name": userData.Profile.FirstName,
