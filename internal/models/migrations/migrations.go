@@ -4,7 +4,6 @@ import "github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 
 func AuthMigrationModels() []interface{} {
 	return []interface{}{
-		models.UserRegionTimezoneLanguage{},
 		models.Blog{},
 		models.AccessToken{},
 		models.Role{},
@@ -24,6 +23,7 @@ func AuthMigrationModels() []interface{} {
 		models.Language{},
 		models.Timezone{},
 		models.Region{},
+		models.UserRegionTimezoneLanguage{},
 	} // an array of db models, example: User{}
 }
 
