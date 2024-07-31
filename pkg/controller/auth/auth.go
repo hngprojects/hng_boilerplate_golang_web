@@ -21,6 +21,13 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+// CreateUser godoc
+// @Summary CreateUser models.CreateUserRequestModel
+// @Description Create a new CreateUser
+// @Tags CreateUser
+// @Accept json
+// @Produce json
+// @Param CreateUser body models.CreateUserRequestModel true "CreateUser details"
 func (base *Controller) CreateUser(c *gin.Context) {
 
 	var (
@@ -60,6 +67,13 @@ func (base *Controller) CreateUser(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
+// CreateAdmin godoc
+// @Summary CreateAdmin models.CreateUserRequestModel
+// @Description Create a new CreateAdmin
+// @Tags CreateAdmin
+// @Accept json
+// @Produce json
+// @Param CreateAdmin body models.CreateUserRequestModel true "CreateAdmin details"
 func (base *Controller) CreateAdmin(c *gin.Context) {
 
 	var (

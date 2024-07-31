@@ -1,0 +1,66 @@
+basePath: /api/v1
+definitions:
+  models.CreateProductRequestModel:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+    required:
+    - category
+    - description
+    - name
+    - price
+    type: object
+  models.CreateUserRequestModel:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+host: http://localhost:8019
+info:
+  contact: {}
+  description: This is a boilerplate for golang HNG Internship 11.0
+  title: HNG Boilerplate Golang Web API
+  version: "1.0"
+paths:
+  /product:
+    post:
+      consumes:
+      - application/json
+      description: Create a new product
+      parameters:
+      - description: Product details
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateProductRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: Create Product
+      tags:
+      - Product
+schemes:
+- http
+swagger: "2.0"

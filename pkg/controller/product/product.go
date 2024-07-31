@@ -21,6 +21,14 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+// CreateProduct godoc
+// @Summary Create Product
+// @Description Create a new product
+// @Tags Product
+// @Accept json
+// @Produce json
+// @Param product body models.CreateProductRequestModel true "Product details"
+// @Router /product [post]
 func (base *Controller) CreateProduct(c *gin.Context) {
 
 	var (

@@ -20,7 +20,7 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	productUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
 	{
 		productUrl.POST("/products", product.CreateProduct)
-		productUrl.DELETE("/products/:product_id", product.DeleteProductController)
+		productUrl.DELETE("/products", product.DeleteProductController)
 		productUrl.GET("/products/:product_id", product.GetProduct)
 		productUrl.PUT("/products/", product.UpdateProduct)
 		productUrl.GET("/products/categories/:category", product.GetProductsInCategory)

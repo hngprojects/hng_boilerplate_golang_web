@@ -87,29 +87,49 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 }
 
 func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var product models.Product
-	if err := db.First(&product, req.ProductID).Error; err != nil {
+	if err := tx.Where("id = ?", req.ProductID).First(&product).Error; err != nil {
+		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("product not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
 
-	ownerID, err := middleware.GetIdFromToken(ctx)
-	if err != nil {
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+	if ownerID == "" {
+		tx.Rollback()
 		return nil, http.StatusUnauthorized, errors.New("failed to get owner ID from token")
 	}
 
 	if product.OwnerID != ownerID {
+		tx.Rollback()
 		return nil, http.StatusForbidden, errors.New("you are not authorized to delete this product")
 	}
 
-	if err := db.Delete(&product).Error; err != nil {
+	if err := tx.Exec("DELETE FROM product_categories WHERE product_id = ?", product.ID).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Delete(&product).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
 	responseData := gin.H{
-		"message": "Product deleted successfully",
+		"message": "Product and its category associations deleted successfully",
 	}
 	return responseData, http.StatusOK, nil
 }

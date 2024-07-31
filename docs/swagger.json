@@ -1,0 +1,97 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a boilerplate for golang HNG Internship 11.0",
+        "title": "HNG Boilerplate Golang Web API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "http://localhost:8019",
+    "basePath": "/api/v1",
+    "paths": {
+        "/product": {
+            "post": {
+                "description": "Create a new product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Create Product",
+                "parameters": [
+                    {
+                        "description": "Product details",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateProductRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "models.CreateProductRequestModel": {
+            "type": "object",
+            "required": [
+                "category",
+                "description",
+                "name",
+                "price"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.CreateUserRequestModel": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
