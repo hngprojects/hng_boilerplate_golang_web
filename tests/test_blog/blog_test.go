@@ -242,7 +242,7 @@ func TestGetBlogById(t *testing.T){
 	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+	blogId, _ := initialise(currUUID, t, r, db, user, blog, true)
 
 	tests := []struct {
 		Name         string
@@ -258,7 +258,6 @@ func TestGetBlogById(t *testing.T){
 			Message: "blog retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
 			},
 		},
 		{
@@ -268,7 +267,6 @@ func TestGetBlogById(t *testing.T){
 			Message:      "invalid blog id format",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
 			},
 		},
 		{
@@ -278,16 +276,6 @@ func TestGetBlogById(t *testing.T){
 			Message:      "blog not found",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
-			},
-		},
-		{
-			Name:         "User Not Authorized to Delete blog",
-			BlogID:        blogId,
-			ExpectedCode: http.StatusUnauthorized,
-			Message:      "Token could not be found!",
-			Headers: map[string]string{
-				"Content-Type": "application/json",
 			},
 		},
 	}
@@ -295,7 +283,7 @@ func TestGetBlogById(t *testing.T){
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
 			blogUrl.GET("/blogs/:id", blog.GetBlogById)
 		}
@@ -344,13 +332,8 @@ func TestGetBlogs(t *testing.T){
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	currUUID := utility.GenerateUUID()
-	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	r := gin.Default()
-
-	_, token := initialise(currUUID, t, r, db, user, blog, true)
-
+	
 	tests := []struct {
 		Name         string
 		ExpectedCode int
@@ -363,15 +346,6 @@ func TestGetBlogs(t *testing.T){
 			Message: "blogs retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
-			},
-		},
-		{
-			Name:         "User Not Authorized to Retrieve blogs",
-			ExpectedCode: http.StatusUnauthorized,
-			Message:      "Token could not be found!",
-			Headers: map[string]string{
-				"Content-Type": "application/json",
 			},
 		},
 	}
@@ -379,7 +353,7 @@ func TestGetBlogs(t *testing.T){
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
 			blogUrl.GET("/blogs", blog.GetBlogs)
 		}
