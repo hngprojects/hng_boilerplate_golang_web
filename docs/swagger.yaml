@@ -36,6 +36,22 @@ definitions:
     - last_name
     - password
     type: object
+  models.UpdateProductRequestModel:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      product_id:
+        type: string
+    required:
+    - description
+    - name
+    - price
+    - product_id
+    type: object
 host: http://localhost:8019
 info:
   contact: {}
@@ -61,6 +77,99 @@ paths:
       summary: Create Product
       tags:
       - Product
+  /product/{product_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete DeleteProductController
+      tags:
+      - DeleteProductController
+    get:
+      consumes:
+      - application/json
+      description: Get a Product
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: GetProduct
+      tags:
+      - GetProduct
+    put:
+      consumes:
+      - application/json
+      description: Update a product
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: string
+      - description: Product details
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateProductRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: UpdateProduct
+      tags:
+      - UpdateProduct
+  /product/category/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Get all products in a category
+      parameters:
+      - description: Category
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: GetProductsInCategory
+      tags:
+      - GetProductsInCategory
+  /product/filter:
+    get:
+      consumes:
+      - application/json
+      description: Get products based on price and category
+      parameters:
+      - description: Price
+        in: query
+        name: price
+        required: true
+        type: number
+      - description: Category
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: FilterProducts
+      tags:
+      - FilterProducts
 schemes:
 - http
 swagger: "2.0"

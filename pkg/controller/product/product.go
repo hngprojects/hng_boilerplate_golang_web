@@ -1,8 +1,10 @@
 package product
 
 import (
+	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -62,6 +64,13 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
+// @Summary Delete DeleteProductController
+// @Description Delete a product
+// @Tags DeleteProductController
+// @Accept json
+// @Produce json
+// @Param product_id path string true "Product ID"
+// @Router /product/{product_id} [delete]
 func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	var (
 		req = models.DeleteProductRequestModel{}
@@ -94,6 +103,13 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	ctx.JSON(code, rd)
 }
 
+// @Summary GetProduct
+// @Description Get a Product
+// @Tags GetProduct
+// @Accept json
+// @Produce json
+// @Param product_id path string true "Product ID"
+// @Router /product/{product_id} [get]
 func (base *Controller) GetProduct(c *gin.Context) {
 	productId := c.Param("product_id")
 
@@ -123,6 +139,14 @@ func (base *Controller) GetProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
+// @Summary UpdateProduct
+// @Description Update a product
+// @Tags UpdateProduct
+// @Accept json
+// @Produce json
+// @Param product_id path string true "Product ID"
+// @Param product body models.UpdateProductRequestModel true "Product details"
+// @Router /product/{product_id} [put]
 func (base *Controller) UpdateProduct(c *gin.Context) {
 	var (
 		req = models.UpdateProductRequestModel{}
@@ -155,6 +179,13 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
+// @Summary GetProductsInCategory
+// @Description Get all products in a category
+// @Tags GetProductsInCategory
+// @Accept json
+// @Produce json
+// @Param category path string true "Category"
+// @Router /product/category/{category} [get]
 func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 	category := ctx.Param("category")
 
@@ -179,6 +210,46 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 
 func (base *Controller) GetAllProducts(ctx *gin.Context) {
 	respData, code, err := product.GetAllProducts(base.Db.Postgresql, ctx)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
+		ctx.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Products found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Products found successfully", respData)
+
+	ctx.JSON(code, rd)
+}
+
+// FilterProducts godoc
+// @Summary Filter products by price and category
+// @Description Filter products by price and category
+// @Tags Products
+// @Accept  json
+// @Produce  json
+// @Param price query float64 true "Product Price"
+// @Param category query string true "Product Category"
+// @Router /products/filter [get]
+func (base *Controller) FilterProducts(ctx *gin.Context) {
+	priceStr := ctx.Query("price")
+	category := ctx.Query("category")
+
+	if priceStr == "" {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Price query parameter is required", "Invalid price", nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		log.Println(err)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "Invalid price", nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := product.FilterProducts(price, category, base.Db.Postgresql, ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)

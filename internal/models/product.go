@@ -36,6 +36,11 @@ type UpdateProductRequestModel struct {
 	Price       float64 `json:"price" validate:"required"`
 }
 
+type FilterProduct struct {
+	Price    float64 `json:"price"`
+	Category string  `json:"category"`
+}
+
 func (u *Product) CreateProduct(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &u)
 	if err != nil {

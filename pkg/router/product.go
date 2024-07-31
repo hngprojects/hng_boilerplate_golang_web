@@ -25,6 +25,7 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 		productUrl.PUT("/products/", product.UpdateProduct)
 		productUrl.GET("/products/categories/:category", product.GetProductsInCategory)
 		productUrl.GET("/products", product.GetAllProducts)
+		productUrl.GET("/products/filter/", product.FilterProducts)
 	}
 
 	return r
