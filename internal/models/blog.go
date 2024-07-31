@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -45,7 +46,7 @@ func (b *Blog) Delete(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -56,4 +57,25 @@ func (b *Blog) GetBlogById(db *gorm.DB, blogId string) (Blog, error) {
 		return blog, err
 	}
 	return blog, nil
+}
+
+func (b *Blog) GetAllBlogs(db *gorm.DB, c *gin.Context) ([]Blog, postgresql.PaginationResponse, error) {
+	var blog []Blog
+
+	pagination := postgresql.GetPagination(c)
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
+		db,
+		"created_at",
+		"desc",
+		pagination,
+		&blog,
+		nil,
+	)
+
+	if err != nil {
+		return nil, paginationResponse, err
+	}
+
+	return blog, paginationResponse, nil
 }

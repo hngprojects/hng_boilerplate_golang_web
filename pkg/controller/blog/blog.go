@@ -90,3 +90,50 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 	c.JSON(http.StatusAccepted, rd)
 
 }
+
+func (base *Controller) GetBlogs(c *gin.Context) {
+	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql, c)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Failed to fetch blogs", err, nil)
+		c.JSON(http.StatusNotFound, rd)
+		return
+	}
+
+	paginationData := map[string]interface{}{
+		"current_page": paginationResponse.CurrentPage,
+		"total_pages":  paginationResponse.TotalPagesCount,
+		"page_size":    paginationResponse.PageCount,
+		"total_items":  len(blogs),
+	}
+
+	base.Logger.Info("blogs retrieved successfully.")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "blogs retrieved successfully", blogs, paginationData)
+	c.JSON(http.StatusOK, rd)
+}
+
+func (base *Controller) GetBlogById(c *gin.Context) {
+	blogID := c.Param("id")
+
+	if _, err := uuid.Parse(blogID); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid blog id format", "failed to delete blog", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	blog, err := service.GetBlogById(blogID, base.Db.Postgresql)
+
+	if err != nil {
+		if err.Error() == "blog not found" {
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to retrieve blog", nil)
+			c.JSON(http.StatusNotFound, rd)
+			return
+		}
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to retrieve blog", err.Error(), nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	base.Logger.Info("blog retrieved successfully.")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "blog retrieved successfully", blog)
+	c.JSON(http.StatusOK, rd)
+}

@@ -72,13 +72,23 @@ func TestGetCategoryNames(t *testing.T) {
 			t.Fatalf("Could not parse response: %v", err)
 		}
 
+		assert.Equal(t, "success", response["status"])
+		assert.Equal(t, float64(200), response["status_code"])
+		assert.Equal(t, "Categories fetched successfully", response["message"])
+
 		assert.Contains(t, response, "data")
-		data, ok := response["data"].([]interface{})
+		data, ok := response["data"].(map[string]interface{})
 		if !ok {
-			t.Fatalf("Invalid response format: 'data' is not an array")
+			t.Fatalf("Invalid response format: 'data' is not an object")
 		}
 
-		for _, category := range data {
+		assert.Contains(t, data, "categories")
+		categories, ok := data["categories"].([]interface{})
+		if !ok {
+			t.Fatalf("Invalid response format: 'categories' is not an array")
+		}
+
+		for _, category := range categories {
 			categoryMap, ok := category.(map[string]interface{})
 			if !ok {
 				t.Fatalf("Invalid category format in response")
@@ -87,8 +97,12 @@ func TestGetCategoryNames(t *testing.T) {
 			assert.True(t, hasName, "Category object should have a 'Name' field")
 		}
 
-		assert.Equal(t, "success", response["status"])
-		assert.Equal(t, float64(200), response["status_code"])
-		assert.Equal(t, "Categories fetched successfully", response["message"])
+		assert.Contains(t, data, "totalCount")
+		assert.Contains(t, data, "page")
+		assert.Contains(t, data, "pageSize")
+
+		assert.Equal(t, float64(3), data["totalCount"])
+		assert.Equal(t, float64(1), data["page"])
+		assert.Equal(t, float64(10), data["pageSize"])
 	})
 }

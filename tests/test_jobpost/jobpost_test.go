@@ -332,3 +332,234 @@ func TestFetchJobPostById(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateJobPostById(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := "/api/v1/jobs"
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	authController := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	tst.SignupUser(t, r, authController, userSignUpData, false)
+
+	token := tst.GetLoginToken(t, r, authController, loginData)
+
+	jobPostData := models.CreateJobPostModel{
+		Title:               "Software Engineer Intern",
+		Salary:              "5000-7000 USD",
+		JobType:             "internship",
+		Location:            "San Francisco, CA",
+		Deadline:            time.Now().AddDate(0, 1, 0),
+		WorkMode:            "remote",
+		Experience:          "Entry level (0-2 years)",
+		HowToApply:          "Submit your resume and cover letter to hr@company.com",
+		JobBenefits:         "Flexible hours, Remote work, Health insurance",
+		CompanyName:         "Tech Innovators",
+		Description:         "We are looking for a passionate Software Engineer Intern to join our team. You will be working on exciting projects and gain hands-on experience.",
+		KeyResponsibilities: "Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews",
+		Qualifications:      "Ability to work solo, Bachelor degree",
+	}
+
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
+	var b bytes.Buffer
+	json.NewEncoder(&b).Encode(jobPostData)
+
+	req, err := http.NewRequest(http.MethodPost, requestURI, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	tst.AssertStatusCode(t, rr.Code, http.StatusCreated)
+
+	data := tst.ParseResponse(rr)
+	jobPostID := data["data"].(map[string]interface{})["id"].(string)
+
+	updatedJobPostData := models.JobPost{
+		Title:               "Updated Software Engineer Intern",
+		Salary:              "6000-8000 USD",
+		JobType:             "full-time",
+		Location:            "San Francisco, CA",
+		Deadline:            time.Now().AddDate(0, 1, 0),
+		WorkMode:            "hybrid",
+		Experience:          "Entry level (0-3 years)",
+		HowToApply:          "Submit your resume and cover letter to hr@company.com",
+		JobBenefits:         "Flexible hours, Health insurance, Stock options",
+		CompanyName:         "Tech Innovators Inc.",
+		Description:         "We are looking for a passionate Software Engineer Intern to join our team. You'll work on exciting projects and gain valuable experience.",
+		KeyResponsibilities: "Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews",
+		Qualifications:      "Ability to work in a team, Bachelor degree in Computer Science",
+	}
+
+	tests := []struct {
+		name         string
+		expectedCode int
+		message      string
+		jobPostID    string
+		updateData   models.JobPost
+	}{
+		{
+			name:         "Update job post",
+			expectedCode: http.StatusOK,
+			message:      "Job post updated successfully",
+			jobPostID:    jobPostID,
+			updateData:   updatedJobPostData,
+		},
+	}
+
+	r.PATCH("/api/v1/jobs/:job_id", jobPostController.UpdateJobPostByID)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var b bytes.Buffer
+			json.NewEncoder(&b).Encode(test.updateData)
+
+			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/jobs/%s", test.jobPostID), &b)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+token)
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.expectedCode)
+		})
+	}
+}
+
+func TestDeleteJobPostById(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	requestURI := "/api/v1/jobs"
+	currUUID := utility.GenerateUUID()
+	userSignUpData := models.CreateUserRequestModel{
+		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
+		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
+		FirstName:   "test",
+		LastName:    "user",
+		Password:    "password",
+		UserName:    fmt.Sprintf("test_username%v", currUUID),
+	}
+	loginData := models.LoginRequestModel{
+		Email:    userSignUpData.Email,
+		Password: userSignUpData.Password,
+	}
+
+	authController := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	tst.SignupUser(t, r, authController, userSignUpData, false)
+
+	token := tst.GetLoginToken(t, r, authController, loginData)
+
+	jobPostData := models.CreateJobPostModel{
+		Title:               "Software Engineer Intern",
+		Salary:              "5000-7000 USD",
+		JobType:             "internship",
+		Location:            "San Francisco, CA",
+		Deadline:            time.Now().AddDate(0, 1, 0),
+		WorkMode:            "remote",
+		Experience:          "Entry level (0-2 years)",
+		HowToApply:          "Submit your resume and cover letter to hr@company.com",
+		JobBenefits:         "Flexible hours, Remote work, Health insurance",
+		CompanyName:         "Tech Innovators",
+		Description:         "We are looking for a passionate Software Engineer Intern to join our team. You will be working on exciting projects and gain hands-on experience.",
+		KeyResponsibilities: "Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews",
+		Qualifications:      "Ability to work solo, Bachelor degree",
+	}
+
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
+	var b bytes.Buffer
+	json.NewEncoder(&b).Encode(jobPostData)
+
+	req, err := http.NewRequest(http.MethodPost, requestURI, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	tst.AssertStatusCode(t, rr.Code, http.StatusCreated)
+
+	data := tst.ParseResponse(rr)
+	jobPostID := data["data"].(map[string]interface{})["id"].(string)
+
+	tests := []struct {
+		name         string
+		expectedCode int
+		jobPostID    string
+	}{
+		{
+			name:         "Delete existing job post",
+			expectedCode: http.StatusNoContent,
+			jobPostID:    jobPostID,
+		},
+		{
+			name:         "Delete non-existent job post",
+			expectedCode: http.StatusNotFound,
+			jobPostID:    jobPostID,
+		},
+	}
+
+	r.DELETE("/api/v1/jobs/:job_id", jobPostController.DeleteJobPostByID)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/jobs/%s", test.jobPostID), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req.Header.Set("Authorization", "Bearer "+token)
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.expectedCode)
+
+			if test.expectedCode == http.StatusNoContent {
+				req, err = http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/jobs/%s", test.jobPostID), nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				rr = httptest.NewRecorder()
+				r.ServeHTTP(rr, req)
+				tst.AssertStatusCode(t, rr.Code, http.StatusNotFound)
+			}
+		})
+	}
+}
