@@ -83,3 +83,41 @@ func (j *JobPost) FetchJobPostByID(db *gorm.DB ) error {
 
 	return  nil
 }
+
+func (j *JobPost) UpdateJobPostByID(db *gorm.DB, ID string) (JobPost, error) {
+	j.ID = ID 
+	
+    exists := postgresql.CheckExists(db, &JobPost{}, "id = ?", ID)
+    if !exists {
+        return JobPost{}, gorm.ErrRecordNotFound
+    }
+
+    _, err := postgresql.SaveAllFields(db, j)
+    if err != nil {
+        return JobPost{}, err
+    }
+
+    updatedJobPost := JobPost{}
+    err = db.First(&updatedJobPost, "id = ?", ID).Error
+    if err != nil {
+        return JobPost{}, err
+    }
+
+    return updatedJobPost, nil
+}
+
+func (j *JobPost) DeleteJobPostByID(db *gorm.DB, ID string) error {
+
+	exists := postgresql.CheckExists(db, &JobPost{}, "id = ?", ID)
+	if !exists {
+		return gorm.ErrRecordNotFound
+	}
+
+	err := postgresql.DeleteRecordFromDb(db, &j)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
