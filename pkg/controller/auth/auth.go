@@ -173,7 +173,7 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("user login successfully")
+	base.Logger.Info("user logout successfully")
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user logout successfully", respData)
 	c.JSON(http.StatusOK, rd)
