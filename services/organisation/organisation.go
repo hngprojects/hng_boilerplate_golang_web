@@ -214,26 +214,3 @@ func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Con
 
 	return users, paginationResponse, nil
 }
-
-// func CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {
-// 	var org models.Organisation
-// 	var user models.User
-
-// 	org, err := org.GetOrgByID(db, orgId)
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	user, err = user.GetUserByID(db, userId)
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	for _, org := range user.Organisations {
-// 		if org.ID == orgId {
-// 			return true, nil
-// 		}
-// 	}
-
-// 	return false, nil
-// }
