@@ -36,6 +36,12 @@ func SeedDatabase(db *gorm.DB) {
 			Phone:     "1234567890",
 			AvatarURL: "http://example.com/avatar.jpg",
 		},
+		Region: models.UserRegionTimezoneLanguage{
+			ID:         utility.GenerateUUID(),
+			RegionID:   utility.GenerateUUID(),
+			LanguageID: utility.GenerateUUID(),
+			TimezoneID: utility.GenerateUUID(),
+		},
 		Products: []models.Product{
 			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Price: 45.33, OwnerID: Userid1},
 			{ID: utility.GenerateUUID(), Name: "Product2", Description: "Description2", Price: 45.33, OwnerID: Userid1},

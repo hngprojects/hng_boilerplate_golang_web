@@ -19,6 +19,48 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+func (base *Controller) GetRegion(c *gin.Context) {
+
+	regionData, err := service.GetRegions(base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Regions retrieved successfully", regionData)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) GetTimeZone(c *gin.Context) {
+
+	timezoneData, err := service.GetTimeZones(base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Timezones retrieved successfully", timezoneData)
+	c.JSON(http.StatusOK, rd)
+
+}
+
+func (base *Controller) GetLanguage(c *gin.Context) {
+
+	languageData, err := service.GetLanguages(base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Languages retrieved successfully", languageData)
+	c.JSON(http.StatusOK, rd)
+
+}
+
 func (base *Controller) AddToRegion(c *gin.Context) {
 	var (
 		req = models.Region{}
