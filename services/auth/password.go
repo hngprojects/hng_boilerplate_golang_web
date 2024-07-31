@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"gorm.io/gorm"
 )
 
 func UpdateUserPassword(c *gin.Context, req models.ChangePasswordRequestModel, db *gorm.DB) (*models.User, int, error) {
@@ -82,7 +82,7 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 		return "error", http.StatusNotFound, fmt.Errorf("user not found")
 	}
 
-	resetToken := utility.GenerateUUID()
+	resetToken := utility.GenerateOTP(6)
 	reset := models.PasswordReset{
 		ID:        utility.GenerateUUID(),
 		Email:     strings.ToLower(userEmail),

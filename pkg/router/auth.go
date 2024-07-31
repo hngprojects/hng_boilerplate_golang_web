@@ -38,7 +38,7 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	authSocial := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
 		authSocial.POST("/google", auth.GoogleLogin)
-		authSocial.GET("/logout/:provider", auth.ProviderLogout)
+		authSocial.POST("/facebook", auth.FacebookLogin)
 	}
 	return r
 }
