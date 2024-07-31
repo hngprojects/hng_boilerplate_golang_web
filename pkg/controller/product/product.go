@@ -146,3 +146,25 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 
 	c.JSON(code, rd)
 }
+
+func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
+	category := ctx.Param("category")
+
+	if category == "" {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "", "Invalid category name", nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := product.GetProductsInCategory(category, base.Db.Postgresql, ctx)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
+		ctx.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Products found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Products found successfully", respData)
+
+	ctx.JSON(code, rd)
+}
