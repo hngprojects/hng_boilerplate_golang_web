@@ -43,3 +43,20 @@ func (base *Controller) UpdateUserRegion(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 
 }
+
+func (base *Controller) GetUserRegion(c *gin.Context) {
+	var (
+		userID = c.Param("user_id")
+	)
+
+	respData, code, err := service.GetUserRegion(userID, base.Db.Postgresql, c)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
+		c.JSON(code, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "User region retrieved successfully", respData)
+	c.JSON(http.StatusOK, rd)
+
+}
