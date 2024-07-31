@@ -73,3 +73,43 @@ func UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string,
 	}
 
 }
+
+func GetUserRegion(userIDStr string,
+	db *gorm.DB, c *gin.Context) (*models.UserRegionTimezoneLanguage, int, error) {
+	var (
+		currentUser models.User
+		regionData  models.UserRegionTimezoneLanguage
+		theData     models.UserRegionTimezoneLanguage
+	)
+
+	userId, err := middleware.GetUserClaims(c, db, "user_id")
+	if err != nil {
+		return &theData, http.StatusNotFound, err
+	}
+
+	currentUserID, ok := userId.(string)
+	if !ok {
+		return &theData, http.StatusBadRequest, errors.New("user_id is not of type string")
+	}
+
+	currentUser, code, err := GetUser(currentUserID, db)
+	if err != nil {
+		return &theData, code, err
+	}
+
+	_, code, err = GetUser(userIDStr, db)
+	if err != nil {
+		return &theData, code, err
+	}
+
+	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	if !isSuperAdmin && currentUserID != userIDStr {
+		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
+	}
+
+	if theData, err = regionData.GetUserRegionByID(db, userIDStr); err != nil {
+		return &theData, http.StatusBadRequest, err
+	}
+
+	return &theData, http.StatusOK, nil
+}
