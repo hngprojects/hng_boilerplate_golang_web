@@ -18,7 +18,7 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	organisation := organisation.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
+	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		organisationUrl.POST("/organizations", organisation.CreateOrganisation)
 		organisationUrl.GET("/organizations/:org_id", organisation.GetOrganisation)
