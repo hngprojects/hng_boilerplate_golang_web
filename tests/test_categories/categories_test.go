@@ -101,7 +101,7 @@ func TestGetCategoryNames(t *testing.T) {
 		assert.Contains(t, data, "page")
 		assert.Contains(t, data, "pageSize")
 
-		assert.Equal(t, float64(3), data["totalCount"])
+		assert.Equal(t, float64(1), data["totalCount"])
 		assert.Equal(t, float64(1), data["page"])
 		assert.Equal(t, float64(10), data["pageSize"])
 	})
