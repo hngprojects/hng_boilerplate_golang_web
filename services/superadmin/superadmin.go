@@ -31,3 +31,39 @@ func AddToLanguage(language *models.Language, db *gorm.DB) error {
 
 	return nil
 }
+
+func GetRegions(db *gorm.DB) ([]models.Region, error) {
+
+	var region models.Region
+
+	regionData, err := region.GetRegions(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return regionData, nil
+}
+
+func GetTimeZones(db *gorm.DB) ([]models.Timezone, error) {
+
+	var timezone models.Timezone
+
+	timezoneData, err := timezone.GetTimeZones(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return timezoneData, nil
+}
+
+func GetLanguages(db *gorm.DB) ([]models.Language, error) {
+
+	var language models.Language
+
+	languageData, err := language.GetLanguages(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return languageData, nil
+}
