@@ -56,7 +56,7 @@ func TestUpdateUserRegion(t *testing.T) {
 	timezone := models.Timezone{
 		ID:         utility.GenerateUUID(),
 		Identifier: fmt.Sprintf("Timezone-%s", utility.RandomString(10)),
-		Offset:     fmt.Sprintf("UTC+%s", utility.RandomString(1)),
+		Offset:     fmt.Sprintf("UTC+%s", utility.RandomString(3)),
 	}
 
 	language := models.Language{
