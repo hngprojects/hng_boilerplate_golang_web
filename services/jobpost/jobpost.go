@@ -9,6 +9,7 @@ import (
 )
 
 type JobPostSummary struct {
+	ID			string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
@@ -53,6 +54,7 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgr
 	var jobPostSummaries []JobPostSummary
 	for _, job := range jobPosts {
 		summary := JobPostSummary{
+			ID: 		 job.ID,
 			Title:       job.Title,
 			Description: job.Description,
 			Location:    job.Location,
