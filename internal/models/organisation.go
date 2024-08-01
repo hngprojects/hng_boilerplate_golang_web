@@ -22,6 +22,7 @@ type Organisation struct {
 	Address     string         `gorm:"type:varchar(255)" json:"address"`
 	Country     string         `gorm:"type:varchar(255)" json:"country"`
 	OwnerID     string         `gorm:"type:uuid;" json:"owner_id"`
+	OrgRoles    []OrgRole      `gorm:"foreignKey:OrganisationID" json:"org_roles"`
 	Users       []User         `gorm:"many2many:user_organisations;foreignKey:ID;joinForeignKey:org_id;References:ID;joinReferences:user_id"`
 	CreatedAt   time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
@@ -239,4 +240,17 @@ func (o *Organisation) CheckUserIsMemberOfOrg(userId string, orgId string, db *g
 	}
 
 	return false, nil
+}
+
+func (o *Organisation) IsOwnerOfOrganisation(db *gorm.DB, requesterID, organisationID string) (bool, error) {
+	var count int64
+	err := db.Model(&Organisation{}).
+		Where("id = ? AND owner_id = ?", organisationID, requesterID).
+		Count(&count).
+		Error
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
