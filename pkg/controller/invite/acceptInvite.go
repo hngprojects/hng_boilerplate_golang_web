@@ -13,17 +13,14 @@ import (
 func (base *Controller) PostAcceptInvite(c *gin.Context) {
 	// accept invite logic here
 	var inviteReq models.InvitationAcceptReq
-
 	claims, exists := c.Get("userClaims")
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
-
 	err := c.ShouldBind(&inviteReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
-
 	}
 	err = base.Validator.Struct(&inviteReq)
 	if err != nil {
@@ -32,7 +29,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		return
 	}
 	invitationToken := invite.ExtractTokenFromInvitationLink(inviteReq.InvitationLink)
-
 	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
 	if err != nil {
 		base.Logger.Error("Failed to accept invitation link", err)
@@ -40,7 +36,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
 	// add user to organisation
 	///check if user from the claims is a member of the organisation
 	if !exists {
@@ -48,7 +43,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
 	err = invite.AddUserToOrganisation(base.Db.Postgresql, invitation.OrganisationID, userId)
 	if err != nil {
 		base.Logger.Error("Failed to add user to organisation", err)
@@ -56,7 +50,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, rd)
 		return
 	}
-
 	rd := utility.BuildSuccessResponse(http.StatusOK, "Invitation accepted successfully", nil)
 	c.JSON(http.StatusOK, rd)
 }
@@ -67,7 +60,6 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 	claims, exists := c.Get("userClaims")
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
-
 	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(
@@ -87,7 +79,6 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
 	err = invite.AddUserToOrganisation(base.Db.Postgresql, invitation.OrganisationID, userId)
 	if err != nil {
 		base.Logger.Error("Failed to add user to organisation", err)

@@ -24,32 +24,26 @@ func (base *Controller) Post(c *gin.Context) {
 	var (
 		req = models.Ping{}
 	)
-
 	err := c.ShouldBind(&req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
 	err = base.Validator.Struct(&req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
 	if !ping.ReturnTrue() {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "ping failed", fmt.Errorf("ping failed"), nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-
-	base.Logger.Info("ping successfull")
-
+	base.Logger.Info("ping successful")
 	rd := utility.BuildSuccessResponse(http.StatusOK, "ping successful", req.Message)
 	c.JSON(http.StatusOK, rd)
-
 }
 
 func (base *Controller) Get(c *gin.Context) {
@@ -58,8 +52,7 @@ func (base *Controller) Get(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	base.Logger.Info("ping successfull")
+	base.Logger.Info("ping successful")
 	rd := utility.BuildSuccessResponse(http.StatusOK, "ping successful", gin.H{"transactions": "transactions object"})
 	c.JSON(http.StatusOK, rd)
-
 }

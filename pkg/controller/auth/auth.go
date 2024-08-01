@@ -22,10 +22,7 @@ type Controller struct {
 }
 
 func (base *Controller) CreateUser(c *gin.Context) {
-
-	var (
-		req = models.CreateUserRequestModel{}
-	)
+	var req models.CreateUserRequestModel
 
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -61,10 +58,7 @@ func (base *Controller) CreateUser(c *gin.Context) {
 }
 
 func (base *Controller) CreateAdmin(c *gin.Context) {
-
-	var (
-		req = models.CreateUserRequestModel{}
-	)
+	var req models.CreateUserRequestModel
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -96,15 +90,11 @@ func (base *Controller) CreateAdmin(c *gin.Context) {
 
 	base.Logger.Info("user created successfully")
 	rd := utility.BuildSuccessResponse(http.StatusCreated, "user created successfully", respData)
-
 	c.JSON(code, rd)
 }
 
 func (base *Controller) LoginUser(c *gin.Context) {
-
-	var (
-		req = models.LoginRequestModel{}
-	)
+	var req models.LoginRequestModel
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -134,7 +124,6 @@ func (base *Controller) LoginUser(c *gin.Context) {
 }
 
 func (base *Controller) LogoutUser(c *gin.Context) {
-
 	claims, exists := c.Get("userClaims")
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
@@ -159,7 +148,7 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("user login successfully")
+	base.Logger.Info("user logout successfully")
 
 	rd := utility.BuildSuccessResponse(http.StatusOK, "user logout successfully", respData)
 	c.JSON(http.StatusOK, rd)

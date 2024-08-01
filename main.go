@@ -20,12 +20,9 @@ import (
 
 func main() {
 	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
-
 	configuration := config.Setup(logger, "./app")
-
 	postgresql.ConnectToDatabase(logger, configuration.Database)
 	redis.ConnectToRedis(logger, configuration.Redis)
-
 	validatorRef := validator.New()
 
 	db := storage.Connection()
@@ -34,13 +31,11 @@ func main() {
 
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)
-
 		// call the seed function
 		seed.SeedDatabase(db.Postgresql)
 	}
 
 	r := router.Setup(logger, validatorRef, db, &configuration.App)
-
 	utility.LogAndPrint(logger, fmt.Sprintf("Server is starting at 127.0.0.1:%s", configuration.Server.Port))
 	log.Fatal(r.Run(":" + configuration.Server.Port))
 }
