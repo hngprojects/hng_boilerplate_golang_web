@@ -2,8 +2,11 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"math"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -21,16 +24,10 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		description  = req.Description
 		price        = req.Price
 		responseData gin.H
-		categoryName = req.Category
+		categoryName = strings.Title(strings.ToLower(req.Category))
 	)
 	owner_id, _ := middleware.GetIdFromToken(c)
-	product := models.Product{
-		ID:          utility.GenerateUUID(),
-		Name:        name,
-		Description: description,
-		Price:       price,
-		OwnerID:     owner_id,
-	}
+
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -38,15 +35,33 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		}
 	}()
 
-	if err := tx.Create(&product).Error; err != nil {
-		tx.Rollback()
-		return nil, http.StatusInternalServerError, err
-	}
 	var category models.Category
-	if err := tx.Where("name = ?", categoryName).FirstOrCreate(&category, models.Category{
-		ID:   utility.GenerateUUID(),
-		Name: categoryName,
-	}).Error; err != nil {
+	if err := tx.Where("LOWER(name) = LOWER(?)", categoryName).First(&category).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// If category does not exist, create it
+			category = models.Category{
+				ID:   utility.GenerateUUID(),
+				Name: categoryName,
+			}
+			if err := tx.Create(&category).Error; err != nil {
+				tx.Rollback()
+				return nil, http.StatusInternalServerError, err
+			}
+		} else {
+			tx.Rollback()
+			return nil, http.StatusInternalServerError, err
+		}
+	}
+
+	product := models.Product{
+		ID:          utility.GenerateUUID(),
+		Name:        name,
+		Description: description,
+		Price:       price,
+		OwnerID:     owner_id,
+	}
+
+	if err := tx.Create(&product).Error; err != nil {
 		tx.Rollback()
 		return nil, http.StatusInternalServerError, err
 	}
@@ -70,6 +85,7 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 	}
 	return responseData, http.StatusCreated, nil
 }
+
 func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
 	var product models.Product
 	if err := db.First(&product, req.ProductID).Error; err != nil {
@@ -147,6 +163,61 @@ func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.C
 
 	responseData := gin.H{
 		"message": "Product updated successfully",
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+	var category models.Category
+	var products []models.Product
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	offset := (page - 1) * pageSize
+
+	if err := db.Where("name = ?", categoryName).First(&category).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, http.StatusNotFound, errors.New("category not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := db.Model(&category).Offset(offset).Limit(pageSize).Association("Products").Find(&products); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	fmt.Printf("Category ID: %v\n", category.ID)
+	fmt.Printf("Number of products found: %d\n", len(products))
+
+	responseData := gin.H{
+		"category":   categoryName,
+		"products":   products,
+		"page":       page,
+		"pageSize":   pageSize,
+		"totalPages": int(math.Ceil(float64(len(category.Products)) / float64(pageSize))),
+		"totalItems": len(category.Products),
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+	var products []models.Product
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	offset := (page - 1) * pageSize
+
+	if err := db.Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"products":   products,
+		"page":       page,
+		"pageSize":   pageSize,
+		"totalPages": int(math.Ceil(float64(len(products)) / float64(pageSize))),
+		"totalItems": len(products),
 	}
 	return responseData, http.StatusOK, nil
 }

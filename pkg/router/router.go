@@ -46,6 +46,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	JobPost(r, ApiVersion, validator, db, logger)
 	FAQ(r, ApiVersion, validator, db, logger)
 	SuperAdmin(r, ApiVersion, validator, db, logger)
+	Category(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -8,6 +8,8 @@ func AuthMigrationModels() []interface{} {
 		models.AccessToken{},
 		models.Role{},
 		models.Organisation{},
+		models.OrgRole{},
+		models.Permission{},
 		models.Profile{},
 		models.Product{},
 		models.User{},
@@ -17,12 +19,11 @@ func AuthMigrationModels() []interface{} {
 		models.WaitlistUser{},
 		models.NewsLetter{},
 		models.JobPost{},
-		models.PasswordReset{},
-		models.MagicLink{},
 		models.FAQ{},
 		models.Language{},
 		models.Timezone{},
 		models.Region{},
+		models.UserRegionTimezoneLanguage{},
 	} // an array of db models, example: User{}
 }
 

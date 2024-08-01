@@ -136,12 +136,12 @@ func GetLoginToken(t *testing.T, r *gin.Engine, auth auth.Controller, loginData 
 // helper to create an organisation
 func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org organisation.Controller, orgData models.CreateOrgRequestModel, token string) string {
 	var (
-		orgPath = "/api/v1/organisations"
+		orgPath = "/api/v1/organizations"
 		orgURI  = url.URL{Path: orgPath}
 	)
 	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
 	{
-		orgUrl.POST("/organisations", org.CreateOrganisation)
+		orgUrl.POST("/organizations", org.CreateOrganisation)
 	}
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(orgData)

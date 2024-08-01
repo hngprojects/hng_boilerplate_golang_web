@@ -23,6 +23,8 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 		productUrl.DELETE("/products/:product_id", product.DeleteProductController)
 		productUrl.GET("/products/:product_id", product.GetProduct)
 		productUrl.PUT("/products/", product.UpdateProduct)
+		productUrl.GET("/products/categories/:category", product.GetProductsInCategory)
+		productUrl.GET("/products", product.GetAllProducts)
 	}
 
 	return r
