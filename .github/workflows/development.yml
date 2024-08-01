@@ -21,6 +21,10 @@ jobs:
       TEST_TIMEZONE: Africa/Lagos
       TEST_SSLMODE: disable
       TEST_MIGRATE: true
+      REDIS_PORT: 6379
+      REDIS_HOST: localhost
+      REDIS_DB: 0
+
     services:
       postgres:
         image: postgres:latest
