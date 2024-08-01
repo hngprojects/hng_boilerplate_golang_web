@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -40,7 +41,7 @@ func RandomString(length int) string {
 	return processedString + string(padding)
 }
 
-func GenerateOTP(max int) string {
+func GenerateOTP(max int) (int, error) {
 	b := make([]byte, max)
 	n, err := io.ReadAtLeast(crand.Reader, b, max)
 	if n != max {
@@ -49,5 +50,5 @@ func GenerateOTP(max int) string {
 	for i := 0; i < len(b); i++ {
 		b[i] = table[int(b[i])%len(table)]
 	}
-	return string(b)
+	return strconv.Atoi(string(b))
 }

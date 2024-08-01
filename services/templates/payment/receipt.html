@@ -276,7 +276,7 @@
                               <h2>Payment Receipt</h2>
                               <p class="p-desc">
                                 Your payment was successfully received in
-                                Vesicash Escrow
+                                 
                               </p>
                               {{ $broker_charge := 0 }} {{ $shipping_charge := 0
                               }} {{ if not (eq .transaction.TransactionID "")}}
@@ -290,7 +290,7 @@
                               <h2>
                                 {{ $currency := .currency }} {{ printf "%s %s"
                                 $currency (printf "%.0f" (add (add
-                                (.escrow_charg | numberFormat) $broker_charge)
+                                (._charg | numberFormat) $broker_charge)
                                 (add $shipping_charge (.amount | numberFormat
                                 )))) }}
                               </h2>
@@ -316,9 +316,9 @@
                                             </td>
                                           </tr>
                                           <tr>
-                                            <td>Escrow Charge</td>
+                                            <td> Charge</td>
                                             <td class="alignright">
-                                              {{ $currency }} {{ .escrow_charge
+                                              {{ $currency }} {{ ._charge
                                               }}
                                             </td>
                                           </tr>
@@ -406,7 +406,7 @@
                               <img
                                 class="logo-img"
                                 src="https://i.ibb.co/qRywKpr/Webp-net-resizeimage.png"
-                                alt="vesicash"
+                                alt=""
                                 width="30%"
                               />
                             </td>
@@ -423,7 +423,7 @@
                     <tr>
                       <td class="aligncenter content-block">
                         Questions? Email
-                        <a href="mailto:">support@vesicash.com</a>
+                        <a href="mailto:">support@.com</a>
                       </td>
                     </tr>
                   </tbody>
