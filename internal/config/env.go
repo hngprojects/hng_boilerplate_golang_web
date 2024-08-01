@@ -12,6 +12,7 @@ type Configuration struct {
 	App          App
 	IPStack      IPStack
 	Mail         MAIL
+	Redis        Redis
 }
 
 type BaseConfig struct {
@@ -55,6 +56,10 @@ type BaseConfig struct {
 	MAIL_PASSWORD string `mapstructure:"MAIL_PASSWORD"`
 	MAIL_USERNAME string `mapstructure:"MAIL_USERNAME"`
 	MAIL_PORT     string `mapstructure:"MAIL_PORT"`
+
+	REDIS_PORT string `mapstructure:"REDIS_PORT"`
+	REDIS_HOST string `mapstructure:"REDIS_HOST"`
+	REDIS_DB   string `mapstructure:"REDIS_DB"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -115,6 +120,12 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			Password: config.MAIL_PASSWORD,
 			Port:     config.MAIL_PORT,
 			Username: config.MAIL_USERNAME,
+		},
+
+		Redis: Redis{
+			REDIS_PORT: config.REDIS_PORT,
+			REDIS_HOST: config.REDIS_HOST,
+			REDIS_DB:   config.REDIS_DB,
 		},
 	}
 }

@@ -4,16 +4,21 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -58,7 +63,7 @@ func UpdateUserPassword(c *gin.Context, req models.ChangePasswordRequestModel, d
 	return &userDataExist, http.StatusOK, nil
 }
 
-func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
+func PasswordReset(userEmail string, db *gorm.DB, extReq request.ExternalRequest) (string, int, error) {
 
 	var (
 		user      = models.User{}
@@ -82,11 +87,16 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 		return "error", http.StatusNotFound, fmt.Errorf("user not found")
 	}
 
-	resetToken := utility.GenerateOTP(6)
+	resetToken, err := utility.GenerateOTP(6)
+
+	if err != nil {
+		return "error", http.StatusInternalServerError, err
+	}
+
 	reset := models.PasswordReset{
 		ID:        utility.GenerateUUID(),
 		Email:     strings.ToLower(userEmail),
-		Token:     resetToken,
+		Token:     strconv.Itoa(resetToken),
 		ExpiresAt: time.Now().Add(time.Duration(config.App.ResetPasswordDuration) * time.Minute),
 	}
 
@@ -95,8 +105,15 @@ func PasswordReset(userEmail string, db *gorm.DB) (string, int, error) {
 		return "error", http.StatusInternalServerError, err
 	}
 
-	// Send email with the reset link (e.g., http://example.com/reset-password?token=resetToken)
-	//SendBackgroundEmail(user.Email, resetToken, "reset password")
+	resetReq := models.SendOTP{
+		Email:    userEmail,
+		OtpToken: resetToken,
+	}
+
+	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendOTP, resetReq)
+	if err != nil {
+		return "error", http.StatusInternalServerError, err
+	}
 
 	return "success", http.StatusOK, nil
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/redis"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -28,6 +29,7 @@ func Setup() *utility.Logger {
 	config := config.Setup(logger, "../../app")
 
 	postgresql.ConnectToDatabase(logger, config.TestDatabase)
+	redis.ConnectToRedis(logger, config.Redis)
 	db := storage.Connection()
 	if config.TestDatabase.Migrate {
 		migrations.RunAllMigrations(db)

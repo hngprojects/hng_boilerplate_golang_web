@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/send"
 )
 
-func (n NotificationObject) SendWelcomeMail() error {
+func (n NotificationObject) SendEmailVerificationMail() error {
 	var (
-		notificationData     = models.SendWelcomeMail{}
-		subject              = "Welcome on board!🎉"
-		templateFileName     = "welcome-email.html"
+		notificationData     = models.SendEmailVerificationMail{}
+		subject              = "Please verify your email address"
+		templateFileName     = "email_verification.html"
 		baseTemplateFileName = ""
+		configData           = config.GetConfig()
 		user                 models.User
 	)
 
@@ -27,7 +29,9 @@ func (n NotificationObject) SendWelcomeMail() error {
 		return fmt.Errorf("error getting user with account id %v, %v", notificationData.Email, err)
 	}
 
-	data, err := ConvertToMapAndAddExtraData(notificationData, map[string]interface{}{"firstname": thisOrThatStr(user.Profile.FirstName, user.Email)})
+	verificationUrl := fmt.Sprintf("%v/email-verify/", configData.App.Url)
+
+	data, err := ConvertToMapAndAddExtraData(notificationData, map[string]interface{}{"firstname": thisOrThatStr(user.Profile.FirstName, user.Email), "verification_url": verificationUrl})
 	if err != nil {
 		return fmt.Errorf("error converting data to map, %v", err)
 	}
