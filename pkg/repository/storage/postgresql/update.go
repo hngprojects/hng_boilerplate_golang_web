@@ -12,6 +12,14 @@ func SaveAllFields(db *gorm.DB, model interface{}) (*gorm.DB, error) {
 	return result, nil
 }
 
+func UpdateFields(db *gorm.DB, model interface{}, updates interface{}, id string) (*gorm.DB, error) {
+	result := db.Model(model).Where("id = ?", id).Updates(updates)
+	if result.Error != nil {
+		return result, result.Error
+	}
+	return result, nil
+}
+
 func SaveAllModelsFields(db *gorm.DB, models []interface{}) (*gorm.DB, error) {
 	// Use a transaction to ensure atomicity of updates
 	tx := db.Begin()

@@ -35,4 +35,10 @@ func SetupSARoutes(r *gin.Engine, saController *superadmin.Controller) {
 		saController.AddToTimeZone)
 	r.POST("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
 		saController.AddToLanguage)
+	r.GET("/api/v1/regions", middleware.Authorize(saController.Db.Postgresql),
+		saController.GetRegion)
+	r.GET("/api/v1/timezones", middleware.Authorize(saController.Db.Postgresql),
+		saController.GetTimeZone)
+	r.GET("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql),
+		saController.GetLanguage)
 }

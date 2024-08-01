@@ -51,4 +51,10 @@ func SetupUsersRoutes(r *gin.Engine, userController *user.Controller) {
 	r.GET("/api/v1/users/:user_id/organisations",
 		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.GetAUserOrganisation)
+	r.PUT("/api/v1/users/:user_id/regions",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+		userController.UpdateUserRegion)
+	r.GET("/api/v1/users/:user_id/regions",
+		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		userController.GetUserRegion)
 }
