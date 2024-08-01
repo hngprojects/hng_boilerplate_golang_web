@@ -8,7 +8,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/oauth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/router"
@@ -20,7 +19,6 @@ func main() {
 	configuration := config.Setup(logger, "./app")
 	postgresql.ConnectToDatabase(logger, configuration.Database)
 	validatorRef := validator.New()
-	oauth.SetupOauth(logger, configuration.Oauth) // setup oauth
 	db := storage.Connection()
 
 	if configuration.Database.Migrate {
