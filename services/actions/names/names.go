@@ -14,6 +14,7 @@ const (
 	SendOTP                   NotificationName = "send_otp"
 	SendResetPasswordMail     NotificationName = "send_reset_password_mail"
 	SendEmailVerificationMail NotificationName = "send_email_verification_mail"
+	SendMagicLink             NotificationName = "send_magic_link"
 )
 
 func Check() {

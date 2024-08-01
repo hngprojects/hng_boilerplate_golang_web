@@ -150,9 +150,6 @@ func VerifyPasswordResetToken(req models.ResetPasswordRequestModel, db *gorm.DB)
 		return nil, http.StatusInternalServerError, err
 	}
 
-	// Send email with the reset link (e.g., http://example.com/reset-password?token=resetToken)
-	//SendBackgroundEmail(user.Email, "reset password verify")
-
 	return &userDataExist, http.StatusOK, nil
 
 }

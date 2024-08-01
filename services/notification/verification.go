@@ -12,7 +12,7 @@ import (
 func (n NotificationObject) SendEmailVerificationMail() error {
 	var (
 		notificationData     = models.SendEmailVerificationMail{}
-		subject              = "Please verify your email address"
+		subject              = "Subject: Please verify your email address"
 		templateFileName     = "email_verification.html"
 		baseTemplateFileName = ""
 		configData           = config.GetConfig()

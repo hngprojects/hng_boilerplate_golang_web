@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -29,7 +30,16 @@ func (base *Controller) RequestMagicLink(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.MagicLinkRequest(req.Email, base.Db.Postgresql)
+	host := c.Request.Host
+
+	scheme := "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+
+	url := scheme + "://" + host
+
+	respData, code, err := service.MagicLinkRequest(req.Email, url, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

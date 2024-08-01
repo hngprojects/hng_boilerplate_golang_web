@@ -35,6 +35,11 @@ type SendResetPassword struct {
 	Token int    `json:"token"  validate:"required"`
 }
 
+type SendMagicLink struct {
+	Email     string `json:"email"  validate:"required"`
+	MagicLink string `json:"magic_link"  validate:"required"`
+}
+
 func (n *NotificationRecord) PushToQueue(rdb *redis.Client) error {
 	err := dbRedis.PushToQueue(rdb, &n)
 
