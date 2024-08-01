@@ -1,8 +1,10 @@
 package product
 
 import (
+	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -171,6 +173,37 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 
 func (base *Controller) GetAllProducts(ctx *gin.Context) {
 	respData, code, err := product.GetAllProducts(base.Db.Postgresql, ctx)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
+		ctx.JSON(code, rd)
+		return
+	}
+
+	base.Logger.Info("Products found successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Products found successfully", respData)
+
+	ctx.JSON(code, rd)
+}
+
+func (base *Controller) FilterProducts(ctx *gin.Context) {
+	priceStr := ctx.Query("price")
+	category := ctx.Query("category")
+
+	if priceStr == "" {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Price query parameter is required", "Invalid price", nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		log.Println(err)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "Invalid price", nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := product.FilterProducts(price, category, base.Db.Postgresql, ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)

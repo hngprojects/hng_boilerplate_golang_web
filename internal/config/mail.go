@@ -1,5 +1,8 @@
 package config
+
 type MAIL struct {
-	Domain string
-	APIKey string
+	Server   string
+	Port     string
+	Username string
+	Password string
 }
