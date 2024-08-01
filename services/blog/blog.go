@@ -57,13 +57,17 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 	return response, nil
 }
 
-func DeleteBlog(blogId string, db *gorm.DB) error {
+func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
 	blog, err := CheckBlogExists(blogId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("blog not found")
 		}
 		return err
+	}
+
+	if blog.AuthorID != userId {
+		return errors.New("user not authorised to delete blog")
 	}
 
 	return blog.Delete(db)

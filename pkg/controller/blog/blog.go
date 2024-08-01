@@ -73,9 +73,24 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 		return
 	}
 
-	if err := service.DeleteBlog(blogID, base.Db.Postgresql); err != nil {
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", "Bad Request", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
+
+	if err := service.DeleteBlog(blogID, userId, base.Db.Postgresql); err != nil {
 		if err.Error() == "blog not found" {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete blog", nil)
+			c.JSON(http.StatusNotFound, rd)
+			return
+		}
+		if err.Error() == "user not authorised to delete blog" {
+			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to delete blog", nil)
 			c.JSON(http.StatusNotFound, rd)
 			return
 		}
@@ -94,7 +109,7 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 func (base *Controller) GetBlogs(c *gin.Context) {
 	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql, c)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Failed to fetch blogs", err, nil)
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch blogs", err, nil)
 		c.JSON(http.StatusNotFound, rd)
 		return
 	}
