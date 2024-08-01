@@ -25,6 +25,12 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 		organisationUrl.DELETE("/organizations/:org_id", organisation.DeleteOrganisation)
 		organisationUrl.PATCH("/organizations/:org_id", organisation.UpdateOrganisation)
 		organisationUrl.GET("/organizations/:org_id/users", organisation.GetUsersInOrganisation)
+		organisationUrl.POST("/organizations/:org_id/roles", organisation.CreateOrgRole)
+		organisationUrl.GET("/organizations/:org_id/roles", organisation.GetOrgRoles)
+		organisationUrl.GET("/organizations/:org_id/roles/:role_id", organisation.GetAOrgRole)
+		organisationUrl.DELETE("/organizations/:org_id/roles/:role_id", organisation.DeleteOrgRole)
+		organisationUrl.PATCH("/organizations/:org_id/roles/:role_id", organisation.UpdateOrgRole)
+		organisationUrl.PATCH("/organizations/:org_id/roles/:role_id/permissions", organisation.UpdateOrgPermissions)
 	}
 
 	organisationUrlSec := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
