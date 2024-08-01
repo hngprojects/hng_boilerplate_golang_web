@@ -139,6 +139,22 @@ func SeedDatabase(db *gorm.DB) {
 		fmt.Println("FAQ already exist, skipping seeding.")
 	}
 
+	//seeding templates
+	templates := SeedTemplates()
+	if err := db.Where("name = ?", templates[0].Name).First(&models.EmailTemplate{}).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Seed templates
+			for _, template := range templates {
+				postgresql.CreateOneRecord(db, &template)
+			}
+		} else {
+			fmt.Println("An error occurred: ", err)
+		}
+	} else {
+		fmt.Println("Templates already exist, skipping seeding.")
+	}
+
+
 }
 
 func SeedTestDatabase(db *gorm.DB) {

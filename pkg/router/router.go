@@ -47,6 +47,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	SuperAdmin(r, ApiVersion, validator, db, logger)
 	Category(r, ApiVersion, validator, db, logger)
 	Notification(r, ApiVersion, validator, db, logger)
+	Template(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
