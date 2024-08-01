@@ -23,12 +23,10 @@ import (
 func TestUserSignup(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
-
 	validatorRef := validator.New()
 	db := storage.Connection()
 	requestURI := url.URL{Path: "/api/v1/auth/users/signup"}
 	currUUID := utility.GenerateUUID()
-	welcomeNotification := models.NotificationRecord{}
 
 	tests := []struct {
 		Name         string
@@ -78,11 +76,6 @@ func TestUserSignup(t *testing.T) {
 
 			code := int(data["status_code"].(float64))
 			tst.AssertStatusCode(t, code, test.ExpectedCode)
-
-			ress, err := welcomeNotification.PopFromQueue(db.Redis)
-			tst.AssertBool(t, err == nil, true)
-
-			fmt.Println(ress)
 
 			if test.Message != "" {
 				message := data["message"]

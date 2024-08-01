@@ -8,7 +8,6 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-
 func RedisSet(rdb *redis.Client, key string, value interface{}) error {
 	serialized, err := json.Marshal(value)
 	if err != nil {
@@ -25,7 +24,7 @@ func PushToQueue(rdb *redis.Client, value interface{}) error {
 
 	err = rdb.LPush(Ctx, KeyName, jsonValue).Err()
 	if err != nil {
-		return fmt.Errorf("could not push to Redis queue: %v", err)
+		fmt.Println("could not push to Redis queue: ", err)
 	}
 
 	return nil

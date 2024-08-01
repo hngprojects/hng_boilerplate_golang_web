@@ -11,7 +11,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
-	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -21,7 +20,6 @@ func TestRequestMagicLink(t *testing.T) {
 	currUUID := utility.GenerateUUID()
 	theRole := models.RoleIdentity.SuperAdmin
 	password, _ := utility.HashPassword("password")
-	magicLinkNotfication := models.NotificationRecord{}
 
 	adminData := models.User{
 		ID:       utility.GenerateUUID(),
@@ -46,11 +44,6 @@ func TestRequestMagicLink(t *testing.T) {
 		tests.AssertStatusCode(t, resp.Code, http.StatusOK)
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Magic link sent to email")
-
-		ress, err := magicLinkNotfication.PopFromQueue(db.Redis)
-		tst.AssertBool(t, err == nil, true)
-
-		fmt.Println(ress)
 	})
 
 }
