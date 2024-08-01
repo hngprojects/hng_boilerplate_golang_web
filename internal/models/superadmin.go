@@ -1,12 +1,24 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
+
+type UserRegionTimezoneLanguage struct {
+	ID         string         `gorm:"type:uuid;primary_key" json:"id"`
+	UserID     string         `gorm:"type:uuid;not null" json:"user_id"`
+	RegionID   string         `gorm:"type:uuid;not null" json:"region_id" validate:"required"`
+	TimezoneID string         `gorm:"type:uuid;not null" json:"timezone_id" validate:"required"`
+	LanguageID string         `gorm:"type:uuid;not null" json:"language_id" validate:"required"`
+	CreatedAt  time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+}
 
 type Language struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"language_id"`
@@ -59,6 +71,28 @@ func (r *Region) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
+func (u *UserRegionTimezoneLanguage) GetUserRegionByID(db *gorm.DB, userID string) (UserRegionTimezoneLanguage, error) {
+	var user UserRegionTimezoneLanguage
+
+	query := db.Where("user_id = ?", userID)
+	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+
+}
+
+func (u *UserRegionTimezoneLanguage) CreateUserRegion(db *gorm.DB) error {
+	err := postgresql.CreateOneRecord(db, &u)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (l *Language) CreateLanguage(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &l)
 
@@ -87,4 +121,48 @@ func (r *Region) CreateRegion(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func (r *Region) GetRegions(db *gorm.DB) ([]Region, error) {
+	var regions []Region
+	err := postgresql.SelectAllFromDb(db, "desc", &regions, nil)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return regions, err
+		}
+		return regions, err
+	}
+
+	return regions, nil
+}
+
+func (r *Timezone) GetTimeZones(db *gorm.DB) ([]Timezone, error) {
+	var timezones []Timezone
+	err := postgresql.SelectAllFromDb(db, "desc", &timezones, nil)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return timezones, err
+		}
+		return timezones, err
+	}
+
+	return timezones, nil
+}
+
+func (r *Language) GetLanguages(db *gorm.DB) ([]Language, error) {
+	var languages []Language
+	err := postgresql.SelectAllFromDb(db, "desc", &languages, nil)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return languages, err
+		}
+		return languages, err
+	}
+
+	return languages, nil
+}
+
+func (u *UserRegionTimezoneLanguage) UpdateUserRegion(db *gorm.DB) error {
+	_, err := postgresql.SaveAllFields(db, &u)
+	return err
 }

@@ -38,7 +38,6 @@ func TestGetAllUsers(t *testing.T) {
 	db.Create(&adminUser)
 	db.Create(&regularUser)
 
-	// This function ensures a fresh setup for each test case
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, userController := SetupUsersTestRouter()
 		authController := auth.Controller{
