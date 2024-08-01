@@ -87,29 +87,49 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 }
 
 func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var product models.Product
-	if err := db.First(&product, req.ProductID).Error; err != nil {
+	if err := tx.Where("id = ?", req.ProductID).First(&product).Error; err != nil {
+		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("product not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
 
-	ownerID, err := middleware.GetIdFromToken(ctx)
-	if err != nil {
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+	if ownerID == "" {
+		tx.Rollback()
 		return nil, http.StatusUnauthorized, errors.New("failed to get owner ID from token")
 	}
 
 	if product.OwnerID != ownerID {
+		tx.Rollback()
 		return nil, http.StatusForbidden, errors.New("you are not authorized to delete this product")
 	}
 
-	if err := db.Delete(&product).Error; err != nil {
+	if err := tx.Exec("DELETE FROM product_categories WHERE product_id = ?", product.ID).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Delete(&product).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
 	responseData := gin.H{
-		"message": "Product deleted successfully",
+		"message": "Product and its category associations deleted successfully",
 	}
 	return responseData, http.StatusOK, nil
 }
@@ -157,7 +177,6 @@ func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.C
 	product.Price = req.Price
 
 	if err := db.Save(&product).Error; err != nil {
-		log.Printf("Error saving product: %v", err) // Add this line
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -218,6 +237,44 @@ func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
 		"pageSize":   pageSize,
 		"totalPages": int(math.Ceil(float64(len(products)) / float64(pageSize))),
 		"totalItems": len(products),
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	var products []models.Product
+	var totalCount int64
+
+	query := db
+
+	if price > 0 {
+		query = query.Where("price <= ?", price)
+	}
+
+	if category != "" {
+		query = query.Joins("JOIN product_categories ON products.id = product_categories.product_id").
+			Joins("JOIN categories ON product_categories.category_id = categories.id").
+			Where("categories.name = ?", category)
+	}
+
+	if err := query.Model(&models.Product{}).Count(&totalCount).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
+	offset := (page - 1) * pageSize
+
+	if err := query.Order("price DESC").Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"products":     products,
+		"total_count":  totalCount,
+		"current_page": page,
+		"page_size":    pageSize,
+		"total_pages":  int(math.Ceil(float64(totalCount) / float64(pageSize))),
 	}
 	return responseData, http.StatusOK, nil
 }
