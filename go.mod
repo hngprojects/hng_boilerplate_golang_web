@@ -2,8 +2,6 @@ module github.com/hngprojects/hng_boilerplate_golang_web
 
 go 1.19
 
-toolchain go1.22.5
-
 //toolchain go1.22.2
 
 require (
