@@ -22,7 +22,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// patch update notification settings
 func (base *Controller) UpdateNotificationSettings(c *gin.Context) {
 	var req models.NotificationSettings
 

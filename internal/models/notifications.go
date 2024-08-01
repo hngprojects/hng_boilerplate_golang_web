@@ -16,17 +16,6 @@ type Notification struct {
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 }
 
-// {
-// 	“mobile_push_notifications": "boolean",
-// 	“email_notification_activity_in workspace": "boolean",
-// 	“email_notification_always_send_email_notifications": "boolean",
-// 	“email_notification_email_digest": "boolean",
-// 	“email_notification_announcement_and_update_emails": "boolean",
-// 	“slack_notifications_activity_on_your_workspace”: "boolean",
-// 	“slack_notifications_always_send_email_notifications”: "boolean",
-// 	“slack_notifications_announcement_and_update_emails”: "boolean"
-// 	}
-
 type NotificationSettings struct {
 	ID                                             string `json:"id" gorm:"type:uuid;primaryKey;unique;not null"`
 	UserID                                         string `json:"user_id" gorm:"type:uuid;not null"`
@@ -64,13 +53,11 @@ func (n *Notification) FetchAllNotifications(db *gorm.DB, c *gin.Context) ([]Not
 	var notifications []Notification
 	type additionalData map[string]interface{}
 
-	//query total notification count
 	totalCount, err := postgresql.CountRecords(db, &n)
 	if err != nil {
 		return nil, additionalData{}, err
 	}
 
-	//query total unread notification count
 	unreadCount, err := postgresql.CountSpecificRecords(db, &n, "is_read = false")
 	if err != nil {
 		return nil, additionalData{}, err
@@ -92,13 +79,11 @@ func (n *Notification) FetchUnReadNotifications(db *gorm.DB, c *gin.Context) ([]
 	var notifications []Notification
 	type additionalData map[string]interface{}
 
-	//query total notification count
 	totalCount, err := postgresql.CountRecords(db, &n)
 	if err != nil {
 		return nil, additionalData{}, err
 	}
 
-	//query total unread notification count
 	unreadCount, err := postgresql.CountSpecificRecords(db, &n, "is_read = false")
 	if err != nil {
 		return nil, additionalData{}, err
