@@ -11,6 +11,17 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+// CreateInvite godoc
+// @Summary Create an invitation
+// @Description Create a new invitation for a user
+// @Tags invite
+// @Accept json
+// @Produce json
+// @Param invitation body models.InvitationCreateReq true "Invitation request body"
+// @Success 201 {object} utility.Response "Invitation created successfully"
+// @Failure 400 {object} utility.Response "Failed to parse request body or Validation failed or Invalid email format or unable to get user claims"
+// @Failure 500 {object} utility.Response "Internal server error"
+// @Router /invite [post]
 func (base *Controller) CreateInvite(c *gin.Context) {
 	var inviteReq models.InvitationCreateReq
 
@@ -43,7 +54,7 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	//call checker validator to check if user is an admin of the organisation and if organisation exists
+	// call checker validator to check if user is an admin of the organisation and if organisation exists
 	_, statusCode, msg, err := invite.CheckerValidator(base.Db, inviteReq, userId, base.Logger)
 	if err != nil {
 		rd := utility.BuildErrorResponse(statusCode, "error", msg, err, nil)
@@ -51,8 +62,7 @@ func (base *Controller) CreateInvite(c *gin.Context) {
 		return
 	}
 
-
-	//generate token, save to db and return invitation link
+	// generate token, save to db and return invitation link
 	inviteLink, err := invite.InvitationLinkGenerator(c, base.Db, inviteReq, userId)
 	if err != nil {
 		return

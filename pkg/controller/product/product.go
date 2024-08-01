@@ -64,12 +64,15 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// @Summary Delete DeleteProductController
+// DeleteProductController godoc
+// @Summary Delete Product
 // @Description Delete a product
-// @Tags DeleteProductController
+// @Tags Product
 // @Accept json
 // @Produce json
 // @Param product_id path string true "Product ID"
+// @Success 200 {object} utility.Response
+// @Failure 400,422 {object} utility.Response
 // @Router /product/{product_id} [delete]
 func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	var (
@@ -103,12 +106,15 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	ctx.JSON(code, rd)
 }
 
-// @Summary GetProduct
+// GetProduct godoc
+// @Summary Get Product
 // @Description Get a Product
-// @Tags GetProduct
+// @Tags Product
 // @Accept json
 // @Produce json
 // @Param product_id path string true "Product ID"
+// @Success 200 {object} utility.Response
+// @Failure 400,404,500 {object} utility.Response
 // @Router /product/{product_id} [get]
 func (base *Controller) GetProduct(c *gin.Context) {
 	productId := c.Param("product_id")
@@ -139,13 +145,16 @@ func (base *Controller) GetProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// @Summary UpdateProduct
+// UpdateProduct godoc
+// @Summary Update Product
 // @Description Update a product
-// @Tags UpdateProduct
+// @Tags Product
 // @Accept json
 // @Produce json
 // @Param product_id path string true "Product ID"
 // @Param product body models.UpdateProductRequestModel true "Product details"
+// @Success 200 {object} utility.Response
+// @Failure 400,422 {object} utility.Response
 // @Router /product/{product_id} [put]
 func (base *Controller) UpdateProduct(c *gin.Context) {
 	var (
@@ -179,12 +188,15 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// @Summary GetProductsInCategory
+// GetProductsInCategory godoc
+// @Summary Get Products In Category
 // @Description Get all products in a category
-// @Tags GetProductsInCategory
+// @Tags Product
 // @Accept json
 // @Produce json
 // @Param category path string true "Category"
+// @Success 200 {object} utility.Response
+// @Failure 400,404 {object} utility.Response
 // @Router /product/category/{category} [get]
 func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 	category := ctx.Param("category")
@@ -223,14 +235,16 @@ func (base *Controller) GetAllProducts(ctx *gin.Context) {
 }
 
 // FilterProducts godoc
-// @Summary Filter products by price and category
+// @Summary Filter Products
 // @Description Filter products by price and category
-// @Tags Products
-// @Accept  json
-// @Produce  json
+// @Tags Product
+// @Accept json
+// @Produce json
 // @Param price query float64 true "Product Price"
 // @Param category query string true "Product Category"
-// @Router /products/filter [get]
+// @Success 200 {object} utility.Response
+// @Failure 400,404 {object} utility.Response
+// @Router /product/filter [get]
 func (base *Controller) FilterProducts(ctx *gin.Context) {
 	priceStr := ctx.Query("price")
 	category := ctx.Query("category")

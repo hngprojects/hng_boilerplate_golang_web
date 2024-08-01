@@ -20,6 +20,13 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+// @Summary Get all users
+// @Description Retrieve a list of all users
+// @Tags User
+// @Produce json
+// @Success 200 {object} utility.Response "Users retrieved successfully"
+// @Failure 500 {object} utility.Response "Error retrieving users"
+// @Router /users [get]
 func (base *Controller) GetAllUsers(c *gin.Context) {
 
 	usersData, paginationResponse, code, err := service.GetAllUsers(c, base.Db.Postgresql)
@@ -34,6 +41,14 @@ func (base *Controller) GetAllUsers(c *gin.Context) {
 
 }
 
+// @Summary Get a user
+// @Description Retrieve a single user by ID
+// @Tags User
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} utility.Response "User retrieved successfully"
+// @Failure 404 {object} utility.Response "User not found"
+// @Router /users/{user_id} [get]
 func (base *Controller) GetAUser(c *gin.Context) {
 
 	var (
@@ -51,6 +66,14 @@ func (base *Controller) GetAUser(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
+// @Summary Get user organizations
+// @Description Retrieve organizations associated with a user
+// @Tags User
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} utility.Response "User organisations retrieved successfully"
+// @Failure 404 {object} utility.Response "User not found"
+// @Router /users/{user_id}/organisations [get]
 func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 
 	var (
@@ -68,6 +91,14 @@ func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
+// @Summary Delete a user
+// @Description Delete a user by ID
+// @Tags User
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} utility.Response "User deleted successfully"
+// @Failure 404 {object} utility.Response "User not found"
+// @Router /users/{user_id} [delete]
 func (base *Controller) DeleteAUser(c *gin.Context) {
 
 	var (
@@ -85,6 +116,17 @@ func (base *Controller) DeleteAUser(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
+// @Summary Update a user
+// @Description Update user information
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Param request body models.UpdateUserRequestModel true "User update request"
+// @Success 200 {object} utility.Response "User info updated successfully"
+// @Failure 400 {object} utility.Response "Failed to parse request body"
+// @Failure 422 {object} utility.Response "Validation failed"
+// @Router /users/{user_id} [put]
 func (base *Controller) UpdateAUser(c *gin.Context) {
 	var (
 		userID = c.Param("user_id")

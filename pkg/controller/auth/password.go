@@ -9,6 +9,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+// ChangePassword godoc
+// @Summary Change Password
+// @Description Change user	password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param password body models.ChangePasswordRequestModel true "Password"
+// @Router /auth/change-password [post]
 func (base *Controller) ChangePassword(c *gin.Context) {
 	var (
 		req = models.ChangePasswordRequestModel{}
@@ -43,6 +51,14 @@ func (base *Controller) ChangePassword(c *gin.Context) {
 
 }
 
+// ForgotPassword godoc
+// @Summary Forgot Password
+// @Description Forgot user password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param email body models.ForgotPasswordRequestModel true "Email"
+// @Router /auth/forgot-password [post]
 func (base *Controller) ResetPassword(c *gin.Context) {
 	var (
 		req = models.ForgotPasswordRequestModel{}
@@ -77,6 +93,14 @@ func (base *Controller) ResetPassword(c *gin.Context) {
 
 }
 
+// VerifyResetToken godoc
+// @Summary Verify Reset Token
+// @Description Verify a reset token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param token body models.ResetPasswordRequestModel true "Token"
+// @Router /auth/verify-reset-token [put]
 func (base *Controller) VerifyResetToken(c *gin.Context) {
 	var (
 		req = models.ResetPasswordRequestModel{}

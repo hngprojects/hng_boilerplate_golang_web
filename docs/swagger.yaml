@@ -1,5 +1,68 @@
-basePath: /api/v1
 definitions:
+  models.AddUserToOrgRequestModel:
+    properties:
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
+  models.ChangePasswordRequestModel:
+    properties:
+      new_password:
+        minLength: 7
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    type: object
+  models.CreateBlogRequest:
+    properties:
+      content:
+        type: string
+      image_urls:
+        items:
+          type: string
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  models.CreateOrgRequestModel:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      industry:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 2
+        type: string
+      state:
+        type: string
+      type:
+        type: string
+    required:
+    - address
+    - country
+    - email
+    - industry
+    - name
+    - state
+    - type
+    type: object
   models.CreateProductRequestModel:
     properties:
       category:
@@ -36,6 +99,188 @@ definitions:
     - last_name
     - password
     type: object
+  models.CreateWaitlistUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  models.FAQ:
+    properties:
+      answer:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      question:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - answer
+    - question
+    type: object
+  models.ForgotPasswordRequestModel:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  models.GoogleRequestModel:
+    properties:
+      id_token:
+        type: string
+    required:
+    - id_token
+    type: object
+  models.InvitationAcceptReq:
+    properties:
+      invitation_link:
+        type: string
+    required:
+    - invitation_link
+    type: object
+  models.InvitationCreateReq:
+    properties:
+      email:
+        type: string
+      organisation_id:
+        type: string
+    required:
+    - email
+    - organisation_id
+    type: object
+  models.InvitationRequest:
+    properties:
+      emails:
+        items:
+          type: string
+        type: array
+      org_id:
+        type: string
+    required:
+    - emails
+    - org_id
+    type: object
+  models.Language:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      language_id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - code
+    - name
+    type: object
+  models.LoginRequestModel:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.MagicLinkRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  models.NewsLetter:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - email
+    type: object
+  models.Ping:
+    properties:
+      message:
+        type: string
+    type: object
+  models.Region:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      name:
+        type: string
+      region_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - code
+    - name
+    type: object
+  models.ResetPasswordRequestModel:
+    properties:
+      new_password:
+        minLength: 7
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  models.Timezone:
+    properties:
+      created_at:
+        type: string
+      identifier:
+        type: string
+      offset:
+        type: string
+      timezone_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - identifier
+    - offset
+    type: object
+  models.UpdateOrgRequestModel:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      industry:
+        type: string
+      name:
+        type: string
+      state:
+        type: string
+      type:
+        type: string
+    type: object
   models.UpdateProductRequestModel:
     properties:
       description:
@@ -52,13 +297,853 @@ definitions:
     - price
     - product_id
     type: object
-host: http://localhost:8019
+  models.UpdateUserRequestModel:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+    required:
+    - first_name
+    - last_name
+    - username
+    type: object
+  models.UserRegionTimezoneLanguage:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      language_id:
+        type: string
+      region_id:
+        type: string
+      timezone_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - language_id
+    - region_id
+    - timezone_id
+    type: object
+  models.VerifyMagicLinkRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  utility.Response:
+    properties:
+      data: {}
+      error:
+        description: for errors that occur even if request is successful
+      extra: {}
+      message:
+        type: string
+      name:
+        description: name of the error
+        type: string
+      pagination: {}
+      status:
+        type: string
+      status_code:
+        type: integer
+    type: object
 info:
   contact: {}
   description: This is a boilerplate for golang HNG Internship 11.0
   title: HNG Boilerplate Golang Web API
   version: "1.0"
 paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: "Change user\tpassword"
+      parameters:
+      - description: Password
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangePasswordRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: Change Password
+      tags:
+      - Auth
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Forgot user password
+      parameters:
+      - description: Email
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.ForgotPasswordRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: Forgot Password
+      tags:
+      - Auth
+  /auth/google-login:
+    post:
+      consumes:
+      - application/json
+      description: Login with google
+      parameters:
+      - description: Google details
+        in: body
+        name: google
+        required: true
+        schema:
+          $ref: '#/definitions/models.GoogleRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: Google Login
+      tags:
+      - Auth
+  /auth/magic-link:
+    post:
+      consumes:
+      - application/json
+      description: Request a magic link to login
+      parameters:
+      - description: Email
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.MagicLinkRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Request Magic Link
+      tags:
+      - Auth
+    put:
+      consumes:
+      - application/json
+      description: Verify a magic link to login
+      parameters:
+      - description: Token
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyMagicLinkRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Verify Magic Link
+      tags:
+      - Auth
+  /auth/provider-login:
+    post:
+      consumes:
+      - application/json
+      description: Login with provider
+      produces:
+      - application/json
+      responses: {}
+      summary: Provider Login
+      tags:
+      - Auth
+  /auth/verify-reset-token:
+    put:
+      consumes:
+      - application/json
+      description: Verify a reset token
+      parameters:
+      - description: Token
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswordRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: Verify Reset Token
+      tags:
+      - Auth
+  /blog:
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog
+      parameters:
+      - description: Blog details
+        in: body
+        name: blog
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateBlogRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Create Blog
+      tags:
+      - Blog
+  /blog/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a blog by id
+      parameters:
+      - description: Blog ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Blog
+      tags:
+      - Blog
+    put:
+      consumes:
+      - application/json
+      description: Update a blog
+      parameters:
+      - description: Blog ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Update Blog
+      tags:
+      - Blog
+  /blogs:
+    get:
+      consumes:
+      - application/json
+      description: Get all blogs
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Blogs
+      tags:
+      - Blog
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all category names
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Category Names
+      tags:
+      - Category
+  /faq:
+    get:
+      consumes:
+      - application/json
+      description: Get all FAQ
+      produces:
+      - application/json
+      responses: {}
+      summary: Get FAQ
+      tags:
+      - FAQ
+    post:
+      consumes:
+      - application/json
+      description: Add a new FAQ
+      parameters:
+      - description: FAQ details
+        in: body
+        name: faq
+        required: true
+        schema:
+          $ref: '#/definitions/models.FAQ'
+      produces:
+      - application/json
+      responses: {}
+      summary: Add FAQ
+      tags:
+      - FAQ
+  /faq/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a FAQ
+      parameters:
+      - description: FAQ ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete FAQ
+      tags:
+      - FAQ
+  /health/get:
+    get:
+      description: Returns a success response if the ping is successful
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful ping response
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Perform a health check get operation
+      tags:
+      - health
+  /health/post:
+    post:
+      consumes:
+      - application/json
+      description: Receives a ping message and returns a success response if the ping
+        is successful
+      parameters:
+      - description: Ping request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Ping'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful ping response
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Perform a health check post operation
+      tags:
+      - health
+  /invite:
+    post:
+      consumes:
+      - application/json
+      description: Create a new invitation for a user
+      parameters:
+      - description: Invitation request body
+        in: body
+        name: invitation
+        required: true
+        schema:
+          $ref: '#/definitions/models.InvitationCreateReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Invitation created successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Failed to parse request body or Validation failed or Invalid
+            email format or unable to get user claims
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Create an invitation
+      tags:
+      - invite
+  /invite/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts an invitation using the provided invitation link
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Invitation acceptance request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.InvitationAcceptReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invitation accepted successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Accept an invitation via POST method
+      tags:
+      - invite
+  /invite/accept/{t}:
+    get:
+      description: Accepts an invitation using the provided token in the URL
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Invitation token
+        in: path
+        name: t
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invitation accepted successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Accept an invitation via GET method
+      tags:
+      - invite
+  /invites:
+    get:
+      description: Retrieve all invitations for a super admin user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invitations Successfully retrieved
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: unable to get user claims
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "403":
+          description: User is not a super admin
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all invitations
+      tags:
+      - invite
+    post:
+      consumes:
+      - application/json
+      description: Create multiple invitations for users
+      parameters:
+      - description: Invitation request body
+        in: body
+        name: invitation
+        required: true
+        schema:
+          $ref: '#/definitions/models.InvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Invitations created successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Failed to parse request body or Validation failed or unable
+            to get user claims
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Create multiple invitations
+      tags:
+      - invite
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login a Login
+      parameters:
+      - description: Login details
+        in: body
+        name: LoginUser
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequestModel'
+      produces:
+      - application/json
+      responses: {}
+      summary: LoginUser models.LoginRequestModel
+      tags:
+      - LoginUser
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout a User
+      produces:
+      - application/json
+      responses: {}
+      summary: LogoutUser
+      tags:
+      - LogoutUser
+  /newsletters:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all newsletter subscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all newsletters
+      tags:
+      - newsletters
+  /newsletters/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a newsletter subscription by ID
+      parameters:
+      - description: Newsletter ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Delete a newsletter subscription
+      tags:
+      - newsletters
+  /newsletters/subscribe:
+    post:
+      consumes:
+      - application/json
+      description: Subscribe a new email to the newsletter
+      parameters:
+      - description: Newsletter subscription details
+        in: body
+        name: newsletter
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewsLetter'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Subscribe to newsletter
+      tags:
+      - newsletters
+  /organisations:
+    post:
+      consumes:
+      - application/json
+      description: Create a new organisation with the provided details
+      parameters:
+      - description: Organisation details
+        in: body
+        name: organisation
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrgRequestModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Create a new organisation
+      tags:
+      - organisations
+  /organisations/{org_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific organisation
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: org_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Delete an organisation
+      tags:
+      - organisations
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific organisation
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: org_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get organisation details
+      tags:
+      - organisations
+    put:
+      consumes:
+      - application/json
+      description: Update details of a specific organisation
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: org_id
+        required: true
+        type: string
+      - description: Updated organisation details
+        in: body
+        name: organisation
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateOrgRequestModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Update organisation details
+      tags:
+      - organisations
+  /organisations/{org_id}/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all users in a specific organisation
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: org_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get users in an organisation
+      tags:
+      - organisations
+    post:
+      consumes:
+      - application/json
+      description: Add a user to a specific organisation
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: org_id
+        required: true
+        type: string
+      - description: User details to add
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddUserToOrgRequestModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Add a user to an organisation
+      tags:
+      - organisations
   /product:
     post:
       consumes:
@@ -90,10 +1175,22 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      summary: Delete DeleteProductController
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Delete Product
       tags:
-      - DeleteProductController
+      - Product
     get:
       consumes:
       - application/json
@@ -106,10 +1203,26 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      summary: GetProduct
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get Product
       tags:
-      - GetProduct
+      - Product
     put:
       consumes:
       - application/json
@@ -128,10 +1241,22 @@ paths:
           $ref: '#/definitions/models.UpdateProductRequestModel'
       produces:
       - application/json
-      responses: {}
-      summary: UpdateProduct
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Update Product
       tags:
-      - UpdateProduct
+      - Product
   /product/category/{category}:
     get:
       consumes:
@@ -145,31 +1270,435 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      summary: GetProductsInCategory
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get Products In Category
       tags:
-      - GetProductsInCategory
+      - Product
   /product/filter:
     get:
       consumes:
       - application/json
-      description: Get products based on price and category
+      description: Filter products by price and category
       parameters:
-      - description: Price
+      - description: Product Price
         in: query
         name: price
         required: true
         type: number
-      - description: Category
+      - description: Product Category
         in: query
         name: category
+        required: true
         type: string
       produces:
       - application/json
-      responses: {}
-      summary: FilterProducts
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Filter Products
       tags:
-      - FilterProducts
+      - Product
+  /superadmin/languages:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all languages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all languages
+      tags:
+      - Superadmin
+    post:
+      consumes:
+      - application/json
+      description: Add a new language to the system
+      parameters:
+      - description: Language details
+        in: body
+        name: language
+        required: true
+        schema:
+          $ref: '#/definitions/models.Language'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Add a new language
+      tags:
+      - Superadmin
+  /superadmin/regions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all regions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all regions
+      tags:
+      - Superadmin
+    post:
+      consumes:
+      - application/json
+      description: Add a new region to the system
+      parameters:
+      - description: Region details
+        in: body
+        name: region
+        required: true
+        schema:
+          $ref: '#/definitions/models.Region'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Add a new region
+      tags:
+      - Superadmin
+  /superadmin/timezones:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all timezones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all timezones
+      tags:
+      - Superadmin
+    post:
+      consumes:
+      - application/json
+      description: Add a new timezone to the system
+      parameters:
+      - description: Timezone details
+        in: body
+        name: timezone
+        required: true
+        schema:
+          $ref: '#/definitions/models.Timezone'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Add a new timezone
+      tags:
+      - Superadmin
+  /users:
+    get:
+      description: Retrieve a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users retrieved successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Error retrieving users
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get all users
+      tags:
+      - User
+  /users/{user_id}:
+    delete:
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Delete a user
+      tags:
+      - User
+    get:
+      description: Retrieve a single user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get a user
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update user information
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: User update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequestModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info updated successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Failed to parse request body
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Validation failed
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Update a user
+      tags:
+      - User
+  /users/{user_id}/organisations:
+    get:
+      description: Retrieve organizations associated with a user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User organisations retrieved successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get user organizations
+      tags:
+      - User
+  /users/{user_id}/region:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's region, timezone, and language
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: User region update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserRegionTimezoneLanguage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info updated successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Failed to parse request body
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: Validation failed
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Update user region
+      tags:
+      - User
+  /users/{user_id}/roles/{role_id}:
+    put:
+      consumes:
+      - application/json
+      description: Assign a new role to a user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Assign role to user
+      tags:
+      - User
+  /waitlist:
+    get:
+      description: Retrieve all waitlist entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Waitlist retrieved successfully
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "500":
+          description: Error retrieving waitlist
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Get waitlist entries
+      tags:
+      - Waitlist
+    post:
+      consumes:
+      - application/json
+      description: Add a new user to the waitlist
+      parameters:
+      - description: Waitlist user creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateWaitlistUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Waitlist signup successful
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "400":
+          description: Failed to parse request body
+          schema:
+            $ref: '#/definitions/utility.Response'
+        "422":
+          description: The given data was invalid
+          schema:
+            $ref: '#/definitions/utility.Response'
+      summary: Create waitlist entry
+      tags:
+      - Waitlist
 schemes:
 - http
+- https
 swagger: "2.0"

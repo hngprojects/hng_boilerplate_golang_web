@@ -9,6 +9,17 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+// @Summary Update user region
+// @Description Update a user's region, timezone, and language
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Param request body models.UserRegionTimezoneLanguage true "User region update request"
+// @Success 200 {object} utility.Response "User info updated successfully"
+// @Failure 400 {object} utility.Response "Failed to parse request body"
+// @Failure 422 {object} utility.Response "Validation failed"
+// @Router /users/{user_id}/region [put]
 func (base *Controller) UpdateUserRegion(c *gin.Context) {
 	var (
 		userID = c.Param("user_id")

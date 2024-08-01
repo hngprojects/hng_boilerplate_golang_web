@@ -21,6 +21,17 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+// PostInvite godoc
+// @Summary Create multiple invitations
+// @Description Create multiple invitations for users
+// @Tags invite
+// @Accept json
+// @Produce json
+// @Param invitation body models.InvitationRequest true "Invitation request body"
+// @Success 201 {object} utility.Response "Invitations created successfully"
+// @Failure 400 {object} utility.Response "Failed to parse request body or Validation failed or unable to get user claims"
+// @Failure 500 {object} utility.Response "Internal server error"
+// @Router /invites [post]
 func (base *Controller) PostInvite(c *gin.Context) {
 	var inviteReq models.InvitationRequest
 
@@ -38,14 +49,13 @@ func (base *Controller) PostInvite(c *gin.Context) {
 	}
 
 	claims, exists := c.Get("userClaims")
-	userClaims := claims.(jwt.MapClaims)
-	userId := userClaims["user_id"].(string)
-
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
 
 	org, statusCode, msg, err := invite.CheckerPostInvite(base.Db, inviteReq, userId)
 	if err != nil {

@@ -114,6 +114,14 @@ func (base *Controller) CreateAdmin(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
+// LoginUser godoc
+// @Summary LoginUser models.LoginRequestModel
+// @Description Login a Login
+// @Tags LoginUser
+// @Accept json
+// @Produce json
+// @Param LoginUser body models.LoginRequestModel true "Login details"
+// @Router /login [post]
 func (base *Controller) LoginUser(c *gin.Context) {
 
 	var (
@@ -147,6 +155,13 @@ func (base *Controller) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
+// LogoutUser godoc
+// @Summary LogoutUser
+// @Description Logout a User
+// @Tags LogoutUser
+// @Accept json
+// @Produce json
+// @Router /logout [post]
 func (base *Controller) LogoutUser(c *gin.Context) {
 
 	claims, exists := c.Get("userClaims")

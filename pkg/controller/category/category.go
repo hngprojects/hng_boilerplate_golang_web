@@ -18,6 +18,13 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
+// GetCategoryNames godoc
+// @Summary Get Category Names
+// @Description Get all category names
+// @Tags Category
+// @Accept json
+// @Produce json
+// @Router /categories [get]
 func (base *Controller) GetCategoryNames(c *gin.Context) {
 	categories, code, err := category.GetCategoryNames(base.Db.Postgresql, c)
 	if err != nil {

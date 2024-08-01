@@ -1,6 +1,7 @@
 {
     "schemes": [
-        "http"
+        "http",
+        "https"
     ],
     "swagger": "2.0",
     "info": {
@@ -9,9 +10,1177 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "http://localhost:8019",
-    "basePath": "/api/v1",
     "paths": {
+        "/auth/change-password": {
+            "post": {
+                "description": "Change user\tpassword",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Change Password",
+                "parameters": [
+                    {
+                        "description": "Password",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChangePasswordRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/forgot-password": {
+            "post": {
+                "description": "Forgot user password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Forgot Password",
+                "parameters": [
+                    {
+                        "description": "Email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ForgotPasswordRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/google-login": {
+            "post": {
+                "description": "Login with google",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Google Login",
+                "parameters": [
+                    {
+                        "description": "Google details",
+                        "name": "google",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GoogleRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/magic-link": {
+            "put": {
+                "description": "Verify a magic link to login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify Magic Link",
+                "parameters": [
+                    {
+                        "description": "Token",
+                        "name": "token",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VerifyMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "post": {
+                "description": "Request a magic link to login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Request Magic Link",
+                "parameters": [
+                    {
+                        "description": "Email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/provider-login": {
+            "post": {
+                "description": "Login with provider",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Provider Login",
+                "responses": {}
+            }
+        },
+        "/auth/verify-reset-token": {
+            "put": {
+                "description": "Verify a reset token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify Reset Token",
+                "parameters": [
+                    {
+                        "description": "Token",
+                        "name": "token",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ResetPasswordRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/blog": {
+            "post": {
+                "description": "Create a new blog",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Create Blog",
+                "parameters": [
+                    {
+                        "description": "Blog details",
+                        "name": "blog",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateBlogRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/blog/{id}": {
+            "get": {
+                "description": "Get a blog by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Get Blog",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Blog ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "put": {
+                "description": "Update a blog",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Update Blog",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Blog ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/blogs": {
+            "get": {
+                "description": "Get all blogs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Get Blogs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/categories": {
+            "get": {
+                "description": "Get all category names",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Get Category Names",
+                "responses": {}
+            }
+        },
+        "/faq": {
+            "get": {
+                "description": "Get all FAQ",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FAQ"
+                ],
+                "summary": "Get FAQ",
+                "responses": {}
+            },
+            "post": {
+                "description": "Add a new FAQ",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FAQ"
+                ],
+                "summary": "Add FAQ",
+                "parameters": [
+                    {
+                        "description": "FAQ details",
+                        "name": "faq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FAQ"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/faq/{id}": {
+            "delete": {
+                "description": "Delete a FAQ",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FAQ"
+                ],
+                "summary": "Delete FAQ",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "FAQ ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/health/get": {
+            "get": {
+                "description": "Returns a success response if the ping is successful",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Perform a health check get operation",
+                "responses": {
+                    "200": {
+                        "description": "Successful ping response",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/post": {
+            "post": {
+                "description": "Receives a ping message and returns a success response if the ping is successful",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Perform a health check post operation",
+                "parameters": [
+                    {
+                        "description": "Ping request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Ping"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful ping response",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invite": {
+            "post": {
+                "description": "Create a new invitation for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invite"
+                ],
+                "summary": "Create an invitation",
+                "parameters": [
+                    {
+                        "description": "Invitation request body",
+                        "name": "invitation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.InvitationCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Invitation created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse request body or Validation failed or Invalid email format or unable to get user claims",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invite/accept": {
+            "post": {
+                "description": "Accepts an invitation using the provided invitation link",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invite"
+                ],
+                "summary": "Accept an invitation via POST method",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Invitation acceptance request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.InvitationAcceptReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation accepted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invite/accept/{t}": {
+            "get": {
+                "description": "Accepts an invitation using the provided token in the URL",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invite"
+                ],
+                "summary": "Accept an invitation via GET method",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Invitation token",
+                        "name": "t",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation accepted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites": {
+            "get": {
+                "description": "Retrieve all invitations for a super admin user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invite"
+                ],
+                "summary": "Get all invitations",
+                "responses": {
+                    "200": {
+                        "description": "Invitations Successfully retrieved",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "unable to get user claims",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "User is not a super admin",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create multiple invitations for users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invite"
+                ],
+                "summary": "Create multiple invitations",
+                "parameters": [
+                    {
+                        "description": "Invitation request body",
+                        "name": "invitation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.InvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Invitations created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse request body or Validation failed or unable to get user claims",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Login a Login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LoginUser"
+                ],
+                "summary": "LoginUser models.LoginRequestModel",
+                "parameters": [
+                    {
+                        "description": "Login details",
+                        "name": "LoginUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRequestModel"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "Logout a User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LogoutUser"
+                ],
+                "summary": "LogoutUser",
+                "responses": {}
+            }
+        },
+        "/newsletters": {
+            "get": {
+                "description": "Retrieve all newsletter subscriptions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "newsletters"
+                ],
+                "summary": "Get all newsletters",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/newsletters/subscribe": {
+            "post": {
+                "description": "Subscribe a new email to the newsletter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "newsletters"
+                ],
+                "summary": "Subscribe to newsletter",
+                "parameters": [
+                    {
+                        "description": "Newsletter subscription details",
+                        "name": "newsletter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.NewsLetter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/newsletters/{id}": {
+            "delete": {
+                "description": "Delete a newsletter subscription by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "newsletters"
+                ],
+                "summary": "Delete a newsletter subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Newsletter ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations": {
+            "post": {
+                "description": "Create a new organisation with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Create a new organisation",
+                "parameters": [
+                    {
+                        "description": "Organisation details",
+                        "name": "organisation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateOrgRequestModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations/{org_id}": {
+            "get": {
+                "description": "Retrieve details of a specific organisation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Get organisation details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation ID",
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update details of a specific organisation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Update organisation details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation ID",
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated organisation details",
+                        "name": "organisation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateOrgRequestModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a specific organisation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Delete an organisation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation ID",
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations/{org_id}/users": {
+            "get": {
+                "description": "Retrieve all users in a specific organisation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Get users in an organisation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation ID",
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a user to a specific organisation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Add a user to an organisation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation ID",
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User details to add",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserToOrgRequestModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/product": {
             "post": {
                 "description": "Create a new product",
@@ -49,9 +1218,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "GetProductsInCategory"
+                    "Product"
                 ],
-                "summary": "GetProductsInCategory",
+                "summary": "Get Products In Category",
                 "parameters": [
                     {
                         "type": "string",
@@ -61,12 +1230,31 @@
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
             }
         },
         "/product/filter": {
             "get": {
-                "description": "Get products based on price and category",
+                "description": "Filter products by price and category",
                 "consumes": [
                     "application/json"
                 ],
@@ -74,25 +1262,45 @@
                     "application/json"
                 ],
                 "tags": [
-                    "FilterProducts"
+                    "Product"
                 ],
-                "summary": "FilterProducts",
+                "summary": "Filter Products",
                 "parameters": [
                     {
                         "type": "number",
-                        "description": "Price",
+                        "description": "Product Price",
                         "name": "price",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Category",
+                        "description": "Product Category",
                         "name": "category",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
             }
         },
         "/product/{product_id}": {
@@ -105,9 +1313,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "GetProduct"
+                    "Product"
                 ],
-                "summary": "GetProduct",
+                "summary": "Get Product",
                 "parameters": [
                     {
                         "type": "string",
@@ -117,7 +1325,32 @@
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
             },
             "put": {
                 "description": "Update a product",
@@ -128,9 +1361,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "UpdateProduct"
+                    "Product"
                 ],
-                "summary": "UpdateProduct",
+                "summary": "Update Product",
                 "parameters": [
                     {
                         "type": "string",
@@ -149,7 +1382,26 @@
                         }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
             },
             "delete": {
                 "description": "Delete a product",
@@ -160,9 +1412,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "DeleteProductController"
+                    "Product"
                 ],
-                "summary": "Delete DeleteProductController",
+                "summary": "Delete Product",
                 "parameters": [
                     {
                         "type": "string",
@@ -172,11 +1424,696 @@
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/superadmin/languages": {
+            "get": {
+                "description": "Retrieve all languages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Get all languages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new language to the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Add a new language",
+                "parameters": [
+                    {
+                        "description": "Language details",
+                        "name": "language",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Language"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/superadmin/regions": {
+            "get": {
+                "description": "Retrieve all regions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Get all regions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new region to the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Add a new region",
+                "parameters": [
+                    {
+                        "description": "Region details",
+                        "name": "region",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Region"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/superadmin/timezones": {
+            "get": {
+                "description": "Retrieve all timezones",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Get all timezones",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new timezone to the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Superadmin"
+                ],
+                "summary": "Add a new timezone",
+                "parameters": [
+                    {
+                        "description": "Timezone details",
+                        "name": "timezone",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Timezone"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Retrieve a list of all users",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "Users retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Error retrieving users",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}": {
+            "get": {
+                "description": "Retrieve a single user by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update user information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateUserRequestModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User info updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse request body",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a user by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/organisations": {
+            "get": {
+                "description": "Retrieve organizations associated with a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user organizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User organisations retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/region": {
+            "put": {
+                "description": "Update a user's region, timezone, and language",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user region",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User region update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRegionTimezoneLanguage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User info updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse request body",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/roles/{role_id}": {
+            "put": {
+                "description": "Assign a new role to a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Assign role to user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "role_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/waitlist": {
+            "get": {
+                "description": "Retrieve all waitlist entries",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Waitlist"
+                ],
+                "summary": "Get waitlist entries",
+                "responses": {
+                    "200": {
+                        "description": "Waitlist retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Error retrieving waitlist",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new user to the waitlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Waitlist"
+                ],
+                "summary": "Create waitlist entry",
+                "parameters": [
+                    {
+                        "description": "Waitlist user creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateWaitlistUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Waitlist signup successful",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse request body",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "The given data was invalid",
+                        "schema": {
+                            "$ref": "#/definitions/utility.Response"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "models.AddUserToOrgRequestModel": {
+            "type": "object",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ChangePasswordRequestModel": {
+            "type": "object",
+            "required": [
+                "new_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "minLength": 7
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateBlogRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "image_urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateOrgRequestModel": {
+            "type": "object",
+            "required": [
+                "address",
+                "country",
+                "email",
+                "industry",
+                "name",
+                "state",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "industry": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "state": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateProductRequestModel": {
             "type": "object",
             "required": [
@@ -229,6 +2166,282 @@
                 }
             }
         },
+        "models.CreateWaitlistUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FAQ": {
+            "type": "object",
+            "required": [
+                "answer",
+                "question"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ForgotPasswordRequestModel": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GoogleRequestModel": {
+            "type": "object",
+            "required": [
+                "id_token"
+            ],
+            "properties": {
+                "id_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InvitationAcceptReq": {
+            "type": "object",
+            "required": [
+                "invitation_link"
+            ],
+            "properties": {
+                "invitation_link": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InvitationCreateReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "organisation_id"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "organisation_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InvitationRequest": {
+            "type": "object",
+            "required": [
+                "emails",
+                "org_id"
+            ],
+            "properties": {
+                "emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "org_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Language": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "language_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LoginRequestModel": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NewsLetter": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Ping": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Region": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ResetPasswordRequestModel": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "minLength": 7
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Timezone": {
+            "type": "object",
+            "required": [
+                "identifier",
+                "offset"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "string"
+                },
+                "timezone_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateOrgRequestModel": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "industry": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpdateProductRequestModel": {
             "type": "object",
             "required": [
@@ -249,6 +2462,94 @@
                 },
                 "product_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateUserRequestModel": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name",
+                "username"
+            ],
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserRegionTimezoneLanguage": {
+            "type": "object",
+            "required": [
+                "language_id",
+                "region_id",
+                "timezone_id"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language_id": {
+                    "type": "string"
+                },
+                "region_id": {
+                    "type": "string"
+                },
+                "timezone_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.VerifyMagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "utility.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "description": "for errors that occur even if request is successful"
+                },
+                "extra": {},
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "name of the error",
+                    "type": "string"
+                },
+                "pagination": {},
+                "status": {
+                    "type": "string"
+                },
+                "status_code": {
+                    "type": "integer"
                 }
             }
         }

@@ -11,6 +11,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+// GoogleLogin godoc
+// @Summary Google Login
+// @Description Login with google
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param google body models.GoogleRequestModel true "Google details"
+// @Router /auth/google-login [post]
 func (base *Controller) GoogleLogin(c *gin.Context) {
 
 	var (
@@ -46,6 +54,13 @@ func (base *Controller) GoogleLogin(c *gin.Context) {
 
 }
 
+// ProviderLogin godoc
+// @Summary Provider Login
+// @Description Login with provider
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Router /auth/provider-login [post]
 func (base *Controller) ProviderLogout(c *gin.Context) {
 
 	err := gothic.Logout(c.Writer, c.Request)

@@ -49,6 +49,12 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	SuperAdmin(r, ApiVersion, validator, db, logger)
 	Category(r, ApiVersion, validator, db, logger)
 
+	// @Summary Health Check
+	// @Description Health Check
+	// @Tags Health
+	// @Accept json
+	// @Produce json
+	// @Router /health [get]
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status_code": 200,
