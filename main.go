@@ -16,11 +16,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-// @title HNG Boilerplate Golang Web API
-// @version 1.0
-// @description This is a boilerplate for golang HNG Internship 11.0
-// @schemes http https
-
 func main() {
 	docs.SwaggerInfo.Title = "HNG Boilerplate Golang Web API"
 	docs.SwaggerInfo.Description = "This is a boilerplate for golang HNG Internship 11.0"

@@ -11,17 +11,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-// CreateInvite godoc
-// @Summary Create an invitation
-// @Description Create a new invitation for a user
-// @Tags invite
-// @Accept json
-// @Produce json
-// @Param invitation body models.InvitationCreateReq true "Invitation request body"
-// @Success 201 {object} utility.Response "Invitation created successfully"
-// @Failure 400 {object} utility.Response "Failed to parse request body or Validation failed or Invalid email format or unable to get user claims"
-// @Failure 500 {object} utility.Response "Internal server error"
-// @Router /invite [post]
 func (base *Controller) CreateInvite(c *gin.Context) {
 	var inviteReq models.InvitationCreateReq
 

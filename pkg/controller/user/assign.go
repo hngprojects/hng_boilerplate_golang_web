@@ -8,17 +8,6 @@ import (
 	"strconv"
 )
 
-// AssignRoleToUser godoc
-// @Summary Assign role to user
-// @Description Assign a new role to a user
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user_id path string true "User ID"
-// @Param role_id path int true "Role ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,404 {object} utility.Response
-// @Router /users/{user_id}/roles/{role_id} [put]
 func (base *Controller) AssignRoleToUser(c *gin.Context) {
 	userID := c.Param("user_id")
 	roleID, err := strconv.Atoi(c.Param("role_id"))

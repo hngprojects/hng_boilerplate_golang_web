@@ -19,13 +19,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// GetFaq godoc
-// @Summary Get FAQ
-// @Description Get all FAQ
-// @Tags FAQ
-// @Accept json
-// @Produce json
-// @Router /faq [get]
 func (base *Controller) GetFaq(c *gin.Context) {
 
 	faqsData, paginationResponse, code, err := service.GetFaq(c, base.Db.Postgresql)
@@ -40,14 +33,6 @@ func (base *Controller) GetFaq(c *gin.Context) {
 
 }
 
-// DeleteFaq godoc
-// @Summary Delete FAQ
-// @Description Delete a FAQ
-// @Tags FAQ
-// @Accept json
-// @Produce json
-// @Param id path string true "FAQ ID"
-// @Router /faq/{id} [delete]
 func (base *Controller) DeleteFaq(c *gin.Context) {
 
 	var (
@@ -65,14 +50,6 @@ func (base *Controller) DeleteFaq(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// AddToFaq godoc
-// @Summary Add FAQ
-// @Description Add a new FAQ
-// @Tags FAQ
-// @Accept json
-// @Produce json
-// @Param faq body models.FAQ true "FAQ details"
-// @Router /faq [post]
 func (base *Controller) AddToFaq(c *gin.Context) {
 	var (
 		req = models.FAQ{}

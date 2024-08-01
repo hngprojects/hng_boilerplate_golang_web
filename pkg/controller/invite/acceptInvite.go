@@ -1,4 +1,3 @@
-// Package invite handles invitation-related operations
 package invite
 
 import (
@@ -11,19 +10,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-// PostAcceptInvite godoc
-// @Summary Accept an invitation via POST method
-// @Description Accepts an invitation using the provided invitation link
-// @Tags invite
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Param request body models.InvitationAcceptReq true "Invitation acceptance request"
-// @Success 200 {object} utility.Response "Invitation accepted successfully"
-// @Failure 400 {object} utility.Response "Bad request"
-// @Failure 422 {object} utility.Response "Unprocessable entity"
-// @Failure 500 {object} utility.Response "Internal server error"
-// @Router /invite/accept [post]
 func (base *Controller) PostAcceptInvite(c *gin.Context) {
 	// accept invite logic here
 	var inviteReq models.InvitationAcceptReq
@@ -68,17 +54,6 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// GetAcceptInvite godoc
-// @Summary Accept an invitation via GET method
-// @Description Accepts an invitation using the provided token in the URL
-// @Tags invite
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Param t path string true "Invitation token"
-// @Success 200 {object} utility.Response "Invitation accepted successfully"
-// @Failure 400 {object} utility.Response "Bad request"
-// @Failure 500 {object} utility.Response "Internal server error"
-// @Router /invite/accept/{t} [get]
 func (base *Controller) GetAcceptInvite(c *gin.Context) {
 	// get accept invite logic here
 	invitationToken := c.Param("t")

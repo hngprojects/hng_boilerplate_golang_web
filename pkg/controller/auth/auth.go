@@ -21,18 +21,8 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// CreateUser godoc
-// @Summary CreateUser models.CreateUserRequestModel
-// @Description Create a new CreateUser
-// @Tags CreateUser
-// @Accept json
-// @Produce json
-// @Param CreateUser body models.CreateUserRequestModel true "CreateUser details"
 func (base *Controller) CreateUser(c *gin.Context) {
-
-	var (
-		req = models.CreateUserRequestModel{}
-	)
+	var req models.CreateUserRequestModel
 
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -67,18 +57,8 @@ func (base *Controller) CreateUser(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// CreateAdmin godoc
-// @Summary CreateAdmin models.CreateUserRequestModel
-// @Description Create a new CreateAdmin
-// @Tags CreateAdmin
-// @Accept json
-// @Produce json
-// @Param CreateAdmin body models.CreateUserRequestModel true "CreateAdmin details"
 func (base *Controller) CreateAdmin(c *gin.Context) {
-
-	var (
-		req = models.CreateUserRequestModel{}
-	)
+	var req models.CreateUserRequestModel
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -110,23 +90,11 @@ func (base *Controller) CreateAdmin(c *gin.Context) {
 
 	base.Logger.Info("user created successfully")
 	rd := utility.BuildSuccessResponse(http.StatusCreated, "user created successfully", respData)
-
 	c.JSON(code, rd)
 }
 
-// LoginUser godoc
-// @Summary LoginUser models.LoginRequestModel
-// @Description Login a Login
-// @Tags LoginUser
-// @Accept json
-// @Produce json
-// @Param LoginUser body models.LoginRequestModel true "Login details"
-// @Router /login [post]
 func (base *Controller) LoginUser(c *gin.Context) {
-
-	var (
-		req = models.LoginRequestModel{}
-	)
+	var req models.LoginRequestModel
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -155,15 +123,7 @@ func (base *Controller) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// LogoutUser godoc
-// @Summary LogoutUser
-// @Description Logout a User
-// @Tags LogoutUser
-// @Accept json
-// @Produce json
-// @Router /logout [post]
 func (base *Controller) LogoutUser(c *gin.Context) {
-
 	claims, exists := c.Get("userClaims")
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)

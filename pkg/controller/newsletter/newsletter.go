@@ -18,15 +18,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// GetNewsLetters godoc
-// @Summary Get all newsletters
-// @Description Retrieve all newsletter subscriptions
-// @Tags newsletters
-// @Accept json
-// @Produce json
-// @Success 200 {object} utility.Response
-// @Failure 400,404,500 {object} utility.Response
-// @Router /newsletters [get]
 func (base *Controller) GetNewsLetters(c *gin.Context) {
 	newslettersData, paginationResponse, code, err := service.GetNewsletters(c, base.Db.Postgresql)
 	if err != nil {
@@ -38,16 +29,6 @@ func (base *Controller) GetNewsLetters(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// DeleteNewsLetter godoc
-// @Summary Delete a newsletter subscription
-// @Description Delete a newsletter subscription by ID
-// @Tags newsletters
-// @Accept json
-// @Produce json
-// @Param id path string true "Newsletter ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,404,500 {object} utility.Response
-// @Router /newsletters/{id} [delete]
 func (base *Controller) DeleteNewsLetter(c *gin.Context) {
 	var (
 		reqID = c.Param("id")
@@ -62,16 +43,6 @@ func (base *Controller) DeleteNewsLetter(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// SubscribeNewsLetter godoc
-// @Summary Subscribe to newsletter
-// @Description Subscribe a new email to the newsletter
-// @Tags newsletters
-// @Accept json
-// @Produce json
-// @Param newsletter body models.NewsLetter true "Newsletter subscription details"
-// @Success 201 {object} utility.Response
-// @Failure 400,409,422,500 {object} utility.Response
-// @Router /newsletters/subscribe [post]
 func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 	var (
 		req = models.NewsLetter{}

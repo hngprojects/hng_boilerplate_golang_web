@@ -16,13 +16,6 @@ type Controller struct {
 	Validator *validator.Validate
 }
 
-// @Summary Get waitlist entries
-// @Description Retrieve all waitlist entries
-// @Tags Waitlist
-// @Produce json
-// @Success 200 {object} utility.Response "Waitlist retrieved successfully"
-// @Failure 500 {object} utility.Response "Error retrieving waitlist"
-// @Router /waitlist [get]
 func (base *Controller) GetWaitLists(c *gin.Context) {
 	waitlistData, paginationResponse, code, err := service.GetWaitLists(c, base.DB.Postgresql)
 	if err != nil {
@@ -34,16 +27,6 @@ func (base *Controller) GetWaitLists(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// @Summary Create waitlist entry
-// @Description Add a new user to the waitlist
-// @Tags Waitlist
-// @Accept json
-// @Produce json
-// @Param request body models.CreateWaitlistUserRequest true "Waitlist user creation request"
-// @Success 201 {object} utility.Response "Waitlist signup successful"
-// @Failure 400 {object} utility.Response "Failed to parse request body"
-// @Failure 422 {object} utility.Response "The given data was invalid"
-// @Router /waitlist [post]
 func (base *Controller) Create(c *gin.Context) {
 	var (
 		req = models.CreateWaitlistUserRequest{}

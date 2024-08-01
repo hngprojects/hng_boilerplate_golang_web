@@ -22,14 +22,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// CreateBlog godoc
-// @Summary Create Blog
-// @Description Create a new blog
-// @Tags Blog
-// @Accept json
-// @Produce json
-// @Param blog body models.CreateBlogRequest true "Blog details"
-// @Router /blog [post]
 func (base *Controller) CreateBlog(c *gin.Context) {
 	var (
 		blogReq models.CreateBlogRequest
@@ -72,14 +64,6 @@ func (base *Controller) CreateBlog(c *gin.Context) {
 
 }
 
-// UpdateBlog godoc
-// @Summary Update Blog
-// @Description Update a blog
-// @Tags Blog
-// @Accept json
-// @Produce json
-// @Param id path string true "Blog ID"
-// @Router /blog/{id} [put]
 func (base *Controller) DeleteBlog(c *gin.Context) {
 	blogID := c.Param("id")
 
@@ -107,15 +91,6 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 
 }
 
-// GetBlogs godoc
-// @Summary Get Blogs
-// @Description Get all blogs
-// @Tags Blog
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number"
-// @Param limit query int false "Limit per page"
-// @Router /blogs [get]
 func (base *Controller) GetBlogs(c *gin.Context) {
 	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql, c)
 	if err != nil {
@@ -136,14 +111,6 @@ func (base *Controller) GetBlogs(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// GetBlogById godoc
-// @Summary Get Blog
-// @Description Get a blog by id
-// @Tags Blog
-// @Accept json
-// @Produce json
-// @Param id path string true "Blog ID"
-// @Router /blog/{id} [get]
 func (base *Controller) GetBlogById(c *gin.Context) {
 	blogID := c.Param("id")
 

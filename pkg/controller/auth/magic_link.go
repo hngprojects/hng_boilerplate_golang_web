@@ -9,14 +9,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-// RequestMagicLink godoc
-// @Summary Request Magic Link
-// @Description Request a magic link to login
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param email body models.MagicLinkRequest true "Email"
-// @Router /auth/magic-link [post]
 func (base *Controller) RequestMagicLink(c *gin.Context) {
 	var (
 		req = models.MagicLinkRequest{}
@@ -51,14 +43,6 @@ func (base *Controller) RequestMagicLink(c *gin.Context) {
 
 }
 
-// VerifyMagicLink godoc
-// @Summary Verify Magic Link
-// @Description Verify a magic link to login
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param token body models.VerifyMagicLinkRequest true "Token"
-// @Router /auth/magic-link [put]
 func (base *Controller) VerifyMagicLink(c *gin.Context) {
 	var (
 		req = models.VerifyMagicLinkRequest{}

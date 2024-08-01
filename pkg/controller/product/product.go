@@ -23,14 +23,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// CreateProduct godoc
-// @Summary Create Product
-// @Description Create a new product
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param product body models.CreateProductRequestModel true "Product details"
-// @Router /product [post]
 func (base *Controller) CreateProduct(c *gin.Context) {
 
 	var (
@@ -64,16 +56,6 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// DeleteProductController godoc
-// @Summary Delete Product
-// @Description Delete a product
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param product_id path string true "Product ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,422 {object} utility.Response
-// @Router /product/{product_id} [delete]
 func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	var (
 		req = models.DeleteProductRequestModel{}
@@ -106,16 +88,6 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 	ctx.JSON(code, rd)
 }
 
-// GetProduct godoc
-// @Summary Get Product
-// @Description Get a Product
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param product_id path string true "Product ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,404,500 {object} utility.Response
-// @Router /product/{product_id} [get]
 func (base *Controller) GetProduct(c *gin.Context) {
 	productId := c.Param("product_id")
 
@@ -145,17 +117,6 @@ func (base *Controller) GetProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// UpdateProduct godoc
-// @Summary Update Product
-// @Description Update a product
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param product_id path string true "Product ID"
-// @Param product body models.UpdateProductRequestModel true "Product details"
-// @Success 200 {object} utility.Response
-// @Failure 400,422 {object} utility.Response
-// @Router /product/{product_id} [put]
 func (base *Controller) UpdateProduct(c *gin.Context) {
 	var (
 		req = models.UpdateProductRequestModel{}
@@ -188,16 +149,6 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 	c.JSON(code, rd)
 }
 
-// GetProductsInCategory godoc
-// @Summary Get Products In Category
-// @Description Get all products in a category
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param category path string true "Category"
-// @Success 200 {object} utility.Response
-// @Failure 400,404 {object} utility.Response
-// @Router /product/category/{category} [get]
 func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 	category := ctx.Param("category")
 
@@ -234,17 +185,6 @@ func (base *Controller) GetAllProducts(ctx *gin.Context) {
 	ctx.JSON(code, rd)
 }
 
-// FilterProducts godoc
-// @Summary Filter Products
-// @Description Filter products by price and category
-// @Tags Product
-// @Accept json
-// @Produce json
-// @Param price query float64 true "Product Price"
-// @Param category query string true "Product Category"
-// @Success 200 {object} utility.Response
-// @Failure 400,404 {object} utility.Response
-// @Router /product/filter [get]
 func (base *Controller) FilterProducts(ctx *gin.Context) {
 	priceStr := ctx.Query("price")
 	category := ctx.Query("category")

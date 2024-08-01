@@ -10,16 +10,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-// GetInvites godoc
-// @Summary Get all invitations
-// @Description Retrieve all invitations for a super admin user
-// @Tags invite
-// @Produce json
-// @Success 200 {object} utility.Response "Invitations Successfully retrieved"
-// @Failure 400 {object} utility.Response "unable to get user claims"
-// @Failure 403 {object} utility.Response "User is not a super admin"
-// @Failure 500 {object} utility.Response "Internal server error"
-// @Router /invites [get]
 func (base *Controller) GetInvites(c *gin.Context) {
 
 	claims, exists := c.Get("userClaims")

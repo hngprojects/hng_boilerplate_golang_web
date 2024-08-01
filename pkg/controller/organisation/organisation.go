@@ -22,16 +22,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-// CreateOrganisation godoc
-// @Summary Create a new organisation
-// @Description Create a new organisation with the provided details
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param organisation body models.CreateOrgRequestModel true "Organisation details"
-// @Success 201 {object} utility.Response
-// @Failure 400,422 {object} utility.Response
-// @Router /organisations [post]
 func (base *Controller) CreateOrganisation(c *gin.Context) {
 
 	var (
@@ -84,16 +74,6 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 	c.JSON(http.StatusCreated, rd)
 }
 
-// GetOrganisation godoc
-// @Summary Get organisation details
-// @Description Retrieve details of a specific organisation
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param org_id path string true "Organisation ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,403,404 {object} utility.Response
-// @Router /organisations/{org_id} [get]
 func (base *Controller) GetOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 
@@ -137,17 +117,6 @@ func (base *Controller) GetOrganisation(c *gin.Context) {
 
 }
 
-// UpdateOrganisation godoc
-// @Summary Update organisation details
-// @Description Update details of a specific organisation
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param org_id path string true "Organisation ID"
-// @Param organisation body models.UpdateOrgRequestModel true "Updated organisation details"
-// @Success 200 {object} utility.Response
-// @Failure 400,403,404 {object} utility.Response
-// @Router /organisations/{org_id} [put]
 func (base *Controller) UpdateOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 	var updateReq models.UpdateOrgRequestModel
@@ -199,16 +168,6 @@ func (base *Controller) UpdateOrganisation(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// DeleteOrganisation godoc
-// @Summary Delete an organisation
-// @Description Delete a specific organisation
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param org_id path string true "Organisation ID"
-// @Success 204 {object} utility.Response
-// @Failure 400,403,404 {object} utility.Response
-// @Router /organisations/{org_id} [delete]
 func (base *Controller) DeleteOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 
@@ -248,17 +207,6 @@ func (base *Controller) DeleteOrganisation(c *gin.Context) {
 	c.JSON(http.StatusNoContent, rd)
 }
 
-// AddUserToOrganisation godoc
-// @Summary Add a user to an organisation
-// @Description Add a user to a specific organisation
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param org_id path string true "Organisation ID"
-// @Param user body models.AddUserToOrgRequestModel true "User details to add"
-// @Success 200 {object} utility.Response
-// @Failure 400,404,409 {object} utility.Response
-// @Router /organisations/{org_id}/users [post]
 func (base *Controller) AddUserToOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 
@@ -308,16 +256,6 @@ func (base *Controller) AddUserToOrganisation(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-// GetUsersInOrganisation godoc
-// @Summary Get users in an organisation
-// @Description Retrieve all users in a specific organisation
-// @Tags organisations
-// @Accept json
-// @Produce json
-// @Param org_id path string true "Organisation ID"
-// @Success 200 {object} utility.Response
-// @Failure 400,403,404 {object} utility.Response
-// @Router /organisations/{org_id}/users [get]
 func (base *Controller) GetUsersInOrganisation(c *gin.Context) {
 	orgId := c.Param("org_id")
 
