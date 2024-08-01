@@ -5,10 +5,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -46,4 +48,34 @@ func initialise(currUUID string, t *testing.T, r *gin.Engine, db *storage.Databa
 	orgID := tst.CreateOrganisation(t, r, db, org, organisationCreationData, token)
 
 	return orgID, token
+}
+
+func SetupOrgTestRouter() (*gin.Engine, *organisation.Controller) {
+	gin.SetMode(gin.TestMode)
+
+	logger := tst.Setup()
+	db := storage.Connection()
+	validator := validator.New()
+
+	orgController := &organisation.Controller{
+		Db:        db,
+		Validator: validator,
+		Logger:    logger,
+	}
+
+	r := gin.Default()
+	SetupOrgRoutes(r, orgController)
+	return r, orgController
+}
+
+func SetupOrgRoutes(r *gin.Engine, orgController *organisation.Controller) {
+	orgUrl := r.Group("/api/v1",
+		middleware.Authorize(orgController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+
+	orgUrl.POST("/organizations/:org_id/roles", orgController.CreateOrgRole)
+	orgUrl.GET("/organizations/:org_id/roles", orgController.GetOrgRoles)
+	orgUrl.GET("/organizations/:org_id/roles/:role_id", orgController.GetAOrgRole)
+	orgUrl.DELETE("/organizations/:org_id/roles/:role_id", orgController.DeleteOrgRole)
+	orgUrl.PATCH("/organizations/:org_id/roles/:role_id", orgController.UpdateOrgRole)
+	orgUrl.PATCH("/organizations/:org_id/roles/:role_id/permissions", orgController.UpdateOrgPermissions)
 }
