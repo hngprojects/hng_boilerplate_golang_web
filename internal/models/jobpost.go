@@ -102,9 +102,9 @@ func (j *JobPost) UpdateJobPostByID(db *gorm.DB, ID string) (JobPost, error) {
     if err != nil {
         return JobPost{}, err
     }
-
     return updatedJobPost, nil
 }
+
 
 func (j *JobPost) DeleteJobPostByID(db *gorm.DB, ID string) error {
 
