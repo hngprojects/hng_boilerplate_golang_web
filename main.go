@@ -19,7 +19,6 @@ func main() {
 	configuration := config.Setup(logger, "./app")
 	postgresql.ConnectToDatabase(logger, configuration.Database)
 	validatorRef := validator.New()
-	oauth.SetupOauth(logger, configuration.Oauth) // setup oauth
 	db := storage.Connection()
 
 	if configuration.Database.Migrate {
