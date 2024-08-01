@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/go-playground/validator/v10"
-	docs "github.com/hngprojects/hng_boilerplate_golang_web/docs"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
@@ -17,13 +16,6 @@ import (
 )
 
 func main() {
-	docs.SwaggerInfo.Title = "HNG Boilerplate Golang Web API"
-	docs.SwaggerInfo.Description = "This is a boilerplate for golang HNG Internship 11.0"
-	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:8019"
-	docs.SwaggerInfo.BasePath = "/api/v1"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-
 	logger := utility.NewLogger() //Warning !!!!! Do not recreate this action anywhere on the app
 	configuration := config.Setup(logger, "./app")
 	postgresql.ConnectToDatabase(logger, configuration.Database)
