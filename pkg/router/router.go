@@ -3,9 +3,10 @@ package router
 import (
 	"net/http"
 
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -26,8 +27,9 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	r.Use(middleware.Logger())
 	r.Use(gin.Recovery())
 	r.Use(middleware.CORS())
-	r.Use(gzip.Gzip(gzip.DefaultCompression))
-	r.MaxMultipartMemory = 1 << 20 // 1MB
+	r.Use(middleware.Metrics(config.GetConfig()))
+	r.Use(middleware.GzipWithExclusion("/metrics"))
+	r.MaxMultipartMemory = 3 << 20
 
 	// routers
 	ApiVersion := "api/v1"
@@ -48,6 +50,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Category(r, ApiVersion, validator, db, logger)
 	Notification(r, ApiVersion, validator, db, logger)
 	Template(r, ApiVersion, validator, db, logger)
+	Python(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -64,6 +67,9 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 			"status":      http.StatusNotFound,
 		})
 	})
+
+	// Prometheus metrics endpoint
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return r
 }

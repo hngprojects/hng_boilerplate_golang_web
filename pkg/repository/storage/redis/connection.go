@@ -13,12 +13,15 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-var Ctx = context.Background()
+var (
+	Ctx     = context.Background()
+	KeyName = "EmailQueue"
+)
 
-func ConnectToRedis(logger *utility.Logger, configDatabases config.Database) *redis.Client {
+func ConnectToRedis(logger *utility.Logger, configDatabases config.Redis) *redis.Client {
 	dbsCV := configDatabases
 	utility.LogAndPrint(logger, "connecting to redis server")
-	connectedServer := connectToDb(dbsCV.DB_HOST, dbsCV.USERNAME, dbsCV.DB_NAME, dbsCV.DB_PORT, logger)
+	connectedServer := connectToDb(dbsCV.REDIS_HOST, dbsCV.REDIS_PORT, dbsCV.REDIS_DB, logger)
 
 	utility.LogAndPrint(logger, "connected to redis server")
 
@@ -27,7 +30,7 @@ func ConnectToRedis(logger *utility.Logger, configDatabases config.Database) *re
 	return connectedServer
 }
 
-func connectToDb(host, user, name, port string, logger *utility.Logger) *redis.Client {
+func connectToDb(host, port, db string, logger *utility.Logger) *redis.Client {
 	if _, err := strconv.Atoi(port); err != nil {
 		u, err := url.Parse(port)
 		if err != nil {
@@ -42,7 +45,7 @@ func connectToDb(host, user, name, port string, logger *utility.Logger) *redis.C
 		}
 		port = detectedPort
 	}
-	db, err := strconv.Atoi(name)
+	dbInst, err := strconv.Atoi(db)
 	if err != nil {
 		utility.LogAndPrint(logger, fmt.Sprintf("parsing url %v to get port failed with: %v", port, err))
 		panic(err)
@@ -53,8 +56,7 @@ func connectToDb(host, user, name, port string, logger *utility.Logger) *redis.C
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: "",
-		Username: user,
-		DB:       db,
+		DB:       dbInst,
 	})
 
 	if err := redisClient.Ping(Ctx).Err(); err != nil {

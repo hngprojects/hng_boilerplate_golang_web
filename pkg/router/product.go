@@ -7,7 +7,6 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
-	imagetest "github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/image-test"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/product"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -27,7 +26,7 @@ func Product(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 		productUrl.GET("/products/categories/:category", product.GetProductsInCategory)
 		productUrl.GET("/products", product.GetAllProducts)
 		productUrl.GET("/products/filter/", product.FilterProducts)
-		productUrl.POST("/post", imagetest.UploadImage)
+		productUrl.PATCH("/products/image/:product_id", product.UploadImage)
 	}
 
 	return r

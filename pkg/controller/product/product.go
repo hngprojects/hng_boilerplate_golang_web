@@ -215,3 +215,26 @@ func (base *Controller) FilterProducts(ctx *gin.Context) {
 
 	ctx.JSON(code, rd)
 }
+
+func (base *Controller) UploadImage(ctx *gin.Context) {
+	productId := ctx.Param("product_id")
+	image, err := ctx.FormFile("image")
+
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	respData, code, err := product.UploadImage(productId, image, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
+		ctx.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	base.Logger.Info("Image uploaded successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "Image uploaded successfully", respData)
+
+	ctx.JSON(code, rd)
+}

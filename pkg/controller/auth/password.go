@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -63,7 +64,7 @@ func (base *Controller) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.PasswordReset(req.Email, base.Db.Postgresql)
+	respData, code, err := service.PasswordReset(req.Email, base.Db.Postgresql, base.ExtReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

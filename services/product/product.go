@@ -3,13 +3,18 @@ package product
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -277,4 +282,51 @@ func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Contex
 		"total_pages":  int(math.Ceil(float64(totalCount) / float64(pageSize))),
 	}
 	return responseData, http.StatusOK, nil
+}
+
+func UploadImage(productID string, image *multipart.FileHeader, db *gorm.DB) (gin.H, int, error) {
+	product := models.Product{}
+	if err := db.First(&product, "id = ?", productID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return gin.H{"error": "Product not found"}, http.StatusNotFound, err
+		}
+		return gin.H{"error": "Database error"}, http.StatusInternalServerError, err
+	}
+
+	if image == nil {
+		return gin.H{"error": "No image file provided"}, http.StatusBadRequest, errors.New("no image file")
+	}
+
+	ext := filepath.Ext(image.Filename)
+	newFilename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+
+	if err := saveUploadedFile(image, fmt.Sprintf("images/%s", newFilename)); err != nil {
+		return gin.H{"error": "Failed to save image"}, http.StatusInternalServerError, err
+	}
+
+	// Update product with new image filename
+	product.Image = newFilename
+	if err := db.Save(&product).Error; err != nil {
+		return gin.H{"error": "Failed to update product"}, http.StatusInternalServerError, err
+	}
+
+	return gin.H{"message": "Image uploaded successfully"}, http.StatusOK, nil
+}
+
+// Helper function to save the uploaded file
+func saveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }

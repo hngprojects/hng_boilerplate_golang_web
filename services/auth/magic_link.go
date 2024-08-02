@@ -9,15 +9,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"gorm.io/gorm"
 )
 
-func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
+func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
 
 	var (
 		user      = models.User{}
@@ -41,11 +45,16 @@ func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
 		return "error", http.StatusNotFound, fmt.Errorf("user not found")
 	}
 
-	requestToken := utility.GenerateUUID()
+	resetToken, err := utility.GenerateOTP(6)
+
+	if err != nil {
+		return "error", http.StatusInternalServerError, err
+	}
+
 	magic := models.MagicLink{
 		ID:        utility.GenerateUUID(),
 		Email:     strings.ToLower(userEmail),
-		Token:     requestToken,
+		Token:     strconv.Itoa(resetToken),
 		ExpiresAt: time.Now().Add(time.Duration(config.App.MagicLinkDuration) * time.Minute),
 	}
 
@@ -54,8 +63,17 @@ func MagicLinkRequest(userEmail string, db *gorm.DB) (string, int, error) {
 		return "error", http.StatusInternalServerError, err
 	}
 
-	// Send email with the reset link (e.g., http://example.com/reset-password?token=resetToken)
-	//SendBackgroundEmail(user.Email, resetToken, "magic link")
+	magic_link := fmt.Sprintf("%v/login/magic-link?token=%v", url, resetToken)
+
+	resetReq := models.SendMagicLink{
+		Email:     userEmail,
+		MagicLink: magic_link,
+	}
+
+	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendMagicLink, resetReq)
+	if err != nil {
+		return "error", http.StatusInternalServerError, err
+	}
 
 	return "success", http.StatusOK, nil
 }
@@ -106,16 +124,21 @@ func VerifyMagicLinkToken(req models.VerifyMagicLinkRequest, db *gorm.DB) (gin.H
 	}
 
 	responseData = gin.H{
-		"email":        userData.Email,
-		"username":     userData.Name,
-		"first_name":   userData.Profile.FirstName,
-		"last_name":    userData.Profile.LastName,
-		"phone":        userData.Profile.Phone,
-		"role":         userData.Role,
-		"expires_in":   tokenData.ExpiresAt.Unix(),
+
+		"user": map[string]string{
+			"id":         userData.ID,
+			"email":      userData.Email,
+			"username":   userData.Name,
+			"first_name": userData.Profile.FirstName,
+			"last_name":  userData.Profile.LastName,
+			"fullname":   userData.Profile.FirstName + " " + userData.Profile.LastName,
+			"phone":      userData.Profile.Phone,
+			"role":       strconv.Itoa(userData.Role),
+			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
+			"created_at": strconv.Itoa(int(userData.CreatedAt.Unix())),
+			"updated_at": strconv.Itoa(int(userData.UpdatedAt.Unix())),
+		},
 		"access_token": tokenData.AccessToken,
-		"created_at":   userData.CreatedAt,
-		"updated_at":   userData.UpdatedAt,
 	}
 
 	return responseData, http.StatusOK, nil
