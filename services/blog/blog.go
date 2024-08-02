@@ -18,6 +18,7 @@ type BlogResponse struct {
 	ImageURL  string    `json:"image_url,omitempty"`
 	Category  string    `json:"category,omitempty"`
 	Author    string    `json:"author"`
+	AuthorID  string    `json:"author_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -51,6 +52,7 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		ImageURL:  blog.Image,
 		Category:  blog.Category,
 		Author:    user.Name,
+		AuthorID:  user.ID,
 		CreatedAt: blog.CreatedAt,
 	}
 
@@ -96,6 +98,7 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 			ImageURL:  blog.Image,
 			Category:  blog.Category,
 			Author:    user.Name,
+			AuthorID:  user.ID,
 			CreatedAt: blog.CreatedAt,
 		}
 
@@ -125,6 +128,7 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 		ImageURL:  blog.Image,
 		Category:  blog.Category,
 		Author:    user.Name,
+		AuthorID:  user.ID,
 		CreatedAt: blog.CreatedAt,
 	}
 
