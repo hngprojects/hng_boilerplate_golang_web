@@ -29,7 +29,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	r.Use(middleware.CORS())
 	r.Use(middleware.Metrics(config.GetConfig()))
 	r.Use(middleware.GzipWithExclusion("/metrics"))
-	r.MaxMultipartMemory = 3 << 20 // 1MB
+	r.MaxMultipartMemory = 3 << 20
 
 	// routers
 	ApiVersion := "api/v1"
