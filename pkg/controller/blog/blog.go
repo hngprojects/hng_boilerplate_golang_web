@@ -100,9 +100,8 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 	}
 
 	base.Logger.Info("blog successfully deleted")
-	rd := utility.BuildSuccessResponse(http.StatusAccepted, "blog successfully deleted", nil)
-
-	c.JSON(http.StatusAccepted, rd)
+	rd := utility.BuildSuccessResponse(http.StatusNoContent, "", nil)
+	c.JSON(http.StatusNoContent, rd)
 
 }
 
