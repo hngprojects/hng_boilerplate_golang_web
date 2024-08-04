@@ -20,7 +20,6 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/sessions v1.1.1
 	github.com/jeanphorn/log4go v0.0.0-20231225120528-d93eb9001e51
-	github.com/lib/pq v1.10.9
 	github.com/mailgun/mailgun-go/v4 v4.12.0
 	github.com/markbates/goth v1.80.0
 	github.com/mitchellh/mapstructure v1.5.0
