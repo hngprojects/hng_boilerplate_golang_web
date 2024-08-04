@@ -16,7 +16,7 @@ var (
 		Name:    "http_request_duration_seconds",
 		Help:    "Duration of HTTP requests in seconds",
 		Buckets: prometheus.DefBuckets,
-	}, []string{"method", "route", "status", "app"})
+	}, []string{"method", "route", "status", "name", "interpreter"})
 )
 
 func init() {
@@ -40,6 +40,6 @@ func Metrics(cfg *config.Configuration) gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 
 		elapsed := time.Since(startTime).Seconds()
-		httpRequestDuration.WithLabelValues(method, c.FullPath(), strconv.Itoa(statusCode), appName).Observe(elapsed)
+		httpRequestDuration.WithLabelValues(method, c.FullPath(), strconv.Itoa(statusCode), appName, "none").Observe(elapsed)
 	}
 }
