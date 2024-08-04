@@ -22,7 +22,7 @@ type Controller struct {
 }
 
 func (base *Controller) RunPythonTestsHandler(c *gin.Context) {
-	cmd := exec.Command("python", "scripts/compare_test.py")
+	cmd := exec.Command("python3", "scripts/compare_test.py")
 	cmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 	var outb, errb bytes.Buffer
