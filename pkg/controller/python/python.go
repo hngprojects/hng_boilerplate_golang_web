@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -21,7 +22,7 @@ type Controller struct {
 }
 
 func (base *Controller) RunPythonTestsHandler(c *gin.Context) {
-	cmd := exec.Command("python", "scripts\\compare_test.py")
+	cmd := exec.Command("python", "scripts/compare_test.py")
 	cmd.Env = append(os.Environ(), "PYTHONIOENCODING=utf-8")
 
 	var outb, errb bytes.Buffer
