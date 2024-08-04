@@ -207,9 +207,7 @@ func TestBlogDelete(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 
-			// For 204 No Content, we don't try to parse the body
 			if rr.Code == http.StatusNoContent {
-				// Success case with no content, just return
 				return
 			}
 
