@@ -72,14 +72,14 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      SERVER_PORT: 7000
+      SERVER_PORT: "7000"
       DB_NAME: "development_db"
       USERNAME: "development_user"
       APP_NAME: "development"
       APP_URL: "https://deployment.api-golang.boilerplate.hng.tech"
-      REDIS_PORT: 6130
+      REDIS_PORT: "6130"
       REDIS_HOST: "0.0.0.0"
-      REDIS_DB: 0
+      REDIS_DB: "0"
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
