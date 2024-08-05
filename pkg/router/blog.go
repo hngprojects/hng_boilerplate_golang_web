@@ -23,6 +23,7 @@ func Blog(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	{
 		blogsAdminUrl.POST("/blogs", blogs.CreateBlog)
 		blogsAdminUrl.DELETE("/blogs/:id", blogs.DeleteBlog)
+		blogsAdminUrl.PATCH("/blogs/edit/:id", blogs.UpdateBlogById)
 	}
 
 	{
