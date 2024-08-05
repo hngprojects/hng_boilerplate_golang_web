@@ -51,6 +51,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Notification(r, ApiVersion, validator, db, logger)
 	Template(r, ApiVersion, validator, db, logger)
 	Python(r, ApiVersion, validator, db, logger)
+	HelpCenter(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
