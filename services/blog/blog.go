@@ -15,11 +15,12 @@ type BlogResponse struct {
 	BlogID    string    `json:"id"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
-	ImageURL  string    `json:"image_url,omitempty"`
+	Image     string    `json:"image_url,omitempty"`
 	Category  string    `json:"category,omitempty"`
 	Author    string    `json:"author"`
 	AuthorID  string    `json:"author_id"`
 	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogResponse, error) {
@@ -30,7 +31,7 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		Content:  req.Content,
 		AuthorID: userId,
 		Category: req.Category,
-		Image:    req.ImageURL,
+		Image:    req.Image,
 	}
 
 	err := blog.Create(db)
@@ -49,7 +50,7 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		BlogID:    blog.ID,
 		Title:     blog.Title,
 		Content:   blog.Content,
-		ImageURL:  blog.Image,
+		Image:     blog.Image,
 		Category:  blog.Category,
 		Author:    user.Name,
 		AuthorID:  user.ID,
@@ -60,7 +61,8 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 }
 
 func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
-	blog, err := CheckBlogExists(blogId, db)
+	var blog models.Blog
+	blog, err := blog.CheckBlogExists(blogId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("blog not found")
@@ -95,7 +97,7 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 			BlogID:    blog.ID,
 			Title:     blog.Title,
 			Content:   blog.Content,
-			ImageURL:  blog.Image,
+			Image:     blog.Image,
 			Category:  blog.Category,
 			Author:    user.Name,
 			AuthorID:  user.ID,
@@ -109,8 +111,11 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 }
 
 func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
-	var user models.User
-	blog, err := CheckBlogExists(blogId, db)
+	var (
+		user models.User
+		blog models.Blog
+	)
+	blog, err := blog.CheckBlogExists(blogId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return BlogResponse{}, errors.New("blog not found")
@@ -125,7 +130,7 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 		BlogID:    blog.ID,
 		Title:     blog.Title,
 		Content:   blog.Content,
-		ImageURL:  blog.Image,
+		Image:     blog.Image,
 		Category:  blog.Category,
 		Author:    user.Name,
 		AuthorID:  user.ID,
@@ -135,13 +140,41 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 	return response, nil
 }
 
-func CheckBlogExists(blogId string, db *gorm.DB) (models.Blog, error) {
-	var blog models.Blog
-
-	blog, err := blog.GetBlogById(db, blogId)
+func UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest, db *gorm.DB) (BlogResponse, error) {
+	var (
+		user models.User
+		blog models.Blog
+	)
+	blog, err := blog.CheckBlogExists(blogId, db)
 	if err != nil {
-		return blog, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return BlogResponse{}, errors.New("blog not found")
+		}
+		return BlogResponse{}, err
 	}
 
-	return blog, nil
+	if blog.AuthorID != userId {
+		return BlogResponse{}, errors.New("user not authorised to update blog")
+	}
+
+	user, _ = user.GetUserByID(db, userId)
+
+	updatedBlog, err := blog.UpdateBlogById(db, req, blogId)
+
+	if err != nil {
+		return BlogResponse{}, err
+	}
+
+	response := BlogResponse{
+		BlogID:    updatedBlog.ID,
+		Title:     updatedBlog.Title,
+		Content:   updatedBlog.Content,
+		Image:     updatedBlog.Image,
+		Category:  updatedBlog.Category,
+		Author:    user.Name,
+		AuthorID:  userId,
+		UpdatedAt: updatedBlog.UpdatedAt,
+	}
+
+	return response, nil
 }

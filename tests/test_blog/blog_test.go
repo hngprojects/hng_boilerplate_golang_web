@@ -394,3 +394,126 @@ func TestGetBlogs(t *testing.T) {
 	}
 
 }
+
+func TestEditBlog(t *testing.T) {
+	logger := tst.Setup()
+	gin.SetMode(gin.TestMode)
+
+	validatorRef := validator.New()
+	db := storage.Connection()
+	currUUID := utility.GenerateUUID()
+	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	r := gin.Default()
+	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+
+	tests := []struct {
+		Name         string
+		RequestBody  models.UpdateBlogRequest
+		BlogID       string
+		ExpectedCode int
+		Message      string
+		Headers      map[string]string
+	}{
+		{
+			Name: "Successful Update of Blog",
+			RequestBody: models.UpdateBlogRequest{
+				Title:   fmt.Sprintf("blog %v", currUUID),
+				Content: fmt.Sprintf("testuser%v", currUUID),
+			},
+			BlogID:       blogId,
+			ExpectedCode: http.StatusOK,
+			Message:      "blog updated successfully",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name: "Invalid Blog ID Format",
+			RequestBody: models.UpdateBlogRequest{
+				Title:   fmt.Sprintf("blog %v", currUUID),
+				Content: fmt.Sprintf("testuser%v", currUUID),
+			},
+			BlogID:       "invalid-id-erttt",
+			ExpectedCode: http.StatusBadRequest,
+			Message:      "invalid blog id format",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name: "Blog Not Found",
+			RequestBody: models.UpdateBlogRequest{
+				Title:   fmt.Sprintf("blog %v", currUUID),
+				Content: fmt.Sprintf("testuser%v", currUUID),
+			},
+			BlogID:       utility.GenerateUUID(),
+			ExpectedCode: http.StatusNotFound,
+			Message:      "blog not found",
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + token,
+			},
+		},
+		{
+			Name: "User Not Authorized to Delete blog",
+			RequestBody: models.UpdateBlogRequest{
+				Title:   fmt.Sprintf("blog %v", currUUID),
+				Content: fmt.Sprintf("testuser%v", currUUID),
+			},
+			BlogID:       blogId,
+			ExpectedCode: http.StatusUnauthorized,
+			Message:      "Token could not be found!",
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		r := gin.Default()
+
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		{
+			blogUrl.PATCH("/blogs/edit/:id", blog.UpdateBlogById)
+		}
+
+		t.Run(test.Name, func(t *testing.T) {
+			var b bytes.Buffer
+			json.NewEncoder(&b).Encode(test.RequestBody)
+			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/blogs/edit/%s", test.BlogID), &b)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i, v := range test.Headers {
+				req.Header.Set(i, v)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
+
+			data := tst.ParseResponse(rr)
+
+			code := int(data["status_code"].(float64))
+			tst.AssertStatusCode(t, code, test.ExpectedCode)
+
+			if test.Message != "" {
+				message := data["message"]
+				if message != nil {
+					tst.AssertResponseMessage(t, message.(string), test.Message)
+				} else {
+					tst.AssertResponseMessage(t, "", test.Message)
+				}
+
+			}
+
+		})
+
+	}
+
+}
