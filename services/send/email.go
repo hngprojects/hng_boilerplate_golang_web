@@ -112,7 +112,8 @@ func (e *EmailRequest) sendEmailViaSMTP() error {
 	sender := mailConfig.Username
 	subject := e.Subject
 	recipients := e.To
-	body := []byte(subject + "\n" + e.Body)
+	mime := "\nMIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body := []byte(subject + mime + e.Body)
 
 	err := smtp.SendMail(
 		mailConfig.Server+":"+mailConfig.Port,

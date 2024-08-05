@@ -7,7 +7,7 @@
   <p>
     Your client {{if not (eq .buyer.Firstname "")}} {{ .buyer.Firstname }}
     {{else}} {{ .buyer.EmailAddress }} {{end}} has successfully paid {{
-    .transaction.Currency }}{{ .transaction.TotalAmount }} into the escrow
+    .transaction.Currency }}{{ .transaction.TotalAmount }} into the 
     account. Kindly proceed with the delivery and track its progress
     <a href="{{ .dashboard}}">here</a>.
   </p>

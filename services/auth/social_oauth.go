@@ -12,7 +12,10 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -20,6 +23,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 
 	var userClaims models.GoogleClaims
 	var reqUser models.CreateUserRequestModel
+	var sendWelcome bool
 
 	tokenString := req.Token
 
@@ -63,6 +67,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 			},
 		}
 		err := user.CreateUser(db)
+		sendWelcome = true
 		if err != nil {
 			return responseData, http.StatusInternalServerError, err
 		}
@@ -97,11 +102,19 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 		},
 		"access_token": tokenData.AccessToken,
 	}
+	if sendWelcome {
+		resetReq := models.SendWelcomeMail{
+			Email: user.Email,
+		}
+
+		err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendWelcomeMail, resetReq)
+		if err != nil {
+			return responseData, http.StatusInternalServerError, err
+		}
+	}
 
 	return responseData, http.StatusCreated, nil
 }
-
-
 
 func CreateFacebookUser(req models.FacebookRequestModel, db *gorm.DB) (gin.H, int, error) {
 

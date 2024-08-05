@@ -18,11 +18,12 @@ func Blog(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	blogs := blog.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
 	blogsAdminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
-	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 
 	{
 		blogsAdminUrl.POST("/blogs", blogs.CreateBlog)
 		blogsAdminUrl.DELETE("/blogs/:id", blogs.DeleteBlog)
+		blogsAdminUrl.PATCH("/blogs/edit/:id", blogs.UpdateBlogById)
 	}
 
 	{
