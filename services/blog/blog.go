@@ -8,18 +8,18 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 type BlogResponse struct {
-	BlogID    string         `json:"id"`
-	Title     string         `json:"title"`
-	Content   string         `json:"content"`
-	ImageURLs pq.StringArray `json:"image_urls,omitempty"`
-	Tags      pq.StringArray `json:"tags,omitempty"`
-	Author    string         `json:"author"`
-	CreatedAt time.Time      `json:"created_at"`
+	BlogID    string    `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	ImageURL  string    `json:"image_url,omitempty"`
+	Category  string    `json:"category,omitempty"`
+	Author    string    `json:"author"`
+	AuthorID  string    `json:"author_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogResponse, error) {
@@ -29,8 +29,8 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		Title:    req.Title,
 		Content:  req.Content,
 		AuthorID: userId,
-		Tags:     pq.StringArray(req.Tags),
-		Images:   pq.StringArray(req.ImageURLs),
+		Category: req.Category,
+		Image:    req.ImageURL,
 	}
 
 	err := blog.Create(db)
@@ -49,22 +49,27 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		BlogID:    blog.ID,
 		Title:     blog.Title,
 		Content:   blog.Content,
-		ImageURLs: blog.Images,
-		Tags:      blog.Tags,
+		ImageURL:  blog.Image,
+		Category:  blog.Category,
 		Author:    user.Name,
+		AuthorID:  user.ID,
 		CreatedAt: blog.CreatedAt,
 	}
 
 	return response, nil
 }
 
-func DeleteBlog(blogId string, db *gorm.DB) error {
+func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
 	blog, err := CheckBlogExists(blogId, db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("blog not found")
 		}
 		return err
+	}
+
+	if blog.AuthorID != userId {
+		return errors.New("user not authorised to delete blog")
 	}
 
 	return blog.Delete(db)
@@ -90,9 +95,10 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 			BlogID:    blog.ID,
 			Title:     blog.Title,
 			Content:   blog.Content,
-			ImageURLs: blog.Images,
-			Tags:      blog.Tags,
+			ImageURL:  blog.Image,
+			Category:  blog.Category,
 			Author:    user.Name,
+			AuthorID:  user.ID,
 			CreatedAt: blog.CreatedAt,
 		}
 
@@ -119,9 +125,10 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 		BlogID:    blog.ID,
 		Title:     blog.Title,
 		Content:   blog.Content,
-		ImageURLs: blog.Images,
-		Tags:      blog.Tags,
+		ImageURL:  blog.Image,
+		Category:  blog.Category,
 		Author:    user.Name,
+		AuthorID:  user.ID,
 		CreatedAt: blog.CreatedAt,
 	}
 

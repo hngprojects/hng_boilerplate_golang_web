@@ -23,7 +23,10 @@ func AuthMigrationModels() []interface{} {
 		models.Language{},
 		models.Timezone{},
 		models.Region{},
+		models.EmailTemplate{},
 		models.UserRegionTimezoneLanguage{},
+		models.Notification{},
+		models.NotificationSettings{},
 	} // an array of db models, example: User{}
 }
 

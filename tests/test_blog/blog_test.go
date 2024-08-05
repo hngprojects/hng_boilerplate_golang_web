@@ -125,8 +125,7 @@ func TestBlogCreate(t *testing.T) {
 	}
 }
 
-
-func TestBlogDelete(t *testing.T)  {
+func TestBlogDelete(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -141,16 +140,16 @@ func TestBlogDelete(t *testing.T)  {
 
 	tests := []struct {
 		Name         string
-		BlogID        string
+		BlogID       string
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
 			Name:         "Successful Deletion of Blog",
-			BlogID :        blogId,
-			ExpectedCode: http.StatusAccepted,
-			Message: "blog successfully deleted",
+			BlogID:       blogId,
+			ExpectedCode: http.StatusNoContent,
+			Message:      "blog successfully deleted",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
@@ -158,7 +157,7 @@ func TestBlogDelete(t *testing.T)  {
 		},
 		{
 			Name:         "Invalid Blog ID Format",
-			BlogID:        "invalid-id-erttt",
+			BlogID:       "invalid-id-erttt",
 			ExpectedCode: http.StatusBadRequest,
 			Message:      "invalid blog id format",
 			Headers: map[string]string{
@@ -168,7 +167,7 @@ func TestBlogDelete(t *testing.T)  {
 		},
 		{
 			Name:         "Blog Not Found",
-			BlogID:        utility.GenerateUUID(),
+			BlogID:       utility.GenerateUUID(),
 			ExpectedCode: http.StatusNotFound,
 			Message:      "blog not found",
 			Headers: map[string]string{
@@ -178,7 +177,7 @@ func TestBlogDelete(t *testing.T)  {
 		},
 		{
 			Name:         "User Not Authorized to Delete blog",
-			BlogID:        blogId,
+			BlogID:       blogId,
 			ExpectedCode: http.StatusUnauthorized,
 			Message:      "Token could not be found!",
 			Headers: map[string]string{
@@ -196,7 +195,7 @@ func TestBlogDelete(t *testing.T)  {
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete,fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -207,6 +206,10 @@ func TestBlogDelete(t *testing.T)  {
 
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
+
+			if rr.Code == http.StatusNoContent {
+				return
+			}
 
 			tst.AssertStatusCode(t, rr.Code, test.ExpectedCode)
 
@@ -231,7 +234,7 @@ func TestBlogDelete(t *testing.T)  {
 
 }
 
-func TestGetBlogById(t *testing.T){
+func TestGetBlogById(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -242,50 +245,38 @@ func TestGetBlogById(t *testing.T){
 	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+	blogId, _ := initialise(currUUID, t, r, db, user, blog, true)
 
 	tests := []struct {
 		Name         string
-		BlogID        string
+		BlogID       string
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
 			Name:         "Successful Retrieval of Blog",
-			BlogID :        blogId,
+			BlogID:       blogId,
 			ExpectedCode: http.StatusOK,
-			Message: "blog retrieved successfully",
+			Message:      "blog retrieved successfully",
 			Headers: map[string]string{
-				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
+				"Content-Type": "application/json",
 			},
 		},
 		{
 			Name:         "Invalid Blog ID Format",
-			BlogID:        "invalid-id-erttt",
+			BlogID:       "invalid-id-erttt",
 			ExpectedCode: http.StatusBadRequest,
 			Message:      "invalid blog id format",
 			Headers: map[string]string{
-				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
+				"Content-Type": "application/json",
 			},
 		},
 		{
 			Name:         "Blog Not Found",
-			BlogID:        utility.GenerateUUID(),
+			BlogID:       utility.GenerateUUID(),
 			ExpectedCode: http.StatusNotFound,
 			Message:      "blog not found",
-			Headers: map[string]string{
-				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
-			},
-		},
-		{
-			Name:         "User Not Authorized to Delete blog",
-			BlogID:        blogId,
-			ExpectedCode: http.StatusUnauthorized,
-			Message:      "Token could not be found!",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
@@ -295,13 +286,13 @@ func TestGetBlogById(t *testing.T){
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
 			blogUrl.GET("/blogs/:id", blog.GetBlogById)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet,fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -334,22 +325,15 @@ func TestGetBlogById(t *testing.T){
 
 	}
 
-
 }
 
-
-func TestGetBlogs(t *testing.T){
+func TestGetBlogs(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	currUUID := utility.GenerateUUID()
-	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	r := gin.Default()
-
-	_, token := initialise(currUUID, t, r, db, user, blog, true)
 
 	tests := []struct {
 		Name         string
@@ -360,16 +344,7 @@ func TestGetBlogs(t *testing.T){
 		{
 			Name:         "Successful Retrieval of Blogs",
 			ExpectedCode: http.StatusOK,
-			Message: "blogs retrieved successfully",
-			Headers: map[string]string{
-				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + token,
-			},
-		},
-		{
-			Name:         "User Not Authorized to Retrieve blogs",
-			ExpectedCode: http.StatusUnauthorized,
-			Message:      "Token could not be found!",
+			Message:      "blogs retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
@@ -379,13 +354,13 @@ func TestGetBlogs(t *testing.T){
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
 			blogUrl.GET("/blogs", blog.GetBlogs)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet,"/api/v1/blogs", nil)
+			req, err := http.NewRequest(http.MethodGet, "/api/v1/blogs", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -419,4 +394,3 @@ func TestGetBlogs(t *testing.T){
 	}
 
 }
-

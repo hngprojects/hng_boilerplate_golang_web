@@ -21,6 +21,10 @@ jobs:
       TEST_TIMEZONE: Africa/Lagos
       TEST_SSLMODE: disable
       TEST_MIGRATE: true
+      REDIS_PORT: 6379
+      REDIS_HOST: localhost
+      REDIS_DB: 0
+
     services:
       postgres:
         image: postgres:latest
@@ -30,6 +34,15 @@ jobs:
           POSTGRES_DB: ${{ env.TEST_DB_NAME }}
         ports:
           - 5432:5432
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -59,14 +72,14 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      SERVER_PORT: 7000
+      SERVER_PORT: "7000"
       DB_NAME: "development_db"
       USERNAME: "development_user"
       APP_NAME: "development"
       APP_URL: "https://deployment.api-golang.boilerplate.hng.tech"
-      REDIS_PORT: 6130
+      REDIS_PORT: "6130"
       REDIS_HOST: "0.0.0.0"
-      REDIS_DB: 0
+      REDIS_DB: "0"
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}

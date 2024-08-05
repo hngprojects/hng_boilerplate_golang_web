@@ -3,13 +3,18 @@ package product
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -87,29 +92,49 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 }
 
 func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var product models.Product
-	if err := db.First(&product, req.ProductID).Error; err != nil {
+	if err := tx.Where("id = ?", req.ProductID).First(&product).Error; err != nil {
+		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("product not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
 
-	ownerID, err := middleware.GetIdFromToken(ctx)
-	if err != nil {
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+	if ownerID == "" {
+		tx.Rollback()
 		return nil, http.StatusUnauthorized, errors.New("failed to get owner ID from token")
 	}
 
 	if product.OwnerID != ownerID {
+		tx.Rollback()
 		return nil, http.StatusForbidden, errors.New("you are not authorized to delete this product")
 	}
 
-	if err := db.Delete(&product).Error; err != nil {
+	if err := tx.Exec("DELETE FROM product_categories WHERE product_id = ?", product.ID).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Delete(&product).Error; err != nil {
+		tx.Rollback()
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
 	responseData := gin.H{
-		"message": "Product deleted successfully",
+		"message": "Product and its category associations deleted successfully",
 	}
 	return responseData, http.StatusOK, nil
 }
@@ -157,7 +182,6 @@ func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.C
 	product.Price = req.Price
 
 	if err := db.Save(&product).Error; err != nil {
-		log.Printf("Error saving product: %v", err) // Add this line
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -220,4 +244,89 @@ func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
 		"totalItems": len(products),
 	}
 	return responseData, http.StatusOK, nil
+}
+
+func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+	var products []models.Product
+	var totalCount int64
+
+	query := db
+
+	if price > 0 {
+		query = query.Where("price <= ?", price)
+	}
+
+	if category != "" {
+		query = query.Joins("JOIN product_categories ON products.id = product_categories.product_id").
+			Joins("JOIN categories ON product_categories.category_id = categories.id").
+			Where("categories.name = ?", category)
+	}
+
+	if err := query.Model(&models.Product{}).Count(&totalCount).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
+	offset := (page - 1) * pageSize
+
+	if err := query.Order("price DESC").Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	responseData := gin.H{
+		"products":     products,
+		"total_count":  totalCount,
+		"current_page": page,
+		"page_size":    pageSize,
+		"total_pages":  int(math.Ceil(float64(totalCount) / float64(pageSize))),
+	}
+	return responseData, http.StatusOK, nil
+}
+
+func UploadImage(productID string, image *multipart.FileHeader, db *gorm.DB) (gin.H, int, error) {
+	product := models.Product{}
+	if err := db.First(&product, "id = ?", productID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return gin.H{"error": "Product not found"}, http.StatusNotFound, err
+		}
+		return gin.H{"error": "Database error"}, http.StatusInternalServerError, err
+	}
+
+	if image == nil {
+		return gin.H{"error": "No image file provided"}, http.StatusBadRequest, errors.New("no image file")
+	}
+
+	ext := filepath.Ext(image.Filename)
+	newFilename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+
+	if err := saveUploadedFile(image, fmt.Sprintf("images/%s", newFilename)); err != nil {
+		return gin.H{"error": "Failed to save image"}, http.StatusInternalServerError, err
+	}
+
+	// Update product with new image filename
+	product.Image = newFilename
+	if err := db.Save(&product).Error; err != nil {
+		return gin.H{"error": "Failed to update product"}, http.StatusInternalServerError, err
+	}
+
+	return gin.H{"message": "Image uploaded successfully"}, http.StatusOK, nil
+}
+
+// Helper function to save the uploaded file
+func saveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }

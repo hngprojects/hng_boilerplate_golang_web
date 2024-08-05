@@ -11,8 +11,8 @@ type Configuration struct {
 	TestDatabase Database
 	App          App
 	IPStack      IPStack
-	Oauth        OauthFields
 	Mail         MAIL
+	Redis        Redis
 }
 
 type BaseConfig struct {
@@ -52,14 +52,14 @@ type BaseConfig struct {
 	IPSTACK_KEY      string `mapstructure:"IPSTACK_KEY"`
 	IPSTACK_BASE_URL string `mapstructure:"IPSTACK_BASE_URL"`
 
-	GOOGLE_CLIENT_ID       string `mapstructure:"GOOGLE_CLIENT_ID"`
-	GOOGLE_CLIENT_SECRET   string `mapstructure:"GOOGLE_CLIENT_SECRET"`
-	FACEBOOK_CLIENT_ID     string `mapstructure:"FACEBOOK_CLIENT_ID"`
-	FACEBOOK_CLIENT_SECRET string `mapstructure:"FACEBOOK_CLIENT_SECRET"`
-	SESSION_SECRET         string `mapstructure:"SESSION_SECRET"`
+	MAIL_SERVER   string `mapstructure:"MAIL_SERVER"`
+	MAIL_PASSWORD string `mapstructure:"MAIL_PASSWORD"`
+	MAIL_USERNAME string `mapstructure:"MAIL_USERNAME"`
+	MAIL_PORT     string `mapstructure:"MAIL_PORT"`
 
-	MAIL_DOMAIN string `mapstructure:"MAIL_DOMAIN"`
-	MAIL_APIKEY string `mapstructure:"MAIL_APIKEY"`
+	REDIS_PORT string `mapstructure:"REDIS_PORT"`
+	REDIS_HOST string `mapstructure:"REDIS_HOST"`
+	REDIS_DB   string `mapstructure:"REDIS_DB"`
 }
 
 func (config *BaseConfig) SetupConfigurationn() *Configuration {
@@ -115,17 +115,17 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			BaseUrl: config.IPSTACK_BASE_URL,
 		},
 
-		Oauth: OauthFields{
-			GOOGLE_CLIENT_ID:       config.GOOGLE_CLIENT_ID,
-			GOOGLE_CLIENT_SECRET:   config.GOOGLE_CLIENT_SECRET,
-			FACEBOOK_CLIENT_ID:     config.FACEBOOK_CLIENT_ID,
-			FACEBOOK_CLIENT_SECRET: config.FACEBOOK_CLIENT_SECRET,
-			SESSION_SECRET:         config.SESSION_SECRET,
+		Mail: MAIL{
+			Server:   config.MAIL_SERVER,
+			Password: config.MAIL_PASSWORD,
+			Port:     config.MAIL_PORT,
+			Username: config.MAIL_USERNAME,
 		},
 
-		Mail: MAIL{
-			Domain: config.MAIL_DOMAIN,
-			APIKey: config.MAIL_APIKEY,
+		Redis: Redis{
+			REDIS_PORT: config.REDIS_PORT,
+			REDIS_HOST: config.REDIS_HOST,
+			REDIS_DB:   config.REDIS_DB,
 		},
 	}
 }

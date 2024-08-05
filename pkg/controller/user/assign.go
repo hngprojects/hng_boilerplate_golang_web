@@ -1,16 +1,14 @@
 package user
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"net/http"
+	"strconv"
 )
 
 func (base *Controller) AssignRoleToUser(c *gin.Context) {
-
 	userID := c.Param("user_id")
 	roleID, err := strconv.Atoi(c.Param("role_id"))
 	if err != nil {

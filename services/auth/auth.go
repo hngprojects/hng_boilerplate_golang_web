@@ -12,7 +12,10 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -128,6 +131,15 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 			"updated_at": strconv.Itoa(int(user.UpdatedAt.Unix())),
 		},
 		"access_token": tokenData.AccessToken,
+	}
+
+	resetReq := models.SendWelcomeMail{
+		Email: user.Email,
+	}
+
+	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendWelcomeMail, resetReq)
+	if err != nil {
+		return responseData, http.StatusInternalServerError, err
 	}
 
 	return responseData, http.StatusCreated, nil

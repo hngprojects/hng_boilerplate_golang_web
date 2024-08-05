@@ -63,7 +63,7 @@ do
         sed -i "s|^$KEY=.*|$KEY=$VALUE|" app.env
     else
         # Add the new key-value pair
-        echo "$KEY=$VALUE" >> app.env
+        echo -e "\n$KEY=$VALUE" >> app.env
     fi
 done
 
