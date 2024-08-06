@@ -59,8 +59,8 @@ func TestProfileUpdate(t *testing.T) {
 		{
 			Name: "Successful profile update",
 			RequestBody: models.UpdateProfileRequest{
-				FirstName: "not_mr_test",
-				// LastName:       "not_Mr_user",
+				FirstName:      "not_mr_test",
+				LastName:       "not_Mr_user",
 				Phone:          fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),
 				SecondaryEmail: fmt.Sprintf("wakandaNo%v@qa.team", currUUID),
 			},
@@ -109,8 +109,6 @@ func TestProfileUpdate(t *testing.T) {
 
 			data := tst.ParseResponse(rr)
 
-			fmt.Println(data)
-
 			code := int(data["status_code"].(float64))
 			tst.AssertStatusCode(t, code, test.ExpectedCode)
 
@@ -123,7 +121,6 @@ func TestProfileUpdate(t *testing.T) {
 				}
 
 			}
-
 		})
 
 	}
