@@ -33,6 +33,9 @@ func Send(extReq request.ExternalRequest, db *gorm.DB, rdb *redis.Client, notifi
 		names.SendMagicLink: func() error {
 			return req.SendMagicLink()
 		},
+		names.SendContactUsMail: func() error {
+			return req.SendContactUsMail()
+		},
 	}
 
 	err = callEmailFunc[name]()

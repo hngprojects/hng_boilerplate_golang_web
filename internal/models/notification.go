@@ -40,6 +40,13 @@ type SendMagicLink struct {
 	MagicLink string `json:"magic_link"  validate:"required"`
 }
 
+type SendContactUsMail struct {
+	Name    string `json:"name"  validate:"required"`
+	Email   string `json:"email" `
+	Subject string `son:"subject" validate:"required"`
+	Message string `json:"message" validate:"required"`
+}
+
 func (n *NotificationRecord) PushToQueue(rdb *redis.Client) error {
 	err := dbRedis.PushToQueue(rdb, &n)
 
