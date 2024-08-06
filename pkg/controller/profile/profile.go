@@ -62,3 +62,4 @@ func (base *Controller) UpdateProfile(c *gin.Context) {
 
 	c.JSON(code, rd)
 }
+
