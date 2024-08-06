@@ -173,3 +173,16 @@ func (u *User) DeleteAUser(db *gorm.DB) error {
 
 	return nil
 }
+
+func (u *User) GetProfileID(db *gorm.DB, userID string) (string, error) {
+	var user User
+
+	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile")
+
+	if err := query.First(&user).Error; err != nil {
+		return user.Profile.ID, err
+	}
+
+	return user.Profile.ID, nil
+}

@@ -52,6 +52,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Template(r, ApiVersion, validator, db, logger)
 	Python(r, ApiVersion, validator, db, logger)
 	HelpCenter(r, ApiVersion, validator, db, logger)
+	Profile(r, ApiVersion, validator, db, logger)
 	Contact(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
