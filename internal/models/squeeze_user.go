@@ -16,6 +16,12 @@ type SqueezeUser struct {
 	UpdatedAt time.Time `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
+type SqueezeUserReq struct {
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+}
+
 func (s *SqueezeUser) Create(db *gorm.DB) error {
 	err := postgresql.CreateOneRecord(db, &s)
 
