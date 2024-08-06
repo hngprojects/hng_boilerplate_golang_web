@@ -36,6 +36,9 @@ func Send(extReq request.ExternalRequest, db *gorm.DB, rdb *redis.Client, notifi
 		names.SendSqueeze: func() error {
 			return req.SendSqueeze()
 		},
+		names.SendContactUsMail: func() error {
+			return req.SendContactUsMail()
+		},
 	}
 
 	err = callEmailFunc[name]()

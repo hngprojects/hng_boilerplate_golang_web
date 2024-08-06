@@ -28,6 +28,8 @@ func AuthMigrationModels() []interface{} {
 		models.UserRegionTimezoneLanguage{},
 		models.Notification{},
 		models.NotificationSettings{},
+		models.HelpCenter{},
+		models.ContactUs{},
 	} // an array of db models, example: User{}
 }
 

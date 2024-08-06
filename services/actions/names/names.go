@@ -16,6 +16,7 @@ const (
 	SendEmailVerificationMail NotificationName = "send_email_verification_mail"
 	SendMagicLink             NotificationName = "send_magic_link"
 	SendSqueeze               NotificationName = "send_squeeze"
+	SendContactUsMail         NotificationName = "send_contact_us"
 )
 
 func Check() {

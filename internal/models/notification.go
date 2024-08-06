@@ -45,6 +45,12 @@ type SendSqueeze struct {
 	LastName  string `json:"last_name" validate:"required"`
 	Email     string `json:"email"  validate:"required"`
 }
+type SendContactUsMail struct {
+	Name    string `json:"name"  validate:"required"`
+	Email   string `json:"email" `
+	Subject string `son:"subject" validate:"required"`
+	Message string `json:"message" validate:"required"`
+}
 
 func (n *NotificationRecord) PushToQueue(rdb *redis.Client) error {
 	err := dbRedis.PushToQueue(rdb, &n)
