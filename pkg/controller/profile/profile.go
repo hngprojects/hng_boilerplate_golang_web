@@ -57,8 +57,8 @@ func (base *Controller) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("Product updated successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Product updated successfully", respData)
+	base.Logger.Info("Profile updated successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Profile updated successfully", respData)
 
 	c.JSON(code, rd)
 }
