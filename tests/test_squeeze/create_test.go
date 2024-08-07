@@ -11,6 +11,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"github.com/lib/pq"
 )
 
 func TestE2ESqueezeUserCreation(t *testing.T) {
@@ -18,10 +19,17 @@ func TestE2ESqueezeUserCreation(t *testing.T) {
 
 	// Test POST /squeeze
 	currUUID := utility.GenerateUUID()
+	phone := fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999))
 	body := models.SqueezeUserReq{
-		FirstName: "test",
-		LastName:  "user1",
-		Email:     fmt.Sprintf("testuser%v@qa.team", currUUID),
+		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),
+		FirstName:      "test",
+		LastName:       "user1",
+		Phone:          phone,
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      []string{"photos", "phones"},
+		ReferralSource: "facebook",
 	}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
@@ -48,10 +56,17 @@ func TestCreateSqueezeUser_ValidateEmail(t *testing.T) {
 	router, _ := SetupSqueezeTestRouter()
 
 	currUUID := utility.GenerateUUID()
+	phone := fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999))
 	body := models.SqueezeUserReq{
-		FirstName: "test",
-		LastName:  "user1",
-		Email:     fmt.Sprintf("testuser%v@qa", currUUID),
+		Email:          fmt.Sprintf("testuser%v@qa", currUUID),
+		FirstName:      "test",
+		LastName:       "user1",
+		Phone:          phone,
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      []string{"photos", "phones"},
+		ReferralSource: "facebook",
 	}
 	jsonBody, _ := json.Marshal(body)
 
@@ -70,19 +85,32 @@ func TestCreateSqueezeUser_CheckDuplicateEmail(t *testing.T) {
 	router, squeezeController := SetupSqueezeTestRouter()
 
 	currUUID := utility.GenerateUUID()
+	phone := fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999))
 
 	db := squeezeController.Db.Postgresql
 	db.Create(&models.SqueezeUser{
-		ID:        currUUID,
-		FirstName: "test",
-		LastName:  "user",
-		Email:     fmt.Sprintf("testuser%v@qa.team", currUUID),
+		ID:             currUUID,
+		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),
+		FirstName:      "test",
+		LastName:       "user",
+		Phone:          phone,
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      pq.StringArray{"photos", "phones"},
+		ReferralSource: "facebook",
 	})
 
 	body := models.SqueezeUserReq{
-		FirstName: "test",
-		LastName:  "user",
-		Email:     fmt.Sprintf("testuser%v@qa.team", currUUID),
+		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),
+		FirstName:      "test",
+		LastName:       "user",
+		Phone:          "09034017724",
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      []string{"photos", "phones"},
+		ReferralSource: "facebook",
 	}
 	jsonBody, _ := json.Marshal(body)
 
@@ -95,4 +123,48 @@ func TestCreateSqueezeUser_CheckDuplicateEmail(t *testing.T) {
 	response := tst.ParseResponse(resp)
 	tst.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
 	tst.AssertResponseMessage(t, response["message"].(string), "user already exists with the given email")
+}
+
+func TestCreateSqueezeUser_CheckDuplicatePhoneNumber(t *testing.T) {
+	router, squeezeController := SetupSqueezeTestRouter()
+
+	currUUID := utility.GenerateUUID()
+	
+
+	db := squeezeController.Db.Postgresql
+	db.Create(&models.SqueezeUser{
+		ID:             currUUID,
+		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),
+		FirstName:      "test",
+		LastName:       "user",
+		Phone:          "08028792017",
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      pq.StringArray{"photos", "phones"},
+		ReferralSource: "facebook",
+	})
+
+	body := models.SqueezeUserReq{
+		Email:          fmt.Sprintf("testuser%v@qc.team", currUUID),
+		FirstName:      "test",
+		LastName:       "user",
+		Phone:          "08028792017",
+		Location:       "Lagos",
+		JobTitle:       "Software engineering",
+		Company:        "Paystack",
+		Interests:      []string{"photos", "phones"},
+		ReferralSource: "facebook",
+	}
+	jsonBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/squeeze", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	router.ServeHTTP(resp, req)
+
+	response := tst.ParseResponse(resp)
+	tst.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
+	tst.AssertResponseMessage(t, response["message"].(string), "user already exists with the given phone")
 }

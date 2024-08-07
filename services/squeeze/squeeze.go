@@ -13,6 +13,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -33,15 +34,32 @@ func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.
 		}
 	}
 
+	if req.Phone != "" {
+		req.Phone = strings.ToLower(req.Phone)
+		phone, _ := utility.PhoneValid(req.Phone)
+		req.Phone = phone
+		exists := postgresql.CheckExists(db, &squeezeUser, "phone = ?", req.Phone)
+		if exists {
+			return req, http.StatusBadRequest, errors.New("user already exists with the given phone")
+		}
+
+	}
+
 	return req, 0, nil
 }
 
 func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.SqueezeUserReq) (*models.SqueezeUser, error) {
 	squeezeUser := &models.SqueezeUser{
-		ID:        utility.GenerateUUID(),
-		FirstName: strings.ToLower(req.FirstName),
-		LastName:  strings.ToLower(req.LastName),
-		Email:     req.Email,
+		ID:             utility.GenerateUUID(),
+		Email:          req.Email,
+		FirstName:      strings.ToLower(req.FirstName),
+		LastName:       strings.ToLower(req.LastName),
+		Phone:          req.Phone,
+		Location:       strings.ToLower(req.Location),
+		JobTitle:       strings.ToLower(req.JobTitle),
+		Company:        strings.ToLower(req.Company),
+		Interests:      pq.StringArray(req.Interests),
+		ReferralSource: strings.ToLower(req.ReferralSource),
 	}
 
 	err := squeezeUser.Create(db)
@@ -51,9 +69,9 @@ func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.Squee
 	}
 
 	squeezeUserReq := models.SendSqueeze{
+		Email:     squeezeUser.Email,
 		FirstName: squeezeUser.FirstName,
 		LastName:  squeezeUser.LastName,
-		Email:     squeezeUser.Email,
 	}
 
 	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendSqueeze, squeezeUserReq)

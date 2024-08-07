@@ -41,9 +41,9 @@ type SendMagicLink struct {
 }
 
 type SendSqueeze struct {
+	Email     string `json:"email"  validate:"required"`
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name" validate:"required"`
-	Email     string `json:"email"  validate:"required"`
 }
 type SendContactUsMail struct {
 	Name    string `json:"name"  validate:"required"`
