@@ -14,7 +14,7 @@ import (
 
 func TestGetInvites(t *testing.T) {
 	setup := InviteSetup(t, true)
-	requestURI := url.URL{Path: "/api/v1/organisation/invitations"}
+	requestURI := url.URL{Path: "/api/v1/organization/invitations"}
 
 	tests := []struct {
 		Name         string
@@ -55,7 +55,7 @@ func TestGetInvites(t *testing.T) {
 
 		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(setup.DB.Postgresql))
 		{
-			inviteURL.GET("/organisation/invitations", setup.InviteController.GetInvites)
+			inviteURL.GET("/organization/invitations", setup.InviteController.GetInvites)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
