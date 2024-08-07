@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
@@ -64,6 +66,14 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 			"status":      http.StatusOK,
 		})
 	})
+
+	r.StaticFile("/swagger.yaml", "static/swagger.yaml")
+	url := ginSwagger.URL("/swagger.yaml")
+	r.GET("/api/docs/*any", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-2TOI2ugkuROHHfKZr6kdGv+XxhrVUI8uHycXqXUIR4g='; img-src 'self' data:;")
+		ginSwagger.WrapHandler(swaggerFiles.Handler, url)(c)
+	})
+
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"name":        "Not Found",

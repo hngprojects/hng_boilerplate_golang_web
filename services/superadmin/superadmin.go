@@ -1,6 +1,8 @@
 package superadmin
 
 import (
+	"net/http"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"gorm.io/gorm"
 )
@@ -66,4 +68,26 @@ func GetLanguages(db *gorm.DB) ([]models.Language, error) {
 	}
 
 	return languageData, nil
+}
+
+func UpdateATimeZone(req *models.Timezone, reqID string, db *gorm.DB) (*models.Timezone, int, error) {
+
+	var (
+		timezone models.Timezone
+	)
+
+	timezone, err := timezone.GetTimezoneByID(db, reqID)
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+
+	timezone.Timezone = req.Timezone
+	timezone.GmtOffset = req.GmtOffset
+	timezone.Description = req.Description
+
+	if err := timezone.UpdateTimeZone(db); err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+
+	return &timezone, http.StatusOK, nil
 }
