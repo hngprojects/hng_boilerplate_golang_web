@@ -11,6 +11,7 @@ on:
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
+    environment: production
     env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
@@ -63,6 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_and_test
     if: github.event_name == 'push'
+    environment: production
     env:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
