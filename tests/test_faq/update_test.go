@@ -44,6 +44,7 @@ func TestUpdateFaq(t *testing.T) {
 		ID:        utility.GenerateUUID(),
 		Question:  fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(9)),
 		Answer:    "To provide answers to frequently asked questions.",
+		Category:  "Policies",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -63,6 +64,7 @@ func TestUpdateFaq(t *testing.T) {
 		updateFaq := models.UpdateFAQ{
 			Question: fmt.Sprintf("Update of this %s FAQ?", utility.RandomString(8)),
 			Answer:   "Updated answer",
+			Category: "Policies",
 		}
 		jsonBody, _ := json.Marshal(updateFaq)
 
@@ -117,6 +119,7 @@ func TestUpdateFaq(t *testing.T) {
 		updateFaq := models.UpdateFAQ{
 			Question: fmt.Sprintf("the purpose of this %s FAQ?", utility.RandomString(10)),
 			Answer:   "Updated answer",
+			Category: "Policies1",
 		}
 		jsonBody, _ := json.Marshal(updateFaq)
 

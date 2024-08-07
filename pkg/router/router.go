@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
@@ -30,6 +32,10 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	r.Use(middleware.Metrics(config.GetConfig()))
 	r.Use(middleware.GzipWithExclusion("/metrics"))
 	r.MaxMultipartMemory = 3 << 20
+
+	r.StaticFile("/swagger.yaml", "./static/swagger.yaml")
+	url := ginSwagger.URL("/swagger.yaml")
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// routers
 	ApiVersion := "api/v1"
