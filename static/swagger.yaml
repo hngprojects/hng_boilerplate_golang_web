@@ -13,10 +13,8 @@ info:
   version: 1.0.0
 servers:
   # Added by API Auto Mocking Plugin
-  # Added by API Auto Mocking Plugin
+  - url: https://staging.api-golang.boilerplate.hng.tech/api/v1
   - url: https://deployment.api-golang.boilerplate.hng.tech/api/v1
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/HARYORTORLARH/hng-go-task/1.0.0
 tags:
   - name: auth
     description:  API for user registration and authentication
@@ -990,7 +988,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
 
-  /newsletter:
+  /newsletter-subscription:
     get:
       tags:
         - newsletter
@@ -1047,6 +1045,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /newsletter-subscription/{id}:
+    delete:
+      tags:
+        - newsletter
+      summary: Delete a newsletter subscription
+      security:
+        - bearerAuth: []
+      description: Deletes a newsletter by its ID.
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the newsletter to delete
+      responses:
+        '200':
+          description: newsletter deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
         '401':
           description: Authentication error
           content:
@@ -1146,6 +1186,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: ID of the FAQ to update
       requestBody:
         required: true
@@ -1188,16 +1229,17 @@ paths:
     delete:
       tags:
         - faq
-      summary: Delete an FAQ
+      summary: Delete a FAQ
       security:
         - bearerAuth: []
-      description: Deletes an FAQ by its ID.
+      description: Deletes a FAQ by its ID.
       parameters:
         - name: faqId
           in: path
           required: true
           schema:
             type: string
+            format: uuid
           description: ID of the FAQ to delete
       responses:
         '200':
@@ -1205,7 +1247,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponseSchema2'
+                $ref: '#/components/schemas/SuccessResponseSchema'
         '404':
           description: FAQ not found
           content:
@@ -1363,6 +1405,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
 
+  /timezones/{id}:
+    patch:
+      tags:
+        - timezone
+      summary: Update a timezone
+      security:
+        - bearerAuth: []
+      description: Update an existing timezone entry.
+      parameters:
+        - name: timezone_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the user to retrieve the region information for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimezoneSchema'
+      responses:
+        '200':
+          description: Timezone updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
   /regions:
     get:
       tags:
@@ -1425,6 +1521,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
         '500':
           description: Server error
           content:
@@ -1489,6 +1591,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
         '500':
           description: Server error
           content:
@@ -5090,7 +5198,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponseSchema2'
+                $ref: '#/components/schemas/SuccessResponseSchema'
         '404':
           description: Contact not found
           content:
@@ -5495,6 +5603,8 @@ components:
           type: string
         answer:
           type: string
+        category:
+          type: string
 
     NewsletterSchema:
       type: object
@@ -5513,10 +5623,13 @@ components:
     TimezoneSchema:
       type: object
       properties:
-        identifier:
+        timezone:
           type: string
-        offset:
+        gmt_offset:
           type: string
+        description:
+          type: string
+        
 
     RegionSchema:
       type: object
