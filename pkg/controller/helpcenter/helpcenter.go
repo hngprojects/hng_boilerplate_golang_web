@@ -76,10 +76,10 @@ func (base *Controller) FetchAllTopics(c *gin.Context) {
 	topics, paginationResponse, err := service.GetPaginatedTopics(c, base.Db.Postgresql)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "No Job post not found", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topics not found", err, nil)
 			c.JSON(http.StatusNotFound, rd)
 		} else {
-			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch job post", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch topics", err, nil)
 			c.JSON(http.StatusInternalServerError, rd)
 		}
 		return
