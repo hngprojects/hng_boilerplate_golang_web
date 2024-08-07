@@ -41,4 +41,6 @@ func SetupSARoutes(r *gin.Engine, saController *superadmin.Controller) {
 		saController.GetTimeZone)
 	r.GET("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql),
 		saController.GetLanguage)
+	r.PATCH("/api/v1/timezones/:id", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+		saController.UpdateTimeZone)
 }

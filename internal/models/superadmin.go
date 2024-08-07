@@ -30,12 +30,13 @@ type Language struct {
 }
 
 type Timezone struct {
-	ID         string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
-	Identifier string         `gorm:"type:varchar(40);unique;not null" json:"identifier" validate:"required"`
-	Offset     string         `gorm:"type:varchar(10);unique;not null" json:"offset" validate:"required"`
-	CreatedAt  time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
-	UpdatedAt  time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	ID          string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
+	Timezone    string         `gorm:"type:varchar(40);unique;not null" json:"timezone" validate:"required"`
+	GmtOffset   string         `gorm:"type:varchar(10);unique;not null" json:"gmt_offset" validate:"required"`
+	Description string         `gorm:"type:varchar(100);not null" json:"description" validate:"required"`
+	CreatedAt   time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type Region struct {
@@ -164,5 +165,22 @@ func (r *Language) GetLanguages(db *gorm.DB) ([]Language, error) {
 
 func (u *UserRegionTimezoneLanguage) UpdateUserRegion(db *gorm.DB) error {
 	_, err := postgresql.SaveAllFields(db, &u)
+	return err
+}
+
+func (t *Timezone) GetTimezoneByID(db *gorm.DB, ID string) (Timezone, error) {
+	var timezone Timezone
+
+	query := db.Where("id = ?", ID)
+	if err := query.First(&timezone).Error; err != nil {
+		return timezone, err
+	}
+
+	return timezone, nil
+
+}
+
+func (t *Timezone) UpdateTimeZone(db *gorm.DB) error {
+	_, err := postgresql.SaveAllFields(db, &t)
 	return err
 }

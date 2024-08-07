@@ -53,9 +53,12 @@ func TestAddToTimezone(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		timezone := models.Timezone{
-			Identifier: fmt.Sprintf("UTC-%s", utility.RandomString(10)),
-			Offset:     fmt.Sprintf("-002-%s", utility.RandomString(5)),
+			ID:          utility.GenerateUUID(),
+			Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
+
 		jsonBody, _ := json.Marshal(timezone)
 
 		req, _ := http.NewRequest(http.MethodPost, "/api/v1/timezones", bytes.NewBuffer(jsonBody))
@@ -80,8 +83,10 @@ func TestAddToTimezone(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		timezone := models.Timezone{
-			Identifier: "",
-			Offset:     fmt.Sprintf("+005-%s", utility.RandomString(5)),
+			ID:          utility.GenerateUUID(),
+			Timezone:    "",
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(5)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
 		jsonBody, _ := json.Marshal(timezone)
 
@@ -108,14 +113,16 @@ func TestAddToTimezone(t *testing.T) {
 		theRandom := utility.RandomString(6)
 
 		timezone := models.Timezone{
-			Identifier: fmt.Sprintf("UTC-%s", theRandom),
-			Offset:     fmt.Sprintf("+001-%s", utility.RandomString(5)),
+			Timezone:    fmt.Sprintf("UTC-%s", theRandom),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(5)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
 		authController.Db.Postgresql.Create(&timezone)
 
 		duplicateTimezone := models.Timezone{
-			Identifier: fmt.Sprintf("UTC-%s", theRandom),
-			Offset:     fmt.Sprintf("+001-%s", utility.RandomString(5)),
+			Timezone:    fmt.Sprintf("UTC-%s", theRandom),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(5)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
 		jsonBody, _ := json.Marshal(duplicateTimezone)
 
@@ -133,8 +140,10 @@ func TestAddToTimezone(t *testing.T) {
 		router, _ := setup()
 
 		timezone := models.Timezone{
-			Identifier: fmt.Sprintf("GMT-%s", utility.RandomString(18)),
-			Offset:     fmt.Sprintf("-001-%s", utility.RandomString(5)),
+			ID:          utility.GenerateUUID(),
+			Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(18)),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(4)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
 		jsonBody, _ := json.Marshal(timezone)
 
@@ -184,8 +193,10 @@ func TestGetTimezones(t *testing.T) {
 	}
 
 	timezone := models.Timezone{
-		Identifier: fmt.Sprintf("Timezone-%s", utility.RandomString(10)),
-		Offset:     fmt.Sprintf("UTC+%s", utility.RandomString(1)),
+		ID:          utility.GenerateUUID(),
+		Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(10)),
+		GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(5)),
+		Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 	}
 
 	db.Create(&adminUser)
@@ -244,5 +255,164 @@ func TestGetTimezones(t *testing.T) {
 		tests.AssertStatusCode(t, resp.Code, http.StatusUnauthorized)
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Token could not be found!")
+	})
+}
+
+func TestUpdateTimezone(t *testing.T) {
+	_, saController := SetupSATestRouter()
+	db := saController.Db.Postgresql
+
+	currUUID := utility.GenerateUUID()
+	password, _ := utility.HashPassword("password")
+
+	adminUser := models.User{
+		ID:       utility.GenerateUUID(),
+		Name:     "Admin User",
+		Email:    fmt.Sprintf("admin%v@qa.team", currUUID),
+		Password: password,
+		Role:     int(models.RoleIdentity.SuperAdmin),
+	}
+
+	db.Create(&adminUser)
+
+	setup := func() (*gin.Engine, *auth.Controller) {
+		router, saController := SetupSATestRouter()
+		authController := auth.Controller{
+			Db:        saController.Db,
+			Validator: saController.Validator,
+			Logger:    saController.Logger,
+		}
+
+		return router, &authController
+	}
+
+	t.Run("Successful Update Timezone", func(t *testing.T) {
+		router, authController := setup()
+
+		loginData := models.LoginRequestModel{
+			Email:    adminUser.Email,
+			Password: "password",
+		}
+		token := tests.GetLoginToken(t, router, *authController, loginData)
+
+		timezone := models.Timezone{
+			ID:          utility.GenerateUUID(),
+			Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
+		}
+		db.Create(&timezone)
+
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
+		}
+		jsonBody, _ := json.Marshal(updateTimezone)
+
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+
+		tests.AssertStatusCode(t, resp.Code, http.StatusOK)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "Timezone updated successfully")
+	})
+
+	t.Run("Validation Error - Missing Fields", func(t *testing.T) {
+		router, authController := setup()
+
+		loginData := models.LoginRequestModel{
+			Email:    adminUser.Email,
+			Password: "password",
+		}
+		token := tests.GetLoginToken(t, router, *authController, loginData)
+
+		timezone := models.Timezone{
+			ID:          utility.GenerateUUID(),
+			Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
+		}
+		db.Create(&timezone)
+
+		updateTimezone := models.Timezone{
+			Timezone:    "",
+			GmtOffset:   "",
+			Description: "",
+		}
+		jsonBody, _ := json.Marshal(updateTimezone)
+
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+
+		tests.AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
+	})
+
+	t.Run("Timezone Not Found", func(t *testing.T) {
+		router, authController := setup()
+
+		loginData := models.LoginRequestModel{
+			Email:    adminUser.Email,
+			Password: "password",
+		}
+		token := tests.GetLoginToken(t, router, *authController, loginData)
+
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
+		}
+		jsonBody, _ := json.Marshal(updateTimezone)
+
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", utility.GenerateUUID()), bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+
+		tests.AssertStatusCode(t, resp.Code, http.StatusNotFound)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "record not found")
+	})
+
+	t.Run("Unauthorized Access", func(t *testing.T) {
+		router, _ := setup()
+
+		timezone := models.Timezone{
+			ID:          utility.GenerateUUID(),
+			Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(18)),
+			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(4)),
+			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
+		}
+		db.Create(&timezone)
+
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(18)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
+		}
+		jsonBody, _ := json.Marshal(updateTimezone)
+
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer invalid_token")
+
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+
+		tests.AssertStatusCode(t, resp.Code, http.StatusUnauthorized)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "Token is invalid!")
 	})
 }

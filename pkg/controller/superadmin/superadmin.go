@@ -162,3 +162,38 @@ func (base *Controller) AddToLanguage(c *gin.Context) {
 	c.JSON(http.StatusCreated, rd)
 
 }
+
+func (base *Controller) UpdateTimeZone(c *gin.Context) {
+	var (
+		req   = models.Timezone{}
+		reqID = c.Param("id")
+	)
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	err = base.Validator.Struct(&req)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed",
+			utility.ValidationResponse(err, base.Validator), nil)
+		c.JSON(http.StatusUnprocessableEntity, rd)
+		return
+	}
+
+	respData, code, err := service.UpdateATimeZone(&req, reqID, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+
+		return
+	}
+
+	base.Logger.Info("timezone updated successfully")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Timezone updated successfully", respData)
+	c.JSON(http.StatusOK, rd)
+
+}
