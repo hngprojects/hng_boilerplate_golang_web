@@ -17,7 +17,7 @@ import (
 func TestPostInvite(t *testing.T) {
 
 	setup := InviteSetup(t, false)
-	requestURI := url.URL{Path: "/api/v1/organisation/send-invite"}
+	requestURI := url.URL{Path: "/api/v1/organization/send-invite"}
 
 	tests := []struct {
 		Name         string
