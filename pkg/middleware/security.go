@@ -22,7 +22,7 @@ func Throttle() gin.HandlerFunc {
 
 	lmt := tollbooth.NewLimiter(requestPerSecond, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetIPLookups([]string{"X-Forwarded-For", "X-Real-IP", "RemoteAddr"})
-	lmt.SetMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	lmt.SetMethods([]string{"GET", "POST", "PUT", "DELETE", "PATCH"})
 
 	return func(c *gin.Context) {
 		if isExemptIP(c.ClientIP(), serverConfig.ExemptFromThrottle) {
