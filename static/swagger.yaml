@@ -15,6 +15,7 @@ servers:
   # Added by API Auto Mocking Plugin
   - url: https://staging.api-golang.boilerplate.hng.tech/api/v1
   - url: https://deployment.api-golang.boilerplate.hng.tech/api/v1
+
 tags:
   - name: auth
     description:  API for user registration and authentication
@@ -1058,7 +1059,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
 
-  /newsletter-subscription/{id}:
+  /newsletter-subscription/{Id}:
     delete:
       tags:
         - newsletter
@@ -1067,7 +1068,7 @@ paths:
         - bearerAuth: []
       description: Deletes a newsletter by its ID.
       parameters:
-        - name: faqId
+        - name: Id
           in: path
           required: true
           schema:
@@ -1093,6 +1094,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /newsletter-subscription/restore/{Id}:
+    patch:
+      tags:
+        - newsletter
+      summary: Restore a deleted newsletter email
+      security:
+        - bearerAuth: []
+      description: Restore a deleted newsletter email by its ID.
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the newsletter to restore
+      responses:
+        '200':
+          description: Newsletter email restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+
+    /newsletter-subscription/deleted:
+    get:
+      tags:
+        - newsletter
+      summary: Get all deleted newsletters emails
+      security:
+        - bearerAuth: []
+      description: Retrieves a paginated list of deleted newsletters emails.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of all deleted newsletters emails
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NewsletterSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
         '500':
           description: Server error
           content:
