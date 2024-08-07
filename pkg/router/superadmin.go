@@ -22,6 +22,7 @@ func SuperAdmin(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 	{
 		superadminUrl.POST("/regions", superAdmin.AddToRegion)
 		superadminUrl.POST("/timezones", superAdmin.AddToTimeZone)
+		superadminUrl.PATCH("/timezones/:id", superAdmin.UpdateTimeZone)
 		superadminUrl.POST("/languages", superAdmin.AddToLanguage)
 		userUrl.GET("/regions", superAdmin.GetRegion)
 		userUrl.GET("/timezones", superAdmin.GetTimeZone)

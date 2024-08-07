@@ -55,6 +55,7 @@ func TestAddToFaq(t *testing.T) {
 		faq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(6)),
 			Answer:   "To provide answers to frequently asked questions.",
+			Category: "Policies",
 		}
 		jsonBody, _ := json.Marshal(faq)
 
@@ -82,6 +83,7 @@ func TestAddToFaq(t *testing.T) {
 		faq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose a %s FAQ?", utility.RandomString(5)),
 			Answer:   "",
+			Category: "Policies",
 		}
 		jsonBody, _ := json.Marshal(faq)
 
@@ -110,12 +112,14 @@ func TestAddToFaq(t *testing.T) {
 		faq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", theRandom),
 			Answer:   "This is a duplicate question test.",
+			Category: "Policies",
 		}
 		authController.Db.Postgresql.Create(&faq)
 
 		duplicateFaq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", theRandom),
 			Answer:   "To provide answers to frequently asked questions.",
+			Category: "Policies",
 		}
 		jsonBody, _ := json.Marshal(duplicateFaq)
 
@@ -137,6 +141,7 @@ func TestAddToFaq(t *testing.T) {
 		faq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(7)),
 			Answer:   "To provide answers to frequently asked questions.",
+			Category: "Policies",
 		}
 		jsonBody, _ := json.Marshal(faq)
 

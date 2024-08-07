@@ -1,4 +1,4 @@
-package test_faq
+package test_superadmin
 
 import (
 	"bytes"
@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -16,19 +15,10 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func TestUpdateFaq(t *testing.T) {
-	setup := func() (*gin.Engine, *auth.Controller) {
-		router, faqController := SetupFAQTestRouter()
-		authController := auth.Controller{
-			Db:        faqController.Db,
-			Validator: faqController.Validator,
-			Logger:    faqController.Logger,
-		}
-		return router, &authController
-	}
+func TestUpdateTimezone(t *testing.T) {
+	_, saController := SetupSATestRouter()
+	db := saController.Db.Postgresql
 
-	_, newsController := SetupFAQTestRouter()
-	db := newsController.Db.Postgresql
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 
@@ -40,19 +30,28 @@ func TestUpdateFaq(t *testing.T) {
 		Role:     int(models.RoleIdentity.SuperAdmin),
 	}
 
-	faq := models.FAQ{
-		ID:        utility.GenerateUUID(),
-		Question:  fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(9)),
-		Answer:    "To provide answers to frequently asked questions.",
-		Category:  "Policies",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	db.Create(&adminUser)
+
+	timezone := models.Timezone{
+		ID:          utility.GenerateUUID(),
+		Timezone:    fmt.Sprintf("America/New_York-%s", utility.RandomString(10)),
+		GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(3)),
+		Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
+	}
+	db.Create(&timezone)
+
+	setup := func() (*gin.Engine, *auth.Controller) {
+		router, saController := SetupSATestRouter()
+		authController := auth.Controller{
+			Db:        saController.Db,
+			Validator: saController.Validator,
+			Logger:    saController.Logger,
+		}
+
+		return router, &authController
 	}
 
-	db.Create(&adminUser)
-	db.Create(&faq)
-
-	t.Run("Successful Update FAQ", func(t *testing.T) {
+	t.Run("Successful Update Timezone", func(t *testing.T) {
 		router, authController := setup()
 
 		loginData := models.LoginRequestModel{
@@ -61,14 +60,14 @@ func TestUpdateFaq(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		updateFaq := models.UpdateFAQ{
-			Question: fmt.Sprintf("Update of this %s FAQ?", utility.RandomString(8)),
-			Answer:   "Updated answer",
-			Category: "Policies",
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
 		}
-		jsonBody, _ := json.Marshal(updateFaq)
+		jsonBody, _ := json.Marshal(updateTimezone)
 
-		req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/faq/%s", faq.ID), bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -77,7 +76,7 @@ func TestUpdateFaq(t *testing.T) {
 
 		tests.AssertStatusCode(t, resp.Code, http.StatusOK)
 		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "FAQ updated successfully")
+		tests.AssertResponseMessage(t, response["message"].(string), "Timezone updated successfully")
 	})
 
 	t.Run("Validation Error - Missing Fields", func(t *testing.T) {
@@ -89,13 +88,14 @@ func TestUpdateFaq(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		updateFaq := models.UpdateFAQ{
-			Question: "",
-			Answer:   "",
+		updateTimezone := models.Timezone{
+			Timezone:    "",
+			GmtOffset:   "",
+			Description: "",
 		}
-		jsonBody, _ := json.Marshal(updateFaq)
+		jsonBody, _ := json.Marshal(updateTimezone)
 
-		req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/faq/%s", faq.ID), bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -107,7 +107,7 @@ func TestUpdateFaq(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
 
-	t.Run("FAQ Not Found", func(t *testing.T) {
+	t.Run("Timezone Not Found", func(t *testing.T) {
 		router, authController := setup()
 
 		loginData := models.LoginRequestModel{
@@ -116,21 +116,21 @@ func TestUpdateFaq(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		updateFaq := models.UpdateFAQ{
-			Question: fmt.Sprintf("the purpose of this %s FAQ?", utility.RandomString(10)),
-			Answer:   "Updated answer",
-			Category: "Policies1",
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(10)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
 		}
-		jsonBody, _ := json.Marshal(updateFaq)
+		jsonBody, _ := json.Marshal(updateTimezone)
 
-		req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/faq/%s", currUUID), bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", utility.GenerateUUID()), bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 		resp := httptest.NewRecorder()
 		router.ServeHTTP(resp, req)
 
-		tests.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
+		tests.AssertStatusCode(t, resp.Code, http.StatusNotFound)
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "record not found")
 	})
@@ -138,13 +138,14 @@ func TestUpdateFaq(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		updateFaq := models.UpdateFAQ{
-			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(15)),
-			Answer:   "Updated answer",
+		updateTimezone := models.Timezone{
+			Timezone:    fmt.Sprintf("America/Los_Angeles-%s", utility.RandomString(18)),
+			GmtOffset:   fmt.Sprintf("-08:00+%s", utility.RandomString(3)),
+			Description: fmt.Sprintf("pacific -%s", utility.RandomString(3)),
 		}
-		jsonBody, _ := json.Marshal(updateFaq)
+		jsonBody, _ := json.Marshal(updateTimezone)
 
-		req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/faq/%s", faq.ID), bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
