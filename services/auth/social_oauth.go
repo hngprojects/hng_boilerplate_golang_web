@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"google.golang.org/api/idtoken"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -21,21 +23,28 @@ import (
 
 func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, error) {
 
-	var userClaims models.GoogleClaims
-	var reqUser models.CreateUserRequestModel
-	var sendWelcome bool
+	var (
+		userClaims models.GoogleClaims
+		reqUser models.CreateUserRequestModel
+		sendWelcome bool
+		responseData gin.H
+	)
 
 	tokenString := req.Token
 
-	// Parse the token
-	_, err := jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
+	_, err := idtoken.Validate(context.Background(), tokenString, "")
+
+	if err != nil {
+		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+	}
+
+	_, _ = jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(""), nil
 	})
 
 	var (
 		email        = strings.ToLower(userClaims.Email)
 		username     = strings.ToLower(userClaims.Name)
-		responseData gin.H
 		user         models.User
 	)
 
@@ -47,7 +56,6 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 		Email: email,
 	}
 
-	// check if user already exists
 	_, err = ValidateCreateUserRequest(reqUser, db)
 	if err != nil {
 		exists := postgresql.CheckExists(db, &user, "email = ?", email)
