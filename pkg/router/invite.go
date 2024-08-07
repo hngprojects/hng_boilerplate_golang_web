@@ -22,13 +22,13 @@ func Invite(r *gin.Engine, ApiVersion string, validator *validator.Validate, db 
 	{
 		{
 			inviteUrl.POST("/invite/create", invite.CreateInvite)
-			inviteUrl.POST("/organisation/send-invite", middleware.RateLimiter(), invite.PostInvite)
+			inviteUrl.POST("/organization/send-invite", middleware.RateLimiter(), invite.PostInvite)
 			inviteUrl.POST("/invite/accept", invite.PostAcceptInvite)
 		}
 
 
 		{
-			inviteUrl.GET("/organisation/invitations", invite.GetInvites)
+			inviteUrl.GET("/organization/invitations", invite.GetInvites)
 			inviteUrl.GET("/invite/accept/:t", invite.GetAcceptInvite)
 		}
 
