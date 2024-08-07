@@ -33,15 +33,13 @@ func (base *Controller) GoogleLogin(c *gin.Context) {
 
 	respData, code, err := auth.CreateGoogleUser(req, base.Db.Postgresql)
 	if err != nil {
-		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, respData)
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
 		return
 	}
 
 	base.Logger.Info("user sign in successfully")
-
-	rd := utility.BuildSuccessResponse(http.StatusOK, "user sign in successfully", respData)
-	c.JSON(http.StatusOK, rd)
+	c.JSON(http.StatusOK, respData)
 
 }
 func (base *Controller) FacebookLogin(c *gin.Context) {

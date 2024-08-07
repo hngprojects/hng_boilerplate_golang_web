@@ -24,9 +24,9 @@ import (
 func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 	var (
-		userClaims models.GoogleClaims
-		reqUser models.CreateUserRequestModel
-		sendWelcome bool
+		userClaims   models.GoogleClaims
+		reqUser      models.CreateUserRequestModel
+		sendWelcome  bool
 		responseData gin.H
 	)
 
@@ -35,7 +35,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	_, err := idtoken.Validate(context.Background(), tokenString, "")
 
 	if err != nil {
-		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+		return responseData, http.StatusBadRequest, fmt.Errorf("token not valid: " + err.Error())
 	}
 
 	_, _ = jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
@@ -43,9 +43,9 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	})
 
 	var (
-		email        = strings.ToLower(userClaims.Email)
-		username     = strings.ToLower(userClaims.Name)
-		user         models.User
+		email    = strings.ToLower(userClaims.Email)
+		username = strings.ToLower(userClaims.Name)
+		user     models.User
 	)
 
 	if email == "" || username == "" {
@@ -100,15 +100,18 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	}
 
 	responseData = gin.H{
+		"status_code": http.StatusOK,
+		"message":     "user sign in successfully",
+		"status":      "success",
 		"user": map[string]string{
 			"id":         user.ID,
 			"email":      user.Email,
 			"fullname":   user.Name,
 			"role":       string(models.UserRoleName),
 			"avatar_url": user.Profile.AvatarURL,
-			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
 		},
 		"access_token": tokenData.AccessToken,
+		"expires_in":   strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
 	}
 	if sendWelcome {
 		resetReq := models.SendWelcomeMail{
