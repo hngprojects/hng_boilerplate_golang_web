@@ -78,3 +78,25 @@ func DeleteNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func RestoreDeletedNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, error) {
+	var (
+		newsLetter models.NewsLetter
+	)
+
+	newsLetter, err := newsLetter.GetDeletedNewsLetterById(db, ID)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	if !newsLetter.DeletedAt.Valid {
+		return http.StatusBadRequest, errors.New("newsletter email is not soft-deleted")
+	}
+	newsLetter.DeletedAt = gorm.DeletedAt{}
+
+	if err := newsLetter.UpdateNewsLetter(db); err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	return http.StatusOK, nil
+}

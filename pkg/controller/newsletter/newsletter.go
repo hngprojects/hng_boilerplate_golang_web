@@ -87,3 +87,17 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(http.StatusCreated, "subscribed successfully", nil)
 	c.JSON(http.StatusCreated, rd)
 }
+
+func (base *Controller) RestoreDeletedNewsLetter(c *gin.Context) {
+	var (
+		reqID = c.Param("id")
+	)
+	code, err := service.RestoreDeletedNewsLetter(reqID, base.Db.Postgresql, c)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Newsletter email restored successfully", nil)
+	c.JSON(http.StatusOK, rd)
+}
