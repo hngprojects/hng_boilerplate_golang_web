@@ -23,7 +23,7 @@ type UserRegionTimezoneLanguage struct {
 type Language struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"language_id"`
 	Name      string         `gorm:"type:varchar(40);unique;not null" json:"name" validate:"required"`
-	Code      string         `gorm:"type:varchar(10);unique;not null" json:"code" validate:"required"`
+	Code      string         `gorm:"type:varchar(20);unique;not null" json:"code" validate:"required"`
 	CreatedAt time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -32,7 +32,7 @@ type Language struct {
 type Timezone struct {
 	ID          string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
 	Timezone    string         `gorm:"type:varchar(40);unique;not null" json:"timezone" validate:"required"`
-	GmtOffset   string         `gorm:"type:varchar(10);unique;not null" json:"gmt_offset" validate:"required"`
+	GmtOffset   string         `gorm:"type:varchar(20);unique;not null" json:"gmt_offset" validate:"required"`
 	Description string         `gorm:"type:varchar(100);not null" json:"description" validate:"required"`
 	CreatedAt   time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
@@ -42,7 +42,7 @@ type Timezone struct {
 type Region struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"region_id"`
 	Name      string         `gorm:"type:varchar(40);unique;not null" json:"name" validate:"required"`
-	Code      string         `gorm:"type:varchar(10);unique;not null" json:"code" validate:"required"`
+	Code      string         `gorm:"type:varchar(20);unique;not null" json:"code" validate:"required"`
 	CreatedAt time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
