@@ -121,9 +121,9 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	faqs := []models.FAQ{
-		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is..."},
-		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are..."},
-		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should..."},
+		{ID: utility.GenerateUUID(), Question: "What is the latest fashion trend?", Answer: "The latest fashion trend is...", Category: "Policies"},
+		{ID: utility.GenerateUUID(), Question: "What are the best grocery stores?", Answer: "The best grocery stores are...", Category: "Policies"},
+		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should...", Category: "Policies"},
 	}
 
 	if err := db.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
@@ -153,7 +153,6 @@ func SeedDatabase(db *gorm.DB) {
 	} else {
 		fmt.Println("Templates already exist, skipping seeding.")
 	}
-
 
 }
 
