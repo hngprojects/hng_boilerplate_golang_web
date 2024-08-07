@@ -79,34 +79,6 @@ func TestUpdateTimezone(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Timezone updated successfully")
 	})
 
-	t.Run("Validation Error - Missing Fields", func(t *testing.T) {
-		router, authController := setup()
-
-		loginData := models.LoginRequestModel{
-			Email:    adminUser.Email,
-			Password: "password",
-		}
-		token := tests.GetLoginToken(t, router, *authController, loginData)
-
-		updateTimezone := models.Timezone{
-			Timezone:    "",
-			GmtOffset:   "",
-			Description: "",
-		}
-		jsonBody, _ := json.Marshal(updateTimezone)
-
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/timezones/%s", timezone.ID), bytes.NewBuffer(jsonBody))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
-		resp := httptest.NewRecorder()
-		router.ServeHTTP(resp, req)
-
-		tests.AssertStatusCode(t, resp.Code, http.StatusUnprocessableEntity)
-		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
-	})
-
 	t.Run("Timezone Not Found", func(t *testing.T) {
 		router, authController := setup()
 

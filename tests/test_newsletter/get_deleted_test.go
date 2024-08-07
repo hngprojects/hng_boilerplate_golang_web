@@ -13,7 +13,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func TestGetAllNewsletters(t *testing.T) {
+func TestGetDeletedNewsletters(t *testing.T) {
 	_, newsController := SetupNewsLetterTestRouter()
 	db := newsController.Db.Postgresql
 	currUUID := utility.GenerateUUID()
@@ -46,8 +46,8 @@ func TestGetAllNewsletters(t *testing.T) {
 		Email: fmt.Sprintf("testuser2%v@qa.team", currUUID),
 	}
 
-	db.Create(&newsletter1)
-	db.Create(&newsletter2)
+	db.Delete(&newsletter1)
+	db.Delete(&newsletter2)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, newsController := SetupNewsLetterTestRouter()
@@ -60,7 +60,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		return router, &authController
 	}
 
-	t.Run("Successful Get All Newsletters", func(t *testing.T) {
+	t.Run("Successful Get Deleted Newsletters", func(t *testing.T) {
 		router, authController := setup()
 
 		loginData := models.LoginRequestModel{
@@ -69,7 +69,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription/deleted", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -78,13 +78,13 @@ func TestGetAllNewsletters(t *testing.T) {
 
 		tests.AssertStatusCode(t, resp.Code, http.StatusOK)
 		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "Newsletters email retrieved successfully")
+		tests.AssertResponseMessage(t, response["message"].(string), "Deleted newsletters email retrieved successfully")
 	})
 
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription/deleted", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -96,7 +96,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Token is invalid!")
 	})
 
-	t.Run("Forbidden Access - Regular User Trying to Get All", func(t *testing.T) {
+	t.Run("Forbidden Access - Regular User Trying to Get Deleted", func(t *testing.T) {
 		router, authController := setup()
 
 		loginData := models.LoginRequestModel{
@@ -105,7 +105,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription/deleted", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
