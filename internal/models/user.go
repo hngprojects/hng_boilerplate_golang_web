@@ -186,3 +186,16 @@ func (u *User) GetProfileID(db *gorm.DB, userID string) (string, error) {
 
 	return user.Profile.ID, nil
 }
+
+func (u *User) GetUserWithProfile(db *gorm.DB, userID string) (User, error) {
+	var user User
+
+	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile")
+
+	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}

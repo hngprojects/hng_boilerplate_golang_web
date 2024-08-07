@@ -24,7 +24,7 @@ import (
 func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 	var (
-		userClaims   models.GoogleClaims
+		userClaims   map[string]interface{}
 		reqUser      models.CreateUserRequestModel
 		sendWelcome  bool
 		responseData gin.H
@@ -32,19 +32,16 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 
 	tokenString := req.Token
 
-	_, err := idtoken.Validate(context.Background(), tokenString, "")
+	resp, err := idtoken.Validate(context.Background(), tokenString, "")
 
+	userClaims = resp.Claims
 	if err != nil {
 		return responseData, http.StatusBadRequest, fmt.Errorf("token not valid: " + err.Error())
 	}
 
-	_, _ = jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(""), nil
-	})
-
 	var (
-		email    = strings.ToLower(userClaims.Email)
-		username = strings.ToLower(userClaims.Name)
+		email    = strings.ToLower(userClaims["email"].(string))
+		username = strings.ToLower(userClaims["name"].(string))
 		user     models.User
 	)
 
@@ -55,12 +52,16 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	reqUser = models.CreateUserRequestModel{
 		Email: email,
 	}
-
 	_, err = ValidateCreateUserRequest(reqUser, db)
 	if err != nil {
 		exists := postgresql.CheckExists(db, &user, "email = ?", email)
 		if !exists {
 			return responseData, http.StatusNotFound, fmt.Errorf("user not found")
+		}
+		user, err = user.GetUserWithProfile(db, user.ID)
+
+		if err != nil {
+			return responseData, http.StatusInternalServerError, fmt.Errorf("error fetching user " + err.Error())
 		}
 
 	} else {
@@ -71,7 +72,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 			Role:  int(models.RoleIdentity.User),
 			Profile: models.Profile{
 				ID:        utility.GenerateUUID(),
-				AvatarURL: userClaims.Picture,
+				AvatarURL: userClaims["picture"].(string),
 			},
 		}
 		err := user.CreateUser(db)
