@@ -29,9 +29,11 @@ func SetupNewsLetterTestRouter() (*gin.Engine, *newsletter.Controller) {
 }
 
 func SetupNewsLetterRoutes(r *gin.Engine, newsController *newsletter.Controller) {
-	r.POST("/api/v1/newsletter", newsController.SubscribeNewsLetter)
-	r.GET("/api/v1/newsletter", middleware.Authorize(newsController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.POST("/api/v1/newsletter-subscription", newsController.SubscribeNewsLetter)
+	r.GET("/api/v1/newsletter-subscription", middleware.Authorize(newsController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
 		newsController.GetNewsLetters)
-	r.DELETE("/api/v1/newsletter/:id", middleware.Authorize(newsController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.DELETE("/api/v1/newsletter-subscription/:id", middleware.Authorize(newsController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
 		newsController.DeleteNewsLetter)
+	r.GET("/api/v1/newsletter-subscription/deleted",
+		middleware.Authorize(newsController.Db.Postgresql, models.RoleIdentity.SuperAdmin), newsController.GetDeletedNewsLetters)
 }

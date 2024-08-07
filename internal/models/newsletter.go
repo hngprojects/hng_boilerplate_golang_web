@@ -80,3 +80,26 @@ func (n *NewsLetter) FetchAllNewsLetter(db *gorm.DB, c *gin.Context) ([]NewsLett
 
 	return newsLetters, paginationResponse, nil
 }
+
+func (n *NewsLetter) FetchAllDeletedNewsLetter(db *gorm.DB, c *gin.Context) ([]NewsLetter, postgresql.PaginationResponse, error) {
+	var newsLetters []NewsLetter
+
+	pagination := postgresql.GetPagination(c)
+
+	query := db.Unscoped().Where("deleted_at IS NOT NULL")
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
+		query,
+		"created_at",
+		"desc",
+		pagination,
+		&newsLetters,
+		nil,
+	)
+
+	if err != nil {
+		return nil, paginationResponse, err
+	}
+
+	return newsLetters, paginationResponse, nil
+}

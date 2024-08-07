@@ -25,7 +25,7 @@ func Newsletter(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 		newsLetterUrl.DELETE("/newsletter-subscription/:id",
 			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.DeleteNewsLetter)
 		newsLetterUrl.GET("/newsletter-subscription/deleted",
-			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetNewsLetters)
+			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetDeletedNewsLetters)
 		newsLetterUrl.PATCH("/newsletter-subscription/restore/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetNewsLetters)
 	}
 	return r

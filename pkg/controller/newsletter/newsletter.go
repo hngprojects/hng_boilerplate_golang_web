@@ -1,6 +1,8 @@
 package newsletter
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
@@ -8,7 +10,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/newsletter"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"net/http"
 )
 
 type Controller struct {
@@ -26,6 +27,17 @@ func (base *Controller) GetNewsLetters(c *gin.Context) {
 		return
 	}
 	rd := utility.BuildSuccessResponse(http.StatusOK, "Newsletters email retrieved successfully", newslettersData, paginationResponse)
+	c.JSON(http.StatusOK, rd)
+}
+
+func (base *Controller) GetDeletedNewsLetters(c *gin.Context) {
+	newslettersData, paginationResponse, code, err := service.GetDeletedNewsletters(c, base.Db.Postgresql)
+	if err != nil {
+		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
+		c.JSON(code, rd)
+		return
+	}
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Deleted newsletters email retrieved successfully", newslettersData, paginationResponse)
 	c.JSON(http.StatusOK, rd)
 }
 

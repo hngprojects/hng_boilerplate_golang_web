@@ -29,6 +29,24 @@ func GetNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *postgres
 
 }
 
+func GetDeletedNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *postgresql.PaginationResponse, int, error) {
+
+	var newsletter models.NewsLetter
+
+	delNewsLetters, paginationResponse, err := newsletter.FetchAllDeletedNewsLetter(db, c)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return delNewsLetters, nil, http.StatusNoContent, nil
+		}
+		return delNewsLetters, nil, http.StatusBadRequest, err
+
+	}
+
+	return delNewsLetters, &paginationResponse, http.StatusOK, nil
+
+}
+
 func NewsLetterSubscribe(newsletter *models.NewsLetter, db *gorm.DB) error {
 
 	if postgresql.CheckExists(db, newsletter, "email = ?", newsletter.Email) {
