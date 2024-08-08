@@ -159,12 +159,24 @@ jobs:
               MAIL_PORT=${{ secrets.MAIL_PORT }} \
               MIGRATE=true
 
+
+  run_docker_container:
+    runs-on: ubuntu-latest
+    needs: upload_docker_image
+    if: github.event.repository.fork == false
+    environment: development
+    env:
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+
+    steps:
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
+          host: ${{ env.HOST }}
+          username: ${{ env.USERNAME }}
+          password: ${{ env.PASSWORD }}
           script: |
             gunzip -c /tmp/golang_dev.tar.gz | docker load
             rm -f /tmp/golang_dev.tar.gz
