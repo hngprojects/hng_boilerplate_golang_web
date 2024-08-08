@@ -13,14 +13,16 @@ type FAQ struct {
 	ID        string         `gorm:"primaryKey;type:uuid" json:"id"`
 	Question  string         `gorm:"type:varchar(225);not null" json:"question" validate:"required"`
 	Answer    string         `gorm:"type:text;not null" json:"answer" validate:"required"`
+	Category  string         `gorm:"type:varchar(30);not null" json:"category" validate:"required"`
 	CreatedAt time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at; null; autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type UpdateFAQ struct {
-	Question string `gorm:"type:text;not null" json:"question" validate:"required"`
-	Answer   string `gorm:"type:text;not null" json:"answer" validate:"required"`
+	Question string `json:"question" validate:"required"`
+	Answer   string `json:"answer" validate:"required"`
+	Category string `json:"category" validate:"required"`
 }
 
 func (f *FAQ) BeforeCreate(tx *gorm.DB) (err error) {

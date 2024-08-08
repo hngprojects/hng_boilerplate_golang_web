@@ -52,14 +52,15 @@ func (base *Controller) CreateHelpCenterTopic(c *gin.Context) {
     }
 
 	req.Author = user.Name
+	req.Title = utility.CleanStringInput(req.Title)
+    req.Content = utility.CleanStringInput(req.Content)
 	
 	if err := base.Validator.Struct(&req); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
+		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Input validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
 
-	
 	respData, err := service.CreateHelpCenterTopic(req, base.Db.Postgresql)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to add Topic", err, nil)
@@ -76,10 +77,10 @@ func (base *Controller) FetchAllTopics(c *gin.Context) {
 	topics, paginationResponse, err := service.GetPaginatedTopics(c, base.Db.Postgresql)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "No Job post not found", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topics not found", err, nil)
 			c.JSON(http.StatusNotFound, rd)
 		} else {
-			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch job post", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch topics", err, nil)
 			c.JSON(http.StatusInternalServerError, rd)
 		}
 		return

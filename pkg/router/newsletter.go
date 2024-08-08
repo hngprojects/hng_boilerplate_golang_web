@@ -19,9 +19,15 @@ func Newsletter(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 
 	newsLetterUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		newsLetterUrl.POST("/newsletter", newsLetter.SubscribeNewsLetter)
-		newsLetterUrl.GET("/newsletter", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetNewsLetters)
-		newsLetterUrl.DELETE("/newsletter/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.DeleteNewsLetter)
+		newsLetterUrl.POST("/newsletter-subscription", newsLetter.SubscribeNewsLetter)
+		newsLetterUrl.GET("/newsletter-subscription",
+			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetNewsLetters)
+		newsLetterUrl.DELETE("/newsletter-subscription/:id",
+			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.DeleteNewsLetter)
+		newsLetterUrl.GET("/newsletter-subscription/deleted",
+			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.GetDeletedNewsLetters)
+		newsLetterUrl.PATCH("/newsletter-subscription/restore/:id",
+			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), newsLetter.RestoreDeletedNewsLetter)
 	}
 	return r
 }

@@ -69,7 +69,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -84,7 +84,7 @@ func TestGetAllNewsletters(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -105,7 +105,7 @@ func TestGetAllNewsletters(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/newsletter-subscription", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 

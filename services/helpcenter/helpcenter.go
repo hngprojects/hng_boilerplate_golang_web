@@ -40,6 +40,11 @@ func GetPaginatedTopics(c *gin.Context, db *gorm.DB) ([]HelpCntSummary, postgres
 	if err != nil {
 		return nil, paginationResponse, err
 	}
+
+	if len(helpCnts) == 0 {
+		return nil, paginationResponse, gorm.ErrRecordNotFound
+	}
+	
 	var topicSummaries []HelpCntSummary
 	for _, Hlp := range helpCnts {
 		summary := HelpCntSummary{
@@ -70,6 +75,10 @@ func SearchHelpCenterTopics(c *gin.Context, db *gorm.DB, query string) ([]HelpCn
 
 	if err != nil {
 		return nil, paginationResponse, err
+	}
+
+	if len(topics) == 0 {
+		return nil, paginationResponse, gorm.ErrRecordNotFound
 	}
 
 	var topicSummaries []HelpCntSummary
