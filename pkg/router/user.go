@@ -28,6 +28,8 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		userUrl.PUT("/users/:user_id/roles/:role_id", user.AssignRoleToUser)
 		userUrl.PUT("/users/:user_id/regions", user.UpdateUserRegion)
 		userUrl.GET("/users/:user_id/regions", user.GetUserRegion)
+		userUrl.GET("/users/:user_id/data-privacy-settings", user.GetUserDataPrivacySettings)
+		userUrl.PUT("/users/:user_id/data-privacy-settings", user.UpdateUserDataPrivacySettings)
 	}
 	adminUrl.GET("/users", user.GetAllUsers)
 
