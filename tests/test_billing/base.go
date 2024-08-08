@@ -20,7 +20,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func initialise(currUUID string, t *testing.T, r *gin.Engine, db *storage.Database, user auth.Controller, Billing billing.Controller, status bool) (string, string) {
+func Initialise(currUUID string, t *testing.T, r *gin.Engine, db *storage.Database, user auth.Controller, Billing billing.Controller, status bool) (string, string) {
 	userSignUpData := models.CreateUserRequestModel{
 		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
 		PhoneNumber: fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999)),

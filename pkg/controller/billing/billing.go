@@ -12,7 +12,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	service "github.com/hngprojects/hng_boilerplate_golang_web/services/blog"
+	"github.com/hngprojects/hng_boilerplate_golang_web/services/billing"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -25,16 +25,16 @@ type Controller struct {
 
 func (base *Controller) CreateBilling(c *gin.Context) {
 	var (
-		blogReq models.CreateBlogRequest
+		billingReq models.CreateBillingRequest
 	)
 
-	if err := c.ShouldBind(&blogReq); err != nil {
+	if err := c.ShouldBind(&billingReq); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	if err := base.Validator.Struct(&blogReq); err != nil {
+	if err := base.Validator.Struct(&billingReq); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
@@ -50,7 +50,7 @@ func (base *Controller) CreateBilling(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := service.CreateBlog(blogReq, base.Db.Postgresql, userId)
+	respData, err := billing.CreateBilling(billingReq, base.Db.Postgresql, userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -58,18 +58,18 @@ func (base *Controller) CreateBilling(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("Blog created successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "blog created successfully", respData)
+	base.Logger.Info("billing created successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "billing created successfully", respData)
 
 	c.JSON(http.StatusCreated, rd)
 
 }
 
 func (base *Controller) DeleteBilling(c *gin.Context) {
-	blogID := c.Param("id")
+	billingID := c.Param("id")
 
-	if _, err := uuid.Parse(blogID); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid blog id format", "failed to delete blog", nil)
+	if _, err := uuid.Parse(billingID); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid billing id format", "failed to delete billing", nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
@@ -84,32 +84,22 @@ func (base *Controller) DeleteBilling(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	if err := service.DeleteBlog(blogID, userId, base.Db.Postgresql); err != nil {
-		if err.Error() == "blog not found" {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete blog", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		if err.Error() == "user not authorised to delete blog" {
-			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to delete blog", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to delete blog", err.Error(), nil)
-		c.JSON(http.StatusInternalServerError, rd)
+	if err := billing.DeleteBilling(billingID, userId, base.Db.Postgresql); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)
+		c.JSON(http.StatusNotFound, rd)
 		return
 	}
 
-	base.Logger.Info("blog successfully deleted")
+	base.Logger.Info("billing successfully deleted")
 	rd := utility.BuildSuccessResponse(http.StatusNoContent, "", nil)
 	c.JSON(http.StatusNoContent, rd)
 
 }
 
 func (base *Controller) GetBillings(c *gin.Context) {
-	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql, c)
+	billings_len, paginationResponse, err := billing.GetBillings(base.Db.Postgresql, c)
 	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch blogs", err, nil)
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch billings", err, nil)
 		c.JSON(http.StatusNotFound, rd)
 		return
 	}
@@ -118,47 +108,42 @@ func (base *Controller) GetBillings(c *gin.Context) {
 		"current_page": paginationResponse.CurrentPage,
 		"total_pages":  paginationResponse.TotalPagesCount,
 		"page_size":    paginationResponse.PageCount,
-		"total_items":  len(blogs),
+		"total_items":  billings_len,
 	}
 
-	base.Logger.Info("blogs retrieved successfully.")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "blogs retrieved successfully", blogs, paginationData)
+	base.Logger.Info("billings retrieved successfully.")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "billings retrieved successfully", billings_len, paginationData)
 	c.JSON(http.StatusOK, rd)
 }
 
 func (base *Controller) GetBillingById(c *gin.Context) {
-	blogID := c.Param("id")
+	billingID := c.Param("id")
 
-	if _, err := uuid.Parse(blogID); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid blog id format", "failed to delete blog", nil)
+	if _, err := uuid.Parse(billingID); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid billing id format", "failed to delete billing", nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	blog, err := service.GetBlogById(blogID, base.Db.Postgresql)
+	billing, err := billing.GetBillingById(billingID, base.Db.Postgresql)
 
 	if err != nil {
-		if err.Error() == "blog not found" {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to retrieve blog", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to retrieve blog", err.Error(), nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)
+		c.JSON(http.StatusNotFound, rd)
 		return
 	}
 
-	base.Logger.Info("blog retrieved successfully.")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "blog retrieved successfully", blog)
+	base.Logger.Info("billing retrieved successfully.")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "billing retrieved successfully", billing)
 	c.JSON(http.StatusOK, rd)
 }
 
 func (base *Controller) UpdateBillingById(c *gin.Context) {
-	blogID := c.Param("id")
-	var req models.UpdateBlogRequest
+	billingID := c.Param("id")
+	var req models.UpdateBillingRequest
 
-	if _, err := uuid.Parse(blogID); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid blog id format", "failed to update blog", nil)
+	if _, err := uuid.Parse(billingID); err != nil {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "invalid billing id format", "failed to update billing", nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
@@ -172,35 +157,25 @@ func (base *Controller) UpdateBillingById(c *gin.Context) {
 	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
 	if err != nil {
 		if err.Error() == "user claims not found" {
-			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update blog", nil)
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update billing", nil)
 			c.JSON(http.StatusNotFound, rd)
 			return
 		}
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update blog", nil)
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update billing", nil)
 		c.JSON(http.StatusInternalServerError, rd)
 		return
 	}
 	userId := userID.(string)
 
-	blog, err := service.UpdateBlogById(blogID, userId, req, base.Db.Postgresql)
+	billing, err := billing.UpdateBillingById(billingID, userId, req, base.Db.Postgresql)
 
 	if err != nil {
-		if err.Error() == "blog not found" {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to update blog", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		if err.Error() == "user not authorised to update blog" {
-			rd := utility.BuildErrorResponse(http.StatusForbidden, "error", err.Error(), "failed to update blog", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "failed to update blog", err.Error(), nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)
+		c.JSON(http.StatusNotFound, rd)
 		return
 	}
 
-	base.Logger.Info("blog updated successfully.")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "blog updated successfully", blog)
+	base.Logger.Info("billing updated successfully.")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "billing updated successfully", billing)
 	c.JSON(http.StatusOK, rd)
 }

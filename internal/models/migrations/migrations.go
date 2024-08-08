@@ -30,6 +30,7 @@ func AuthMigrationModels() []interface{} {
 		models.NotificationSettings{},
 		models.HelpCenter{},
 		models.ContactUs{},
+		models.Billing{},
 	} // an array of db models, example: User{}
 }
 

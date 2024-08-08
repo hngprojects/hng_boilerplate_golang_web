@@ -13,14 +13,14 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/blog"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/billing"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func TestBlogCreate(t *testing.T) {
+func TestBillingCreate(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -28,26 +28,26 @@ func TestBlogCreate(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	_, token := initialise(currUUID, t, r, db, user, blog, true)
+	_, token := Initialise(currUUID, t, r, db, user, billing, true)
 
 	tests := []struct {
 		Name         string
-		RequestBody  models.CreateBlogRequest
+		RequestBody  models.CreateBillingRequest
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
-			Name: "Successful blog created",
-			RequestBody: models.CreateBlogRequest{
-				Title:   fmt.Sprintf("blog %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			Name: "Successful billing created",
+			RequestBody: models.CreateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
 			ExpectedCode: http.StatusCreated,
-			Message:      "blog created successfully",
+			Message:      "billing created successfully",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
@@ -55,8 +55,8 @@ func TestBlogCreate(t *testing.T) {
 		},
 		{
 			Name: "Validation failed",
-			RequestBody: models.CreateBlogRequest{
-				Title: fmt.Sprintf("Org %v", currUUID),
+			RequestBody: models.CreateBillingRequest{
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
 			ExpectedCode: http.StatusUnprocessableEntity,
 			Message:      "Validation failed",
@@ -67,9 +67,9 @@ func TestBlogCreate(t *testing.T) {
 		},
 		{
 			Name: "User unauthorized",
-			RequestBody: models.CreateBlogRequest{
-				Title:   fmt.Sprintf("Org %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			RequestBody: models.CreateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
 			ExpectedCode: http.StatusUnauthorized,
 			Message:      "Token could not be found!",
@@ -82,16 +82,16 @@ func TestBlogCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 		{
-			blogUrl.POST("/blogs", blog.CreateBlog)
+			billingUrl.POST("/billing-plans", billing.CreateBilling)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
 			var b bytes.Buffer
 			json.NewEncoder(&b).Encode(test.RequestBody)
 
-			req, err := http.NewRequest(http.MethodPost, "/api/v1/blogs", &b)
+			req, err := http.NewRequest(http.MethodPost, "/api/v1/billing-plans", &b)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -125,7 +125,7 @@ func TestBlogCreate(t *testing.T) {
 	}
 }
 
-func TestBlogDelete(t *testing.T) {
+func TestBillingDelete(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -133,51 +133,51 @@ func TestBlogDelete(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+	billingId, token := Initialise(currUUID, t, r, db, user, billing, true)
 
 	tests := []struct {
 		Name         string
-		BlogID       string
+		billingID    string
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
-			Name:         "Successful Deletion of Blog",
-			BlogID:       blogId,
+			Name:         "Successful Deletion of billing",
+			billingID:    billingId,
 			ExpectedCode: http.StatusNoContent,
-			Message:      "blog successfully deleted",
+			Message:      "billing successfully deleted",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name:         "Invalid Blog ID Format",
-			BlogID:       "invalid-id-erttt",
+			Name:         "Invalid billing ID Format",
+			billingID:    "invalid-id-erttt",
 			ExpectedCode: http.StatusBadRequest,
-			Message:      "invalid blog id format",
+			Message:      "invalid billing id format",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name:         "Blog Not Found",
-			BlogID:       utility.GenerateUUID(),
+			Name:         "billing Not Found",
+			billingID:    utility.GenerateUUID(),
 			ExpectedCode: http.StatusNotFound,
-			Message:      "blog not found",
+			Message:      "billing not found",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name:         "User Not Authorized to Delete blog",
-			BlogID:       blogId,
+			Name:         "User Not Authorized to Delete billing",
+			billingID:    billingId,
 			ExpectedCode: http.StatusUnauthorized,
 			Message:      "Token could not be found!",
 			Headers: map[string]string{
@@ -189,13 +189,13 @@ func TestBlogDelete(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 		{
-			blogUrl.DELETE("/blogs/:id", blog.DeleteBlog)
+			billingUrl.DELETE("/billing-plans/:id", billing.DeleteBilling)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/billing-plans/%s", test.billingID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -234,7 +234,7 @@ func TestBlogDelete(t *testing.T) {
 
 }
 
-func TestGetBlogById(t *testing.T) {
+func TestGetbillingById(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -242,41 +242,41 @@ func TestGetBlogById(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
 
-	blogId, _ := initialise(currUUID, t, r, db, user, blog, true)
+	billingId, _ := Initialise(currUUID, t, r, db, user, billing, true)
 
 	tests := []struct {
 		Name         string
-		BlogID       string
+		billingID    string
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
-			Name:         "Successful Retrieval of Blog",
-			BlogID:       blogId,
+			Name:         "Successful Retrieval of billing",
+			billingID:    billingId,
 			ExpectedCode: http.StatusOK,
-			Message:      "blog retrieved successfully",
+			Message:      "billing retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
 		},
 		{
-			Name:         "Invalid Blog ID Format",
-			BlogID:       "invalid-id-erttt",
+			Name:         "Invalid billing ID Format",
+			billingID:    "invalid-id-erttt",
 			ExpectedCode: http.StatusBadRequest,
-			Message:      "invalid blog id format",
+			Message:      "invalid billing id format",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
 		},
 		{
-			Name:         "Blog Not Found",
-			BlogID:       utility.GenerateUUID(),
+			Name:         "billing Not Found",
+			billingID:    utility.GenerateUUID(),
 			ExpectedCode: http.StatusNotFound,
-			Message:      "blog not found",
+			Message:      "billing not found",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
@@ -286,13 +286,13 @@ func TestGetBlogById(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
-			blogUrl.GET("/blogs/:id", blog.GetBlogById)
+			billingUrl.GET("/billing-plans/:id", billing.GetBillingById)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/blogs/%s", test.BlogID), nil)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/billing-plans/%s", test.billingID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -327,13 +327,13 @@ func TestGetBlogById(t *testing.T) {
 
 }
 
-func TestGetBlogs(t *testing.T) {
+func TestGetbillingplans(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
 
 	tests := []struct {
 		Name         string
@@ -342,9 +342,9 @@ func TestGetBlogs(t *testing.T) {
 		Headers      map[string]string
 	}{
 		{
-			Name:         "Successful Retrieval of Blogs",
+			Name:         "Successful Retrieval of billing-plans",
 			ExpectedCode: http.StatusOK,
-			Message:      "blogs retrieved successfully",
+			Message:      "billings retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 			},
@@ -354,13 +354,13 @@ func TestGetBlogs(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"))
 		{
-			blogUrl.GET("/blogs", blog.GetBlogs)
+			billingUrl.GET("/billing-plans", billing.GetBillings)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet, "/api/v1/blogs", nil)
+			req, err := http.NewRequest(http.MethodGet, "/api/v1/billing-plans", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -395,7 +395,7 @@ func TestGetBlogs(t *testing.T) {
 
 }
 
-func TestEditBlog(t *testing.T) {
+func TestEditbilling(t *testing.T) {
 	logger := tst.Setup()
 	gin.SetMode(gin.TestMode)
 
@@ -403,67 +403,67 @@ func TestEditBlog(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
 	r := gin.Default()
-	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
+	billingId, token := Initialise(currUUID, t, r, db, user, billing, true)
 
 	tests := []struct {
 		Name         string
-		RequestBody  models.UpdateBlogRequest
-		BlogID       string
+		RequestBody  models.UpdateBillingRequest
+		billingID    string
 		ExpectedCode int
 		Message      string
 		Headers      map[string]string
 	}{
 		{
-			Name: "Successful Update of Blog",
-			RequestBody: models.UpdateBlogRequest{
-				Title:   fmt.Sprintf("blog %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			Name: "Successful Update of billing",
+			RequestBody: models.UpdateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
-			BlogID:       blogId,
+			billingID:    billingId,
 			ExpectedCode: http.StatusOK,
-			Message:      "blog updated successfully",
+			Message:      "billing updated successfully",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name: "Invalid Blog ID Format",
-			RequestBody: models.UpdateBlogRequest{
-				Title:   fmt.Sprintf("blog %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			Name: "Invalid billing ID Format",
+			RequestBody: models.UpdateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
-			BlogID:       "invalid-id-erttt",
+			billingID:    "invalid-id-erttt",
 			ExpectedCode: http.StatusBadRequest,
-			Message:      "invalid blog id format",
+			Message:      "invalid billing id format",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name: "Blog Not Found",
-			RequestBody: models.UpdateBlogRequest{
-				Title:   fmt.Sprintf("blog %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			Name: "billing Not Found",
+			RequestBody: models.UpdateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
-			BlogID:       utility.GenerateUUID(),
+			billingID:    utility.GenerateUUID(),
 			ExpectedCode: http.StatusNotFound,
-			Message:      "blog not found",
+			Message:      "billing not found",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
 		},
 		{
-			Name: "User Not Authorized to Delete blog",
-			RequestBody: models.UpdateBlogRequest{
-				Title:   fmt.Sprintf("blog %v", currUUID),
-				Content: fmt.Sprintf("testuser%v", currUUID),
+			Name: "User Not Authorized to Delete billing",
+			RequestBody: models.UpdateBillingRequest{
+				Name:  fmt.Sprintf("Billing Name %s", utility.GenerateUUID()),
+				Price: float64(utility.GetRandomNumbersInRange(0, 10000_00)),
 			},
-			BlogID:       blogId,
+			billingID:    billingId,
 			ExpectedCode: http.StatusUnauthorized,
 			Message:      "Token could not be found!",
 			Headers: map[string]string{
@@ -475,15 +475,15 @@ func TestEditBlog(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 		{
-			blogUrl.PATCH("/blogs/edit/:id", blog.UpdateBlogById)
+			billingUrl.PATCH("/billing-plans/:id", billing.UpdateBillingById)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
 			var b bytes.Buffer
 			json.NewEncoder(&b).Encode(test.RequestBody)
-			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/blogs/edit/%s", test.BlogID), &b)
+			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/billing-plans/%s", test.billingID), &b)
 			if err != nil {
 				t.Fatal(err)
 			}
