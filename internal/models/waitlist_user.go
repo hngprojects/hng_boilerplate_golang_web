@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 

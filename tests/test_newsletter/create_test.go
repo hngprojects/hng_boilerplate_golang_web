@@ -26,7 +26,7 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 		t.Fatalf("Failed to marshal request body: %v", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, "/api/v1/newsletter-subscription", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter-subscription", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -74,7 +74,7 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter-subscription", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -94,7 +94,7 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter-subscription", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -120,7 +120,7 @@ func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
 	}
 	jsonBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter", bytes.NewBuffer(jsonBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/newsletter-subscription", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 

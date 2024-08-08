@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"google.golang.org/api/idtoken"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
@@ -21,22 +23,26 @@ import (
 
 func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, error) {
 
-	var userClaims models.GoogleClaims
-	var reqUser models.CreateUserRequestModel
-	var sendWelcome bool
+	var (
+		userClaims   map[string]interface{}
+		reqUser      models.CreateUserRequestModel
+		sendWelcome  bool
+		responseData gin.H
+	)
 
 	tokenString := req.Token
 
-	// Parse the token
-	_, err := jwt.ParseWithClaims(tokenString, &userClaims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(""), nil
-	})
+	resp, err := idtoken.Validate(context.Background(), tokenString, "")
+
+	userClaims = resp.Claims
+	if err != nil {
+		return responseData, http.StatusBadRequest, fmt.Errorf("token not valid: " + err.Error())
+	}
 
 	var (
-		email        = strings.ToLower(userClaims.Email)
-		username     = strings.ToLower(userClaims.Name)
-		responseData gin.H
-		user         models.User
+		email    = strings.ToLower(userClaims["email"].(string))
+		username = strings.ToLower(userClaims["name"].(string))
+		user     models.User
 	)
 
 	if email == "" || username == "" {
@@ -46,13 +52,16 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	reqUser = models.CreateUserRequestModel{
 		Email: email,
 	}
-
-	// check if user already exists
 	_, err = ValidateCreateUserRequest(reqUser, db)
 	if err != nil {
 		exists := postgresql.CheckExists(db, &user, "email = ?", email)
 		if !exists {
 			return responseData, http.StatusNotFound, fmt.Errorf("user not found")
+		}
+		user, err = user.GetUserWithProfile(db, user.ID)
+
+		if err != nil {
+			return responseData, http.StatusInternalServerError, fmt.Errorf("error fetching user " + err.Error())
 		}
 
 	} else {
@@ -63,7 +72,7 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 			Role:  int(models.RoleIdentity.User),
 			Profile: models.Profile{
 				ID:        utility.GenerateUUID(),
-				AvatarURL: userClaims.Picture,
+				AvatarURL: userClaims["picture"].(string),
 			},
 		}
 		err := user.CreateUser(db)
@@ -92,15 +101,18 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	}
 
 	responseData = gin.H{
+		"status_code": http.StatusOK,
+		"message":     "user sign in successfully",
+		"status":      "success",
 		"user": map[string]string{
 			"id":         user.ID,
 			"email":      user.Email,
 			"fullname":   user.Name,
 			"role":       string(models.UserRoleName),
 			"avatar_url": user.Profile.AvatarURL,
-			"expires_in": strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
 		},
 		"access_token": tokenData.AccessToken,
+		"expires_in":   strconv.Itoa(int(tokenData.ExpiresAt.Unix())),
 	}
 	if sendWelcome {
 		resetReq := models.SendWelcomeMail{

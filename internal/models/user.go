@@ -16,6 +16,7 @@ type User struct {
 	Password      string                     `gorm:"column:password; type:text; not null" json:"-"`
 	Profile       Profile                    `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
 	Region        UserRegionTimezoneLanguage `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"region"`
+	DataPrivacy   DataPrivacySettings        `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"data_privacy"`
 	Organisations []Organisation             `gorm:"many2many:user_organisations;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product                  `gorm:"foreignKey:OwnerID" json:"products"`
 	Blogs         []Blog                     `gorm:"foreignKey:AuthorID" json:"blogs"`
@@ -185,4 +186,17 @@ func (u *User) GetProfileID(db *gorm.DB, userID string) (string, error) {
 	}
 
 	return user.Profile.ID, nil
+}
+
+func (u *User) GetUserWithProfile(db *gorm.DB, userID string) (User, error) {
+	var user User
+
+	query := db.Where("id = ?", userID)
+	query = postgresql.PreloadEntities(query, &user, "Profile")
+
+	if err := query.First(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
