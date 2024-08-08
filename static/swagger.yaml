@@ -1803,7 +1803,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDataPrivacySchema'
+                $ref: '#/components/schemas/UserDataPrivacyResponseSchema'
         '400':
           description: Bad request
           content:
@@ -1822,6 +1822,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    put:
+      tags:
+        - user
+      summary: Update user data privacy settings
+      security:
+        - bearerAuth: []
+      description: Updates the data privacy settings for a specific user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to update the data privacy info for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDataPrivacyUpdateSchema'
+      responses:
+        '200':
+          description: User data privacy updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataPrivacyResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
         '500':
           description: Server error
           content:
@@ -6270,7 +6322,7 @@ components:
         - subject
         - message
 
-    UserDataPrivacySchema:
+    UserDataPrivacyResponseSchema:
       type: object
       properties:
         status:
