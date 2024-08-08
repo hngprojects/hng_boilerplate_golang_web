@@ -1,0 +1,6276 @@
+openapi: 3.0.3
+info:
+  title: Kimiko Golang Swagger
+  description: |-
+    This API provides functionalities for user management, organisation management, authentication, messaging, payments, and various other services.
+    It includes features like social authentication, email notifications, payment integrations with Stripe and Flutterwave, and comprehensive user and organisation management.
+  termsOfService: http://example.com/terms/
+  contact:
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - url: https://staging.api-golang.boilerplate.hng.tech/api/v1
+  - url: https://deployment.api-golang.boilerplate.hng.tech/api/v1
+
+tags:
+  - name: auth
+    description:  API for user registration and authentication
+  - name: contact
+    description: API for contact us management
+  - name: roles
+    description: API for organization and role management
+  - name: user
+    description: API for users management
+  - name: newsletter
+    description: API for newsletter related operations
+  - name: faq
+    description: API for FAQ related operations 
+  - name: waitlist
+    description: API for waitlist related operations
+  - name: language
+    description: API for language related operations
+  - name: timezone
+    description: API for timezone related operations
+  - name: region
+    description: API for region related operations
+  - name: organization
+    description: API for organization related operations
+  - name: blogs
+    description: API for blogs related operations
+  - name: products
+    description: API for products related operations
+
+paths:
+
+  # Auth paths
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone_number:
+                  type: string
+              required:
+                - username
+                - email
+                - password
+                - first_name
+                - last_name
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: success response
+                    example: success
+                  message:
+                    type: string
+                    example: "user created successfully"
+                  status_code:
+                    type: integer
+                    example: 201
+                  data:
+                    $ref: "#/components/schemas/UserSchema"
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorSchema"
+                
+        '422':
+          description: Unprocessed Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessedEntityErrorSchema"
+  
+     
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: User login successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: success response
+                    example: success
+                  status_code:
+                    type: integer
+                    description: HTTP status Code response
+                    example: 200
+                  message:
+                    type: string
+                    example: Login Successfully
+                  data:
+                    $ref: "#/components/schemas/UserSchema"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+        '422':
+          description: Unprocessed Entity
+          content:
+           application/json:
+            schema:
+                $ref: "#/components/schemas/UnprocessedEntityErrorSchema"
+                
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: logout a user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User logout successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: success response
+                    example: success
+                  status_code:
+                    type: integer
+                    description: HTTP status Code response
+                    example: 200
+                  message:
+                    type: string
+                    example: Logout Successfully
+                  data:
+                    type: object
+                    example: {}
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+        '400':
+          description: Invalid input
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "Bad Request"
+                message:
+                  type: string
+                  example: "message"
+                status_code:
+                  type: integer
+                  example: 400
+  /auth/google:
+    post:
+      tags:
+        - auth
+      summary: Endpoint for callback from frontend with token gotten from google oauth provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_token:
+                  type: string
+              required:
+                - id_token
+
+      responses:
+        '200':
+          description: user sign in succesfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "user sign in  successfully"
+                status_code:
+                  type: integer
+                  example: 200
+                data:
+                  type: object
+                  properties:
+                      access_token:
+                        type: string
+                        example: "access_token"
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "user_id_here"
+                          email:
+                            type: string
+                            example: "user@example.com"
+                          fullname:
+                            type: string
+                            example: "John Doe"
+                          avatar_url:
+                            type: string
+                            example: "http://example.com/avatar.jpg"
+                          expires_in:
+                            type: string
+                            example: "3600"
+                          role:
+                            type: string
+                            example: "user"
+                    
+        '400':
+          description: Invalid input
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "Bad Request"
+                message:
+                  type: string
+                  example: "message"
+                status_code:
+                  type: integer
+                  example: 400
+        '422':
+          description: Unprocessed Entity
+          content:
+           application/json:
+            schema:
+                $ref: "#/components/schemas/UnprocessedEntityErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+ 
+  /auth/facebook:
+    post:
+      tags:
+        - auth
+      summary: Endpoint for callback from frontend with token gotten from google oauth provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_token:
+                  type: string
+              required:
+                - id_token
+
+      responses:
+        '200':
+          description: user sign in succesfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "user sign in  successfully"
+                status_code:
+                  type: integer
+                  example: 200
+                data:
+                  type: object
+                  properties:
+                      access_token:
+                        type: string
+                        example: "access_token"
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "user_id_here"
+                          email:
+                            type: string
+                            example: "user@example.com"
+                          fullname:
+                            type: string
+                            example: "John Doe"
+                          avatar_url:
+                            type: string
+                            example: "http://example.com/avatar.jpg"
+                          expires_in:
+                            type: string
+                            example: "3600"
+                          role:
+                            type: string
+                            example: "user"
+                    
+        '400':
+          description: Invalid input
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "Bad Request"
+                message:
+                  type: string
+                  example: "message"
+                status_code:
+                  type: integer
+                  example: 400
+        '422':
+          description: Unprocessed Entity
+          content:
+           application/json:
+            schema:
+                $ref: "#/components/schemas/UnprocessedEntityErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+
+  /auth/change-password:
+    put:
+      tags:
+        - auth
+      summary: Verify the password reset token and set a new password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+              required:
+                - old_password
+                - new_password
+
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Password updated successfully"
+                status_code:
+                  type: integer
+                  example: 200
+        '400':
+          description: Invalid input
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "Bad Request"
+                message:
+                  type: string
+                  example: "message"
+                status_code:
+                  type: integer
+                  example: 400
+        '422':
+          description: Unprocessed Entity
+          content:
+           application/json:
+            schema:
+                $ref: "#/components/schemas/UnprocessedEntityErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+
+  /auth/magick-link:
+    post:
+      tags:
+        - auth
+      summary: Request a magic link for authentication
+      description: |-
+            Uses Cases: 
+              - Sign up a new user
+              - Sign in an existing user
+              - Sign in with auto sign-up a new user if not exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Magic link sent successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Magic link sent succesfully"
+                statusCode:
+                  type: integer
+                  example: 200
+                  
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                  
+  /auth/magick-link/verify:
+    post:
+      tags:
+        - auth
+      summary: Verify the magic link token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+                - token
+      responses:
+        '200':
+          description: Token verified successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                statusCode:
+                  type: integer
+                  example: 200
+                message:
+                  type: string
+                  example: "Token verified successfully"
+                data:
+                  $ref: "#/components/schemas/UserSchema"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                  
+
+  /auth/password-reset:
+    post:
+      tags:
+        - auth
+      summary: Request a password reset link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Password reset link sent successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Password reset link sent successfully"
+                statusCode:
+                  type: integer
+                  example: 200
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                  
+  
+  /auth/password-reset/verify:
+    post:
+      tags:
+        - auth
+      summary: Verify the password reset token and set a new password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                new_password:
+                  type: string
+              required:
+                - token
+                - new_password
+
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Password reset successfully"
+                statusCode:
+                  type: integer
+                  example: 200
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  #User path
+  /users/{userId}:
+    get:
+      tags:
+        - user
+        #- super admin
+      summary: Get user information
+      security:
+        - bearerAuth: []
+      description: Retrieves a user information.
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user
+      responses:
+        '200':
+          description: A user information
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    put:
+      tags:
+        - user
+        #- super admin
+      summary: Update user info
+      security:
+        - bearerAuth: []
+      description: Updates the information of an existing user.
+      operationId: updateUserInfo
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to update
+      requestBody:
+        description: Updated user information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+        required: true
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    delete:
+      tags:
+        - user
+        #- super admin
+      summary: Delete a user
+      security:
+        - bearerAuth: []
+      description: Deletes a user by their ID.
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to delete
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /users/{userId}/organisations:
+    get:
+      tags:
+        - user
+        #- super admin
+      summary: Query organisations where a user belongs
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of organisations where the specified user belongs.
+      operationId: getUserorganisations
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to query organisations for
+      responses:
+        '200':
+          description: A list of organisations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organisation'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+
+  /users/{userId}/role/{roleId}:
+    put:
+      tags:
+        - user
+      summary: Assign user to another role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Role updated successfully"
+                status_code:
+                  type: integer
+                  example: 200
+        '400':
+          description: Bad request
+          content:
+           application/json:
+            schema:
+              $ref: "#/components/schemas/BadRequestErrorSchema"
+
+        '404':
+          description: Not found
+          content:
+           application/json:
+            schema:
+                $ref: "#/components/schemas/NotFoundErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+  
+  /users:
+    get:
+      tags:
+        - user
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      description: Retrieves a paginated list of users.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /newsletter-subscription:
+    get:
+      tags:
+        - newsletter
+      summary: Get all newsletters
+      security:
+        - bearerAuth: []
+      description: Retrieves a paginated list of newsletters.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of newsletters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NewsletterSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    post:
+      tags:
+        - newsletter
+      summary: Add new email to newsletter
+      description: Add a new email entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsletterSchema'
+      responses:
+        '201':
+          description: Email added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /newsletter-subscription/{Id}:
+    delete:
+      tags:
+        - newsletter
+      summary: Delete a newsletter subscription
+      security:
+        - bearerAuth: []
+      description: Deletes a newsletter by its ID.
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the newsletter to delete
+      responses:
+        '200':
+          description: newsletter deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /newsletter-subscription/restore/{Id}:
+    patch:
+      tags:
+        - newsletter
+      summary: Restore a deleted newsletter email
+      security:
+        - bearerAuth: []
+      description: Restore a deleted newsletter email by its ID.
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the newsletter to restore
+      responses:
+        '200':
+          description: Newsletter email restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+
+    /newsletter-subscription/deleted:
+    get:
+      tags:
+        - newsletter
+      summary: Get all deleted newsletters emails
+      security:
+        - bearerAuth: []
+      description: Retrieves a paginated list of deleted newsletters emails.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of all deleted newsletters emails
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NewsletterSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /faq:
+    get:
+      tags:
+        - faq
+      summary: Get all FAQs
+      description: Retrieves a paginated list of FAQs.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of FAQs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FAQSchema'
+        
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    post:
+      tags:
+        - faq
+      summary: Create a new FAQ
+      security:
+        - bearerAuth: []
+      description: Creates a new FAQ entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FAQSchema'
+      responses:
+        '201':
+          description: FAQ created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /faq/{faqId}:
+    put:
+      tags:
+        - faq
+      summary: Update an FAQ
+      security:
+        - bearerAuth: []
+      description: Updates an existing FAQ.
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the FAQ to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FAQSchema'
+      responses:
+        '200':
+          description: FAQ updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: FAQ not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    delete:
+      tags:
+        - faq
+      summary: Delete a FAQ
+      security:
+        - bearerAuth: []
+      description: Deletes a FAQ by its ID.
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the FAQ to delete
+      responses:
+        '200':
+          description: FAQ deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: FAQ not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /languages:
+    get:
+      tags:
+        - language
+      summary: Get all languages
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of all available languages.
+      responses:
+        '200':
+          description: A list of languages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageSchema'
+        '400':
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+
+    post:
+      tags:
+        - language
+      summary: Create a new language
+      security:
+        - bearerAuth: []
+      description: Creates a new language entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageSchema'
+      responses:
+        '201':
+          description: Language created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /timezones:
+    get:
+      tags:
+        - timezone
+      summary: Get all timezones
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of all available timezones.
+      responses:
+        '200':
+          description: A list of timezones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimezoneSchema'
+        '400':
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+
+    post:
+      tags:
+        - timezone
+      summary: Create a new timezone
+      security:
+        - bearerAuth: []
+      description: Creates a new timezone entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimezoneSchema'
+      responses:
+        '201':
+          description: Timezone created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /timezones/{id}:
+    patch:
+      tags:
+        - timezone
+      summary: Update a timezone
+      security:
+        - bearerAuth: []
+      description: Update an existing timezone entry.
+      parameters:
+        - name: timezone_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the user to retrieve the region information for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimezoneSchema'
+      responses:
+        '200':
+          description: Timezone updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /regions:
+    get:
+      tags:
+        - region
+      summary: Get all regions
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of all available regions.
+      responses:
+        '200':
+          description: A list of regions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegionSchema'
+        '400':
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+
+    post:
+      tags:
+        - region
+      summary: Create a new region
+      security:
+        - bearerAuth: []
+      description: Creates a new region entry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionSchema'
+      responses:
+        '201':
+          description: Region created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /waitlist:
+    get:
+      tags:
+        - waitlist
+      summary: Get all waitlist entries
+      security:
+        - bearerAuth: []
+      description: Retrieves a paginated list of waitlist entries.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of waitlist entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaitlistSchema'
+        '400':
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+
+    post:
+      tags:
+        - waitlist
+      summary: Add to waitlist
+      description: Adds an entry to the waitlist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistSchema'
+      responses:
+        '201':
+          description: Waitlist entry created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /users/{user_id}/regions:
+    get:
+      tags:
+        - user
+      summary: Get user region
+      security:
+        - bearerAuth: []
+      description: Retrieves the region information for a specific user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the user to retrieve the region information for.
+      responses:
+        '200':
+          description: User region retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegionResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    put:
+      tags:
+        - user
+      summary: Update user region
+      security:
+        - bearerAuth: []
+      description: Updates the region for a specific user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to update the region for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegionUpdateSchema'
+      responses:
+        '200':
+          description: User region updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegionUpdateResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /organizations/{org_id}/roles:
+    post:
+      tags:
+        - roles
+      summary: Create a new organization role
+      security:
+        - bearerAuth: []
+      description: Creates a new role within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization to create the role in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgRoleCreateSchema'
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleCreateResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+
+    get:
+      tags:
+        - roles
+      summary: Retrieve a list of organization roles
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of roles within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization to retrieve roles for.
+      responses:
+        '200':
+          description: Roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRolesListResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /organizations/{org_id}/roles/{role_id}:
+    get:
+      tags:
+        - roles
+      summary: Retrieve a specific organization role
+      security:
+        - bearerAuth: []
+      description: Retrieves detailed information about a specific role within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization containing the role.
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the role to retrieve.
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    patch:
+      tags:
+        - roles
+      summary: Update a specific organization role
+      security:
+        - bearerAuth: []
+      description: Updates the details of a specific role within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization containing the role.
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the role to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgRoleUpdateSchema'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleUpdateResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+
+    delete:
+      tags:
+        - roles
+      summary: Delete a specific organization role
+      security:
+        - bearerAuth: []
+      description: Deletes a specific role within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization containing the role.
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the role to delete.
+      responses:
+        '200':
+          description: Role deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleDeleteResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /organizations/{org_id}/roles/{role_id}/permissions:
+    patch:
+      tags:
+        - roles
+      summary: Update permissions for a specific role
+      security:
+        - bearerAuth: []
+      description: Updates the permissions for a specific role within an organization.
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the organization containing the role.
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the role to update permissions for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermissionsUpdateSchema'
+      responses:
+        '200':
+          description: Permissions updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePermissionsUpdateResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+  /jobs:
+    get:
+      tags:
+        - Job Posts
+      summary: Fetch all job posts
+      description: Fetches all job posts with optional pagination.
+      operationId: fetchAllJobPosts
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The number of items per page
+          example: 6
+      responses:
+        '200':
+          description: A list of job posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobPost'
+        '500':
+          description: Failed to fetch job posts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Job Posts
+      summary: Create a new job post
+      description: Creates a new job post with the provided details.
+      operationId: createJobPost
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobPost'
+      responses:
+        '201':
+          description: Job post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPostResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to create job post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /jobs/{job_id}:
+    get:
+      tags:
+        - Job Posts
+      summary: Fetch a job post by ID
+      description: Fetches the details of a job post by its ID.
+      operationId: fetchJobPostByID
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the job post to fetch
+      responses:
+        '200':
+          description: Job post fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPostResponse'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to fetch job post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+        - Job Posts
+      summary: Update a job post by ID
+      description: Updates the details of an existing job post.
+      operationId: updateJobPostByID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the job post to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJobPost'
+      responses:
+        '200':
+          description: Job post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPostResponse'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to update job post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Job Posts
+      summary: Delete a job post by ID
+      description: Deletes a job post by its ID.
+      operationId: deleteJobPostByID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the job post to delete
+      responses:
+        '204':
+          description: No content
+                  
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to delete job post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            
+  
+  /organizations:
+    post:
+      tags:
+        - organization
+      summary: create an organization
+      security:
+        - bearerAuth: []
+      description: creates an organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createOrganizationReq'
+      responses:
+        '201':
+          description: organization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/organizationSuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+                
+  /organizations/{orgId}:
+    patch:
+      tags:
+        - organization
+      summary: update an organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orgId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      description: updates an organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createOrganizationReq'
+      responses:
+        '200':
+          description: organization updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/organizationUSuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+    get:
+      tags:
+        - organization
+      summary: retrieve an organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orgId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      description: retrieve an organization
+      responses:
+        '200':
+          description: organization retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/organizationGSuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+    delete:
+      tags:
+        - organization
+      summary: Delete an organisation by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orgId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      
+      responses:
+        '204':
+          description: Organisations deleted successfully
+
+        '400':
+          description: Invalid orgId format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+                
+                
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenErrorSchema"
+                
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorSchema"
+                
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorSchema"
+                
+                
+  /organizations/{orgId}/users:
+    post:
+      tags:
+        - organization
+      summary: add a user to an organization by superadmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orgId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      description: adds a user to an organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addUserToOrganizationReq'
+      responses:
+        '200':
+          description: User added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: success response
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: User added successfully
+                  
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+    get:
+      tags:
+        - organization
+      summary: Get users in an organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orgId
+          schema:
+            type: string
+            format: uuid
+          required: true
+
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+               type: object
+               properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Users retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        email:
+                          type: string
+                          example: user@gmail.com
+                        phone_number:
+                          type: string
+                          example: 09055667788
+                        name:
+                          type: string
+                          example: Iretoms
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+                
+  /blogs:
+    post:
+      tags:
+        - blogs
+      summary: create a blog post by a superadmin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: New Blog Post
+                content:
+                  type: string
+                  example: This is the content of the new blog post
+                category:
+                  type: string
+                  example: Tech
+                image_url:
+                  type: string
+                  example: http://image.com
+      responses:
+        '201':
+          description: Blog post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Blog post created successfully.   
+                  data:
+                    type: object
+                    properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: New Blog Post
+                        content:
+                          type: string
+                          example: This is the content of the new blog post
+                        image_url:
+                          type: string
+                          example: http://image.com 
+                        category:
+                          type: string
+                          example: Tech
+                        author:
+                          type: string
+                        author_id:
+                          type: string
+                          format: uuid
+                        created_at:
+                          type: string
+                          format: date-time
+        
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'  
+    
+    get:
+      tags:
+        - blogs
+      summary: get all blogs from the lastest
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The number of items per page
+          example: 6
+      responses:
+        '200':
+          description: A list of all blogs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Blogs retrieved successfully.   
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: New Blog Post
+                        content:
+                          type: string
+                          example: This is the content of the new blog post
+                        image_url:
+                          type: string
+                          example: http://image.com 
+                        category:
+                          type: string
+                          example: Tech
+                        author:
+                          type: string
+                        author_id:
+                          type: string
+                          format: uuid
+                        created_at:
+                          type: string
+                          format: date-time
+        
+        '400':
+          description: Failed to fetch all blogs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /blogs/{blogId}:
+    get:
+      tags:
+        - blogs
+      summary: retrieve a single blog post
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Blog post retrieved successfully.   
+                  data:
+                    type: object
+                    properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: New Blog Post
+                        content:
+                          type: string
+                          example: This is the content of the new blog post
+                        image_url:
+                          type: string
+                          example: http://image.com 
+                        category:
+                          type: string
+                          example: Tech
+                        author:
+                          type: string
+                        author_id:
+                          type: string
+                          format: uuid
+                        created_at:
+                          type: string
+                          format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema' 
+  
+    delete:
+      tags:
+        - blogs
+      summary: Delete a blog by admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: blogId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      
+      responses:
+        '204':
+          description: blog deleted successfully
+
+        '400':
+          description: Invalid orgId format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorSchema"
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+                
+                
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenErrorSchema"
+                
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorSchema"
+                
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorSchema"
+                
+  /blogs/edit/{blogId}:
+    patch:
+      tags:
+        - blogs
+      summary: update a blog post by a superadmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: blogId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Updated Blog Post
+                content:
+                  type: string
+                  example: This is the content of the updated blog post
+                category:
+                  type: string
+                  example: Space
+                image_url:
+                  type: string
+                  example: http://solarsystem.com
+      responses:
+        '200':
+          description: Blog post updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Blog post updated successfully.   
+                  data:
+                    type: object
+                    properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: Updated Blog Post
+                        content:
+                          type: string
+                          example: This is the content of the updated blog post
+                        image_url:
+                          type: string
+                          example: http://solarsystem.com 
+                        category:
+                          type: string
+                          example: space
+                        author:
+                          type: string
+                        author_id:
+                          type: string
+                          format: uuid
+                        updated_at:
+                          type: string
+                          format: date-time
+        
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'  
+                 
+# product routes    
+  /products:
+    post:
+        tags:
+          - products
+        summary: Create a new product
+        description: Creates a new product entry.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the product
+                    example: "Product 1"
+                  description:
+                    type: string
+                    description: A brief description of the product
+                    example: "This is a product"
+                  price:
+                    type: number
+                    description: The price of the product
+                    example: 100.00
+                  stock:
+                    type: integer
+                    description: The stock quantity of the product
+                    example: 100
+                  category:
+                    type: string
+                    description: The category of the product
+                    example: "Category 1"
+                
+        responses:
+  
+          '201':
+            description: Product created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SuccessResponseSchema2'
+          '400':
+              description: Bad Request
+              content:
+               application/json:
+                  schema:
+                    $ref: '#/components/schemas/BadRequestErrorSchema'
+          '401':
+            description: Authentication error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UnauthorizedErrorSchema'
+          '500':
+            description: Server error
+            content:
+              application/json:
+                schema:
+                 $ref: '#/components/schemas/ServerErrorSchema'  
+
+    put:
+        tags:
+          - products
+        summary: Update a product
+        description: Updates a product entry.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The id of the product to be updated
+                    example: "1"
+                  name:
+                    type: string
+                    description: The name of the product
+                    example: "Product 1"
+                  description:
+                    type: string
+                    description: A brief description of the product
+                    example: "This is a product"
+                  price:
+                    type: number
+                    description: The price of the product
+                    example: 100.00
+                  stock:
+                    type: integer
+                    description: The stock quantity of the product
+                    example: 100
+                  category:
+                    type: string
+                    description: The category of the product
+                    example: "Category 1"
+        responses:
+          '200':
+            description: Product updated successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SuccessResponseSchema'
+          '400':
+            description: Bad Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/BadRequestErrorSchema'
+          '401':
+            description: Authentication error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UnauthorizedErrorSchema'
+          '500':
+            description: Server error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ServerErrorSchema'
+    get:
+      tags:
+        - products
+      summary: Get all products
+      description: Get all products.
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The id of the product
+                          example: "1"
+                        name:
+                          type: string
+                          description: The name of the product
+                          example: "Product 1"
+                        description:
+                          type: string
+                          description: A brief description of the product
+                          example: "This is a product"
+                        price:
+                          type: number
+                          description: The price of the product
+                          example: 100.00
+                        stock:
+                          type: integer
+                          description: The stock quantity of the product
+                          example: 100
+                        category:
+                          type: string
+                          description: The category of the product
+                          example: "Category 1"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /products/{product_id}:
+    get:
+      tags:
+        - products
+      summary: Get a product
+      description: Get a product entry.
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The id of the product to be retrieved
+            example: "1"
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The id of the product
+                    example: "1"
+                  name:
+                    type: string
+                    description: The name of the product
+                    example: "Product 1"
+                  description:
+                    type: string
+                    description: A brief description of the product
+                    example: "This is a product"
+                  price:
+                    type: number
+                    description: The price of the product
+                    example: 100.00
+                  stock:
+                    type: integer
+                    description: The stock quantity of the product
+                    example: 100
+                  category:
+                    type: string
+                    description: The category of the product
+                    example: "Category 1"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'    
+    delete:
+      tags:
+        - products
+      summary: Delete a product
+      description: Deletes a product entry.
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The id of the product to be retrieved
+            example: "1"
+    
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema' 
+                  
+  /products/categories/{category}:
+    get:
+      tags:
+        - products
+      summary: Get products by category
+      description: Get products by category.
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The category of the products to be retrieved
+            example: "Category 1"
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The id of the product
+                          example: "1"
+                        name:
+                          type: string
+                          description: The name of the product
+                          example: "Product 1"
+                        description:
+                          type: string
+                          description: A brief description of the product
+                          example: "This is a product"
+                        price:
+                          type: number
+                          description: The price of the product
+                          example: 100.00
+                        stock:
+                          type: integer
+                          description: The stock quantity of the product
+                          example: 100
+                        category:
+                          type: string
+                          description: The category of the product
+                          example: "Category 1"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'  
+                
+                
+  /products/filter:
+    get:
+          tags:
+            - products
+          summary: Filter products
+          description: Filter products by category and price.
+          parameters:
+            - name: category
+              in: query
+              required: false
+              schema:
+                type: string
+                description: The category of the products to be retrieved
+                example: "Category 1"
+            - name: price
+              in: query
+              required: false
+              schema:
+                type: number
+                description: The price of the products to be retrieved
+                example: 100.00
+          responses:
+            '200':
+              description: Products retrieved successfully
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: The id of the product
+                              example: "1"
+                            name:
+                              type: string
+                              description: The name of the product
+                              example: "Product 1"
+                            description:
+                              type: string
+                              description: A brief description of the product
+                              example: "This is a product"
+                            price:
+                              type: number
+                              description: The price of the product
+                              example: 100.00
+                            stock:
+                              type: integer
+                              description: The stock quantity of the product
+                              example: 100
+                            category:
+                              type: string
+                              description: The category of the product
+                              example: "Category 1"
+            '400':
+              description: Bad Request
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/BadRequestErrorSchema'
+            '401':
+              description: Authentication error
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/UnauthorizedErrorSchema'
+            '404':
+              description: Not Found
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/NotFoundErrorSchema'
+            '500':
+              description: Server error
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ServerErrorSchema' 
+                    
+  /products/image/{product_id}:
+    patch:
+      tags:
+        - products
+      summary: Update a product image
+      description: Updates a product image.
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The id of the product to be updated
+            example: "1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  description: The image of the product
+                  example: "image.jpg"
+      responses:
+        '200':
+          description: Product image updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+  /invite/create:
+    post:
+      tags:
+        - invitation
+      summary: Create a new invitation link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organizationId:
+                  type: string
+                email:
+                  type: string
+              required:
+                - organizationId
+                - email
+      responses:
+        '201':
+          description: Invitation link created and sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invitation link created and sent successfully
+                  data:
+                    type: object
+                    properties:
+                      invitationLink:
+                        type: string
+                        example: string
+                  status_code:
+                    type: integer
+                    example: 201
+        
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorSchema"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorSchema"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorSchema"
+
+  /api/v1/organisations/send-invite:
+    post:
+      tags:
+        - invitation
+      summary: Send invitations to join an organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emails:
+                  type: array
+                  items:
+                    type: string
+                org_id:
+                  type: string
+              required:
+                - emails
+                - org_id
+      responses:
+        '201':
+          description: Invitations sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Invitations sent successfully
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          example: user@example.com
+                        expires_at:
+                          type: string
+                          format: date-time
+                          example: 2024-07-29T13:53:02+01:00
+                        organization:
+                          type: string
+                          example: testorg
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorSchema"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenErrorSchema"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorSchema"
+
+  /invite/accept:
+    get:
+      tags:
+        - invitation
+      summary: Accept an invitation
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation accepted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invitation accepted, you have been added to the organization
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: Invalid or expired invitation link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid or expired invitation link
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Invalid invitation link format
+                      - Expired invitation link
+                      - Organization not found
+                  status_code:
+                    type: integer
+                    example: 400
+
+  /api/invite:
+    post:
+      tags:
+        - invitation
+      summary: Accept an invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invitationLink:
+                  type: string
+              required:
+                - invitationLink
+      responses:
+        '200':
+          description: Invitation accepted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invitation accepted, you have been added to the organization
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: Invalid or expired invitation link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid or expired invitation link
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Invalid invitation link format
+                      - Expired invitation link
+                      - Organization not found
+                  status_code:
+                    type: integer
+                    example: 400
+
+  /api/v1/organisations/invitations:
+    get:
+      tags:
+        - invitation
+      summary: Retrieve invitations sent by admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Request successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Request successful
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          example: user@example.com
+                        org_id:
+                          type: string
+                          example: aoalj-alhljkdshj345klhsd
+                        status:
+                          type: string
+                          example: pending/approved/rejected
+                        sent_at:
+                          type: string
+                          format: date-time
+                          example: 2023-06-23T00:00:00Z
+                        expires_at:
+                          type: string
+                          format: date-time
+                          example: 2023-07-23T00:00:00Z
+                        invitation_token:
+                          type: string
+                          example: invitation-token
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid request
+                  message:
+                    type: string
+                    example: User not authenticated or authorized
+
+  /api/v1/template:
+    post:
+      tags:
+        - email_template
+      summary: Create a new email template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                body:
+                  type: string
+              required:
+                - name
+                - body
+      responses:
+        '201':
+          description: Template created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Template created successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 01910c39-01e0-73b7-bed9-d326a6ea5197
+                      name:
+                        type: string
+                        example: send_otp
+                      body:
+                        type: string
+                        example: this is the email body
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T05:35:48.3211659+01:00
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T05:35:48.3211659+01:00
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 422
+                  message:
+                    type: string
+                    example: Validation failed
+                  error:
+                    type: object
+                    properties:
+                      TemplateRequest.Body:
+                        type: string
+                        example: Body is a required field
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - email_template
+      summary: Retrieve all email templates
+      responses:
+        '200':
+          description: Templates successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Templates successfully retrieved
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 01910b38-22db-79a1-a766-26b69757e3d2
+                        name:
+                          type: string
+                          example: template_name
+                        body:
+                          type: string
+                          example: this is the email body
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: 2024-08-01T00:55:14.011782+01:00
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: 2024-08-01T00:55:14.011782+01:00
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+      security:
+        - bearerAuth: []
+
+  /api/v1/template/{id}:
+    get:
+      tags:
+        - email_template
+      summary: Retrieve a specific email template by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Template successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Template successfully retrieved
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 01910b26-4508-7e1b-8855-15aeb15133aa
+                      name:
+                        type: string
+                        example: send_invitation
+                      body:
+                        type: string
+                        example: "<!DOCTYPE html>\r\n<html>\r\n  <body\r\n  </body>\r\n</html>"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T02:00:14.011782+01:00
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T02:00:14.011782+01:00
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: Template not found
+      security:
+        - bearerAuth: []
+
+    put:
+      tags:
+        - email_template
+      summary: Update a specific email template by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                body:
+                  type: string
+              required:
+                - name
+                - body
+      responses:
+        '200':
+          description: Template successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Template successfully updated
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 01910b26-4508-7e1b-8855-15aeb15133aa
+                      name:
+                        type: string
+                        example: updated_template_name
+                      body:
+                        type: string
+                        example: "<!DOCTYPE html>\r\n<html>\r\n  <body>\r\n  Updated template body\r\n  </body>\r\n</html>"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T02:00:14.011782+01:00
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T03:00:14.011782+01:00
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 422
+                  message:
+                    type: string
+                    example: Validation failed
+                  error:
+                    type: object
+                    properties:
+                      TemplateRequest.Body:
+                        type: string
+                        example: Body is a required field
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: Template not found
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - email_template
+      summary: Delete a specific email template by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Template successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Template successfully deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: Template not found
+      security:
+        - bearerAuth: []
+        
+  /api/v1/notifications:
+    post:
+      tags:
+        - notifications
+      summary: Create a new notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "This is a notification message"
+              required:
+                - message
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notification created successfully
+                  status_code:
+                    type: integer
+                    example: 201
+                  data:
+                    type: object
+                    properties:
+                      notifications:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            notification_id:
+                              type: string
+                              example: 01910c39-01e0-73b7-bed9-d326a6ea5197
+                            user_id:
+                              type: string
+                              example: 01910b39-01e0-73b7-bed9-d326a6ea5197
+                            message:
+                              type: string
+                              example: "This is a notification message"
+                            is_read:
+                              type: boolean
+                              example: false
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: 2024-08-01T05:35:48.3211659+01:00
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized request
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - notifications
+      summary: Retrieve all notifications
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notifications retrieved successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      total_notification_count:
+                        type: integer
+                        example: 10
+                      total_unread_notification_count:
+                        type: integer
+                        example: 2
+                      notifications:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            notification_id:
+                              type: string
+                              example: 01910b38-22db-79a1-a766-26b69757e3d2
+                            is_read:
+                              type: boolean
+                              example: false
+                            message:
+                              type: string
+                              example: "This is a notification message"
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: 2024-08-01T00:55:14.011782+01:00
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized request
+      security:
+        - bearerAuth: []
+
+  /api/v1/notifications/:
+    get:
+      tags:
+        - notifications
+      summary: Retrieve unread notifications
+      parameters:
+        - name: is_read
+          in: query
+          required: true
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: Unread notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Unread notifications retrieved successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      total_notification_count:
+                        type: integer
+                        example: 10
+                      total_unread_notification_count:
+                        type: integer
+                        example: 2
+                      notifications:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            notification_id:
+                              type: string
+                              example: 01910b38-22db-79a1-a766-26b69757e3d2
+                            is_read:
+                              type: boolean
+                              example: false
+                            message:
+                              type: string
+                              example: "This is a notification message"
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: 2024-08-01T00:55:14.011782+01:00
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized request
+      security:
+        - bearerAuth: []
+
+  /api/v1/notifications/{notification_id}:
+    patch:
+      tags:
+        - notifications
+      summary: Mark a notification as read
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 01910b38-22db-79a1-a766-26b69757e3d2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_read:
+                  type: boolean
+                  example: true
+              required:
+                - is_read
+      responses:
+        '200':
+          description: Notification updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notification updated successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      notification_id:
+                        type: string
+                        example: 01910b38-22db-79a1-a766-26b69757e3d2
+                      is_read:
+                        type: boolean
+                        example: true
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: 2024-08-01T06:00:14.011782+01:00
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized request
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: Notification not found
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - notifications
+      summary: Delete a notification
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 01910b38-22db-79a1-a766-26b69757e3d2
+      responses:
+        '200':
+          description: Notification deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notification deleted successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      notifications:
+                        type: array
+                        items: {}
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized request
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: Notification not found
+      security:
+        - bearerAuth: []
+
+  /api/v1/notification-settings:
+    patch:
+      tags:
+        - notification_settings
+      summary: Update notification settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mobile_push_notifications:
+                  type: boolean
+                  example: true
+                email_notification_activity_in_workspace:
+                  type: boolean
+                  example: true
+                email_notification_always_send_email_notifications:
+                  type: boolean
+                  example: true
+                email_notification_email_digest:
+                  type: boolean
+                  example: true
+                email_notification_announcement_and_update_emails:
+                  type: boolean
+                  example: true
+                slack_notifications_activity_on_your_workspace:
+                  type: boolean
+                  example: true
+                slack_notifications_always_send_email_notifications:
+                  type: boolean
+                  example: true
+                slack_notifications_announcement_and_update_emails:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Notification preferences updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notification preferences updated successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      mobile_push_notifications:
+                        type: boolean
+                        example: true
+                      email_notification_activity_in_workspace:
+                        type: boolean
+                        example: true
+                      email_notification_always_send_email_notifications:
+                        type: boolean
+                        example: true
+                      email_notification_email_digest:
+                        type: boolean
+                        example: true
+                      email_notification_announcement_and_update_emails:
+                        type: boolean
+                        example: true
+                      slack_notifications_activity_on_your_workspace:
+                        type: boolean
+                        example: true
+                      slack_notifications_always_send_email_notifications:
+                        type: boolean
+                        example: true
+                      slack_notifications_announcement_and_update_emails:
+                        type: boolean
+                        example: true
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid input
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - notification_settings
+      summary: Retrieve notification settings
+      responses:
+        '200':
+          description: Notification preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Notification preferences retrieved successfully
+                  status_code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      mobile_push_notifications:
+                        type: boolean
+                        example: true
+                      email_notification_activity_in_workspace:
+                        type: boolean
+                        example: true
+                      email_notification_always_send_email_notifications:
+                        type: boolean
+                        example: true
+                      email_notification_email_digest:
+                        type: boolean
+                        example: true
+                      email_notification_announcement_and_update_emails:
+                        type: boolean
+                        example: true
+                      slack_notifications_activity_on_your_workspace:
+                        type: boolean
+                        example: true
+                      slack_notifications_always_send_email_notifications:
+                        type: boolean
+                        example: true
+                      slack_notifications_announcement_and_update_emails:
+                        type: boolean
+                        example: true
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid request
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+                    
+  /help-center/topics:
+    post:
+      summary: Create a new Help Center topic
+      description: Creates a new Help Center topic.
+      security:
+        - bearerAuth: []
+      tags:
+        - Help Center
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHelpCenter'
+      responses:
+        '201':
+          description: Topic created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelpCenter'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Invalid request body
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Validation failed
+        '500':
+          description: Failed to add topic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Failed to add topic
+                    
+    get:
+      summary: Fetch all Help Center topics
+      description: Retrieves all Help Center topics.
+      tags:
+        - Help Center
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: The number of items per page
+          example: 6  
+      responses:
+        '200':
+          description: Topics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HelpCenter'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'                
+
+  /help-center/topics/{id}:
+    get:
+      summary: Fetch a Help Center topic by ID
+      description: Retrieves a Help Center topic by its ID.
+      tags:
+        - Help Center
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: The ID of the Help Center topic to fetch
+      responses:
+        '200':
+          description: Topic retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelpCenter'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    patch:
+      summary: Update a Help Center topic by ID
+      description: Updates a Help Center topic by its ID.
+      security:
+        - bearerAuth: []
+      tags:
+        - Help Center
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: The ID of the Help Center topic to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHelpCenter'
+      responses:
+        '200':
+          description: Topic updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelpCenter'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Failed to update topic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Failed to update topic
+                    
+    delete:
+      summary: Delete a Help Center topic by ID
+      description: Deletes a Help Center topic by its ID.
+      security:
+        - bearerAuth: []
+      tags:
+        - Help Center
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: The ID of the Help Center topic to delete
+      responses:
+        '204':
+          description: Topic deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Failed to delete topic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Failed to delete topic
+
+  /help-center/topics/search:
+    get:
+      summary: Search Help Center topics
+      description: Searches Help Center topics by title and content.
+      tags:
+        - Help Center
+      parameters:
+        - in: query
+          name: title
+          schema:
+            type: string
+          required: true
+          description: The search Topic title
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HelpCenter'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'  
+
+  /contact:
+    post:
+      tags:
+        - contact
+      summary: Add a new message
+      description: Adds a new messages to the contact us list.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "johndoe@example.com"
+                subject:
+                  type: string
+                  example: "Inquiry about services with malicious content3"
+                message:
+                  type: string
+                  example: "I would like to know more about your services1 with html content here</br><script>?</script>.3"
+              required:
+                - name
+                - email
+                - subject
+                - message
+      responses:
+        '201':
+          description: Contact added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema2'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    get:
+      tags:
+        - contact
+      summary: Get all messages
+      security:
+        - bearerAuth: []
+      description: Retrieves all contact entries.
+      parameters:
+        - $ref: '#/components/parameters/PageLimitParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A list of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /contact/{id}:
+    delete:
+      tags:
+        - contact
+      security:
+        - bearerAuth: []
+      summary: Delete a contact
+      description: Deletes a contact by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the contact to delete
+      responses:
+        '200':
+          description: Contact deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+                
+  /contact/id/{id}:
+    get:
+      tags:
+        - contact
+      summary: Get a contact by ID
+      security:
+        - bearerAuth: []
+      description: Retrieves a specific contact by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the contact to retrieve
+      responses:
+        '200':
+          description: Contact details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactSchema'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /contact/email/{email}:
+    get:
+      tags:
+        - contact
+      summary: Get a contact by email
+      security:
+        - bearerAuth: []
+      description: Retrieves a contact by its email.
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+          description: Email of the contact to retrieve
+      responses:
+        '200':
+          description: Contact details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactSchema'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'              
+
+components:
+
+  schemas:
+
+    NotFoundErrorSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: |-
+            The responses will contain this property with
+            - Not found error
+          example: Not Found
+        status_code:
+          type: integer
+          description: >
+            The HTTP status code. when data cant be found
+          example: 404
+        message:
+          type: string
+          description: >
+            A basic message pointing to data doesn't exist.
+
+    SuccessResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        status_code:
+          type: integer
+          description: >
+            The HTTP status code. Usually 200 , 201, 204 etc
+          example: 200
+        message:
+          type: string
+          description: >
+            A basic message describing a request was processed successfully.
+            example: "Successfully"
+
+    SuccessResponseSchema2:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        status_code:
+          type: integer
+          description: >
+            The HTTP status code. Usually 200 , 201, 204 etc
+          example: 201
+        message:
+          type: string
+          description: >
+            A basic message describing a request was processed successfully.
+            example: "Successfully"
+
+    ServerErrorSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: |-
+            The responses will contain this property with
+            - Internal server error
+          example: Internal Server Error
+        status_code:
+          type: integer
+          description: >
+            The HTTP status code. Usually missing if `error` is present.
+          example: 500
+        message:
+          type: string
+          description: >
+            A basic message describing the problem from the server.
+
+    BadRequestErrorSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: |-
+            Certain responses will contain this property with the provided values.
+
+            Usually one of these:
+            - Bad Request
+            - invalid input
+          example: Bad Reqeust
+        statuCode:
+          type: integer
+          description: >
+            The HTTP status code. Usually missing if `error` is present.
+          example: 400
+        message:
+          type: string
+          description: >
+            A basic message describing the problem with the request. Usually missing if `error` is present.
+    
+    UnprocessedEntityErrorSchema:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: >
+            contains field and corresponding error message
+          items:
+            $ref: "#/components/schemas/UnprocessedEntity"
+        statuCode:
+          type: integer
+          description: >
+            The HTTP status code. Usually missing if `error` is present.
+          example: 422
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Validation failed"
+        
+    UnauthorizedErrorSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: |-
+            Certain responses will contain this property with the provided values.
+
+            Usually one of these:
+            - Unauthorized
+            - Forbidden
+          example: Unauthorized
+        statuCode:
+          type: integer
+          description: >
+            The HTTP status code. Usually missing if `error` is present.
+          example: 401
+        message:
+          type: string
+          description: >
+            A basic message describing the problem with the request. Usually missing if `error` is present.
+
+    ForbiddenErrorSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: |-
+            Certain responses will contain this property with the provided values.
+
+            Usually one of these:
+            - Forbidden
+            - Unauthorized
+          example: Forbidden
+        statuCode:
+          type: integer
+          description: >
+            The HTTP status code. Usually missing if `error` is present.
+          example: 403
+        message:
+          type: string
+          description: >
+            A basic message describing the problem with the request. Usually missing if `error` is present.
+
+    UserSchema:
+      type: object
+      description: Object describing the user related to the issued access and refresh tokens.
+      properties:
+        first_name:
+          type: string
+          description: firstname of the user
+        last_name:
+          type: string
+          description: lastname of the user
+        role:
+          type: integer
+          description: User's role type (superadmin or user)
+        email:
+          type: string
+          description: User's primary contact email.
+        phone:
+          type: string
+          format: phone
+          description: User's primary contact phone number.
+        username:
+          type: string
+          description: Last updated time        
+        created_at:
+          type: string
+          format: date-time
+          description: Time of registration
+        updated_at:
+          type: string
+          format: date-time
+          description: Last updated time
+        access_token:
+          type: string
+          description: A valid JWT that will expire in `expires_in` seconds.
+        expires_at:
+          type: string
+          format: date-time
+          description: UNIX timestamp after which the `access_token` should be renewed by using the refresh token with the `refresh_token` grant type.
+
+    OrganisationResponseSchema:
+      type: object
+      description: Object describing the organisation data
+      properties:
+        organisation_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: organisation name
+        description: 
+          type: string
+          description: organisation description
+
+    UpdateUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          format: phone
+        language:
+          type: string
+
+    Organisation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Example organisation"
+        description:
+          type: string
+          example: "An example organisation"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UnprocessedEntity:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Message
+
+    FAQSchema:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        category:
+          type: string
+
+    NewsletterSchema:
+      type: object
+      properties:
+        email:
+          type: string
+
+    LanguageSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+
+    TimezoneSchema:
+      type: object
+      properties:
+        timezone:
+          type: string
+        gmt_offset:
+          type: string
+        description:
+          type: string
+        
+
+    RegionSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+
+    WaitlistSchema:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    UserRegionUpdateSchema:
+      type: object
+      properties:
+        region_id:
+          type: string
+          format: uuid
+        timezone_id:
+          type: string
+          format: uuid
+        language_id:
+          type: string
+          format: uuid
+
+    UserRegionUpdateResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        status_code:
+          type: integer
+        message:
+          type: string
+    
+    UserRegionResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: User region retrieved successfully
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 019109d8-a5a6-7f4d-a3ec-ee3bd0383ee5
+            user_id:
+              type: string
+              format: uuid
+              example: 019109d8-a5a6-7f47-8cc5-d9b3f62293f8
+            region_id:
+              type: string
+              format: uuid
+              example: 019109d8-a5a6-7f4e-84a2-9e9f0eed380b
+            timezone_id:
+              type: string
+              format: uuid
+              example: 019109d8-a5a6-7f50-a8b4-47512d0150c9
+            language_id:
+              type: string
+              format: uuid
+              example: 019109d8-a5a6-7f4f-8824-0daa5e00a9bd
+            created_at:
+              type: string
+              format: date-time
+              example: 2024-07-31T18:31:18.832037+01:00
+            updated_at:
+              type: string
+              format: date-time
+              example: 2024-07-31T18:31:18.832037+01:00
+
+    OrgRoleCreateSchema:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: Name of the role.
+        description:
+          type: string
+          description: Description of the role.
+
+    OrgRoleCreateResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        status_code:
+          type: integer
+        message:
+          type: string
+
+    OrgRolesListResponseSchema:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgRoleResponseSchema'
+
+    OrgRoleResponseSchema:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+
+    OrgRoleUpdateSchema:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: Updated name of the role.
+        description:
+          type: string
+          description: Updated description of the role.
+
+    OrgRoleUpdateResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        status_code:
+          type: integer
+        message:
+          type: string
+
+    OrgRoleDeleteResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        status_code:
+          type: integer
+        message:
+          type: string
+
+    RolePermissionsUpdateSchema:
+      type: object
+      required:
+        - category
+        - permission_list
+      properties:
+        category:
+          type: string
+          description: Category of permissions being updated.
+        permission_list:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Object where keys are permission names and values are boolean indicating whether the permission is granted.
+
+    RolePermissionsUpdateResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        status_code:
+          type: integer
+        message:
+          type: string
+    
+    CreateJobPost:
+      type: object
+      properties:
+        title:
+          type: string
+        salary:
+          type: string
+        job_type:
+          type: string
+        location:
+          type: string
+        deadline:
+          type: string
+        work_mode:
+          type: string
+        experience:
+          type: string
+        how_to_apply:
+          type: string
+        job_benefits:
+          type: string
+        company_name:
+          type: string
+        description:
+          type: string
+        key_responsibilities:
+          type: string
+        qualifications:
+          type: string
+
+    UpdateJobPost:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Updated Software Engineer Intern
+        salary:
+          type: string
+          example: 6000-8000 USD
+        job_type:
+          type: string
+          example: full-time
+        location:
+          type: string
+          example: San Francisco, CA
+        deadline:
+          type: string
+          format: date-time
+          example: 2024-12-31T23:59:59Z
+        work_mode:
+          type: string
+          example: hybrid
+        experience:
+          type: string
+          example: Entry level (0-3 years)
+        how_to_apply:
+          type: string
+          example: Submit your resume and cover letter to hr@company.com
+        job_benefits:
+          type: string
+          example: Flexible hours, Health insurance, Stock options
+        company_name:
+          type: string
+          example: Tech Innovators Inc.
+        description:
+          type: string
+          example: We are looking for a passionate Software Engineer Intern to join our team. You'll work on exciting projects and gain valuable experience.
+        key_responsibilities:
+          type: string
+          example: Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews
+        qualifications:
+          type: string
+          example: Ability to work in a team, Bachelor degree in Computer Science
+
+    JobPost:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01910544-d1e1-7ada-bdac-c761e527ec91
+        title:
+          type: string
+          example: Junior Backend intern
+        salary:
+          type: string
+          example: 500,000 NGN
+        job_type:
+          type: string
+          example: internship
+        location:
+          type: string
+          example: San Francisco, CA
+        deadline:
+          type: string
+          format: date-time
+          example: 2024-12-31T23:59:59Z
+        work_mode:
+          type: string
+          example: remote
+        experience:
+          type: string
+          example: Entry level (0-2 years)
+        how_to_apply:
+          type: string
+          example: Submit your resume and cover letter to hr@company.com
+        job_benefits:
+          type: string
+          example: Flexible hours, Remote work, Health insurance
+        company_name:
+          type: string
+          example: Tech Innovators
+        description:
+          type: string
+          example: We are looking for a passionate Software Engineer Intern to join our team. You will be working on exciting projects and gain hands-on experience.
+        key_responsibilities:
+          type: string
+          example: Develop and maintain web applications, Collaborate with the team on various projects, Participate in code reviews
+        qualifications:
+          type: string
+          example: Expert with GIT
+        created_at:
+          type: string
+          format: date-time
+          example: 2024-07-30T21:11:21.9538358+01:00
+        updated_at:
+          type: string
+          format: date-time
+          example: 2024-07-30T21:11:21.9538358+01:00
+
+    JobPostResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Job post created successfully
+        data:
+          $ref: '#/components/schemas/JobPost'
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        status_code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: An error occurred
+          
+          
+    addUserToOrganizationReq:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          example: 01910544-d1e1-7ada-bdac-c761e527ec91
+          
+          
+    createOrganizationReq:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+        state:
+          type: string
+        industry:
+          type: string
+        type:
+          type: string
+        address:
+          type: string
+        country:
+          type: string
+          
+    organizationResData:
+      type: object
+      description: Object describing the organisation data
+      properties:
+        organisation_id:
+          type: string
+          format: uuid
+          example: 01910544-d1e1-7ada-bdac-c761e527ec91
+        name:
+          type: string
+          example: daveOrg
+        description: 
+          type: string
+          example: something something
+        email:
+          type: string
+          example: org@gmail.com
+        state: 
+          type: string
+          example: lagos
+        industry:
+          type: string
+          example: tech
+        type: 
+          type: string
+          example: sometype
+        address: 
+          type: string
+          example: somewhere somewhere
+        created_at:
+          type: string
+          format: date-time
+          example: 2024-07-30T21:11:21.9538358+01:00
+        updated_at:
+          type: string
+          format: date-time
+          example: 2024-07-30T21:11:21.9538358+01:00
+          
+    organizationSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: organization created successfully
+        data:
+          $ref: '#/components/schemas/organizationResData'
+    
+    organizationUSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: organization updated successfully
+        data:
+          $ref: '#/components/schemas/organizationResData'
+          
+    organizationGSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: organization retrieved successfully
+        data:
+          $ref: '#/components/schemas/organizationResData'
+          
+    CreateHelpCenter:
+      type: object
+      properties:
+        title:
+          type: string
+          example: How to reset password
+        content:
+          type: string
+          example: To reset your password, go to the settings page and click 'Reset Password'.
+      required:
+        - title
+        - content
+
+    HelpCenter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0190fade-6a88-783f-97bc-870d0f5c187e
+        title:
+          type: string
+          example: How to reset password
+        content:
+          type: string
+          example: To reset your password, go to the settings page and click 'Reset Password'.
+        author:
+          type: string
+          example: John Doe
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    ContactSchema:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        subject:
+          type: string
+        message:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - subject
+        - message
+
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: Unauthorized
+
+    NotFoundError:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: Not Found      
+
+  parameters:
+    PageLimitParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      required: false
+      schema:
+        type: integer
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        default: 10
+
+  securitySchemes:
+      bearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT

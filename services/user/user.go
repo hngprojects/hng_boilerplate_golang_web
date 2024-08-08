@@ -2,156 +2,221 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (models.CreateUserRequestModel, error) {
-
-	user := models.User{}
-	profile := models.Profile{}
-
-	// Check if the user email is valid or already exists
-
-	if req.Email != "" {
-		req.Email = strings.ToLower(req.Email)
-		formattedMail, checkBool := utility.EmailValid(req.Email)
-		if !checkBool {
-			return req, fmt.Errorf("email address is invalid")
-		}
-		req.Email = formattedMail
-		exists := postgresql.CheckExists(db, &user, "email = ?", req.Email)
-		if exists {
-			return req, errors.New("user already exists with the given email")
-		}
-	}
-
-	// Check if the user phone is valid, then format and check if already exists
-
-	if req.PhoneNumber != "" {
-		req.PhoneNumber = strings.ToLower(req.PhoneNumber)
-		phone, _ := utility.PhoneValid(req.PhoneNumber)
-		req.PhoneNumber = phone
-		exists := postgresql.CheckExists(db, &profile, "phone = ?", req.PhoneNumber)
-		if exists {
-			return req, errors.New("user already exists with the given phone")
-		}
-
-	}
-
-	return req, nil
-}
-
-func GetUser(userIDStr string, db *gorm.DB) (models.User, error) {
+func GetUser(userIDStr string, db *gorm.DB) (models.User, int, error) {
 	var userResp models.User
 
 	userResp, err := userResp.GetUserByID(db, userIDStr)
 	if err != nil {
-		return userResp, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return userResp, http.StatusNotFound, errors.New("user not found")
+		}
+		return userResp, http.StatusBadRequest, err
 	}
-
-	return userResp, nil
+	return userResp, http.StatusOK, nil
 }
 
-func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, error) {
+func GetUserByEmail(email string, db *gorm.DB) (models.User, error) {
+	var user models.User
 
-	var (
-		email        = strings.ToLower(req.Email)
-		firstName    = strings.Title(strings.ToLower(req.FirstName))
-		lastName     = strings.Title(strings.ToLower(req.LastName))
-		username     = strings.ToLower(req.UserName)
-		phoneNumber  = req.PhoneNumber
-		password     = req.Password
-		responseData gin.H
-	)
-
-	password, err := utility.HashPassword(req.Password)
+	user, err := user.GetUserByEmail(db, email)
 	if err != nil {
-		return nil, http.StatusInternalServerError, err
+		return user, err
 	}
-
-	user := models.User{
-		ID:       utility.GenerateUUID(),
-		Name:     username,
-		Email:    email,
-		Password: password,
-		Profile: models.Profile{
-			ID:        utility.GenerateUUID(),
-			FirstName: firstName,
-			LastName:  lastName,
-			Phone:     phoneNumber,
-		},
-	}
-
-	err = user.CreateUser(db)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-
-	token, expiry, err := middleware.CreateToken(user)
-	if err != nil {
-		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
-	}
-
-	responseData = gin.H{
-		"email":        user.Email,
-		"username":     user.Name,
-		"first_name":   user.Profile.FirstName,
-		"last_name":    user.Profile.LastName,
-		"phone":        user.Profile.Phone,
-		"expires_in":   expiry,
-		"access_token": token,
-	}
-
-	return responseData, http.StatusCreated, nil
+	return user, nil
 }
 
-func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
+func GetAUser(userIDStr string, db *gorm.DB, c *gin.Context) (*models.User, int, error) {
+	var userResp models.User
 
+	userId, err := middleware.GetUserClaims(c, db, "user_id")
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+
+	userID, ok := userId.(string)
+	if !ok {
+		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
+	}
+
+	user, code, err := GetUser(userID, db)
+	if err != nil {
+		return nil, code, err
+	}
+
+	isSuperAdmin := user.CheckUserIsAdmin(db)
+	if isSuperAdmin {
+		userResp, err = userResp.GetUserByID(db, userIDStr)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return &userResp, http.StatusNotFound, errors.New("user not found")
+			}
+			return &userResp, http.StatusBadRequest, err
+		}
+	} else {
+		userResp, err = userResp.GetUserByIDsAdmin(db, userIDStr, userID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return &userResp, http.StatusNotFound, errors.New("user not found")
+			}
+			return &userResp, http.StatusBadRequest, err
+		}
+	}
+
+	return &userResp, http.StatusOK, nil
+}
+
+func GetAUserOrganisation(userIDStr string, db *gorm.DB, c *gin.Context) (*[]models.Organisation, int, error) {
 	var (
-		user         = models.User{}
-		responseData gin.H
+		orgData models.Organisation
+		orgResp []models.Organisation
 	)
 
-	// Check if the user email exists
-	exists := postgresql.CheckExists(db, &user, "email = ?", req.Email)
-	if !exists {
-		return responseData, 400, fmt.Errorf("invalid credentials")
-	}
-
-	if !utility.CompareHash(req.Password, user.Password) {
-		return responseData, 400, fmt.Errorf("invalid credentials")
-	}
-
-	userData, err := user.GetUserByID(db, user.ID)
+	userId, err := middleware.GetUserClaims(c, db, "user_id")
 	if err != nil {
-		return responseData, http.StatusInternalServerError, fmt.Errorf("unable to fetch user " + err.Error())
+		return nil, http.StatusNotFound, err
 	}
 
-	token, expiry, err := middleware.CreateToken(userData)
+	userID, ok := userId.(string)
+	if !ok {
+		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
+	}
 
+	user, code, err := GetUser(userID, db)
 	if err != nil {
-		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
+		return nil, code, err
 	}
 
-	responseData = gin.H{
-		"email":        userData.Email,
-		"username":     userData.Name,
-		"first_name":   userData.Profile.FirstName,
-		"last_name":    userData.Profile.LastName,
-		"phone":        userData.Profile.Phone,
-		"expires_in":   expiry,
-		"access_token": token,
+	isSuperAdmin := user.CheckUserIsAdmin(db)
+	if isSuperAdmin {
+		orgResp, err = orgData.GetOrganisationsByUserID(db, userIDStr)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return &orgResp, http.StatusNotFound, errors.New("user not found")
+			}
+			return &orgResp, http.StatusBadRequest, err
+		}
+	} else {
+		orgResp, err = orgData.GetOrganisationsByUserIDs(db, userIDStr, userID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return &orgResp, http.StatusNotFound, errors.New("user not found")
+			}
+			return &orgResp, http.StatusBadRequest, err
+		}
 	}
 
-	return responseData, http.StatusCreated, nil
+	return &orgResp, http.StatusOK, nil
+}
+
+func DeleteAUser(userIDStr string, db *gorm.DB, c *gin.Context) (int, error) {
+	var (
+		currentUser models.User
+		targetUser  models.User
+	)
+
+	userId, err := middleware.GetUserClaims(c, db, "user_id")
+	if err != nil {
+		return http.StatusNotFound, err
+	}
+
+	currentUserID, ok := userId.(string)
+	if !ok {
+		return http.StatusBadRequest, errors.New("user_id is not of type string")
+	}
+
+	currentUser, code, err := GetUser(currentUserID, db)
+	if err != nil {
+		return code, err
+	}
+
+	targetUser, code, err = GetUser(userIDStr, db)
+	if err != nil {
+		return code, err
+	}
+
+	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	if isSuperAdmin || currentUserID == userIDStr {
+
+		if err := targetUser.DeleteAUser(db); err != nil {
+			return http.StatusInternalServerError, err
+		}
+	} else {
+		return http.StatusForbidden, errors.New("user does not have permission to delete this user")
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateAUser(userData models.UpdateUserRequestModel, userIDStr string, db *gorm.DB, c *gin.Context) (*models.User, int, error) {
+	var (
+		currentUser models.User
+		targetUser  models.User
+	)
+
+	userId, err := middleware.GetUserClaims(c, db, "user_id")
+	if err != nil {
+		return &targetUser, http.StatusNotFound, err
+	}
+
+	currentUserID, ok := userId.(string)
+	if !ok {
+		return &targetUser, http.StatusBadRequest, errors.New("user_id is not of type string")
+	}
+
+	currentUser, code, err := GetUser(currentUserID, db)
+	if err != nil {
+		return &targetUser, code, err
+	}
+
+	targetUser, code, err = GetUser(userIDStr, db)
+	if err != nil {
+		return &targetUser, code, err
+	}
+
+	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	if isSuperAdmin || currentUserID == userIDStr {
+
+		targetUser.Name = userData.UserName
+		targetUser.Profile.FirstName = userData.FirstName
+		targetUser.Profile.LastName = userData.LastName
+		targetUser.Profile.Phone = userData.PhoneNumber
+
+		err = targetUser.Update(db)
+		if err != nil {
+			return &targetUser, http.StatusInternalServerError, err
+		}
+
+	} else {
+		return &targetUser, http.StatusForbidden, errors.New("user does not have permission to update this user")
+	}
+
+	return &targetUser, http.StatusOK, nil
+}
+
+func GetAllUsers(c *gin.Context, db *gorm.DB) ([]models.User, *postgresql.PaginationResponse, int, error) {
+
+	var users []models.User
+	pagination := postgresql.GetPagination(c)
+
+	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(db, "created_at", "desc", pagination, &users, "deleted_at IS NULL")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return users, nil, http.StatusNoContent, nil
+		}
+		return users, nil, http.StatusBadRequest, err
+
+	}
+
+	return users, &paginationResponse, http.StatusOK, nil
+
 }

@@ -9,21 +9,9 @@ on:
       - dev
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set Golang
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.22.1"
-      - name: Build the application
-        run: go build -o development_app
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
+    environment: development
     env:
       TEST_USERNAME: postgres
       TEST_PASSWORD: password
@@ -34,6 +22,10 @@ jobs:
       TEST_TIMEZONE: Africa/Lagos
       TEST_SSLMODE: disable
       TEST_MIGRATE: true
+      REDIS_PORT: 6379
+      REDIS_HOST: localhost
+      REDIS_DB: 0
+
     services:
       postgres:
         image: postgres:latest
@@ -43,27 +35,62 @@ jobs:
           POSTGRES_DB: ${{ env.TEST_DB_NAME }}
         ports:
           - 5432:5432
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Set Golang
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
       - name: Create app config file
         run: cp app-sample.env app.env
+      - name: Build the application
+        run: go build -o development_app
+      - name: Run the application
+        run: nohup ./development_app > /dev/null 2>&1 &
+      - name: Wait for application to start
+        run: sleep 30s
+      - name: Test for reachability
+        run: curl http://localhost:8019
       - name: Run All Tests
         run: go test ./... -timeout 99999s
 
   deploy:
     runs-on: ubuntu-latest
-    needs: test
+    needs: build_and_test
+    if: github.event_name == 'push'
+    environment: development
     env:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      SERVER_PORT: 7000
+      SERVER_PORT: "7000"
       DB_NAME: "development_db"
       USERNAME: "development_user"
       APP_NAME: "development"
-      APP_URL: "http://localhost:7000"
+      APP_URL: "https://deployment.api-golang.boilerplate.hng.tech"
+      REDIS_PORT: "6130"
+      REDIS_HOST: "0.0.0.0"
+      REDIS_DB: "0"
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
+      FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
     steps:
       - name: SSH into server and deploy
@@ -87,4 +114,22 @@ jobs:
               git clone -b dev https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} SERVER_PORT=${{ env.SERVER_PORT }} DB_NAME=${{ env.DB_NAME }} USERNAME=${{ env.USERNAME }} APP_NAME=${{ env.APP_NAME }} APP_URL=${{ env.APP_URL }}
+            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} \
+              SERVER_PORT=${{ env.SERVER_PORT }} \
+              DB_NAME=${{ env.DB_NAME }} \
+              USERNAME=${{ env.USERNAME }} \
+              APP_NAME=${{ env.APP_NAME }} \
+              APP_URL=${{ env.APP_URL }} \
+              REDIS_PORT=${{ env.REDIS_PORT }} \
+              REDIS_HOST=${{ env.REDIS_HOST }} \
+              REDIS_DB=${{ env.REDIS_DB }} \
+              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ env.SESSION_SECRET }} \
+              MAIL_SERVER=${{ env.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ env.MAIL_PORT }} \
+              MIGRATE=true

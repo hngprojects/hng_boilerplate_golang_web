@@ -192,6 +192,7 @@ func SelectOneFromDb(db *gorm.DB, receiver interface{}, query interface{}, args 
 	}
 	return tx.Error, nil
 }
+
 func SelectLatestFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
 	tx := db.Order("id desc").Where(query, args...).First(receiver)
@@ -239,4 +240,11 @@ func CheckExistsInTable(db *gorm.DB, table string, query interface{}, args ...in
 	var result map[string]interface{}
 	tx := db.Table(table).Where(query, args...).Take(&result)
 	return tx.RowsAffected != 0
+}
+
+func PreloadEntities(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+	return db
 }

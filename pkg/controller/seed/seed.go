@@ -27,7 +27,7 @@ func (base *Controller) GetUser(c *gin.Context) {
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		c.JSON(http.StatusNotFound, rd)
 		return
 	}
 
