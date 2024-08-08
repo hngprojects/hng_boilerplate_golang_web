@@ -21,6 +21,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - db
+      - redis
     ports:
       - "8000:8019"
     env_file :
