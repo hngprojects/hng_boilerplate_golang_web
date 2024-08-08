@@ -30,6 +30,8 @@ func (base *Controller) CreateJobPost(c *gin.Context) {
 		return
 	}
 
+	// req.Sanitize()
+
 	if err := base.Validator.Struct(&req); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)
@@ -43,8 +45,8 @@ func (base *Controller) CreateJobPost(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("Job post created successfully")
-	rd := utility.BuildSuccessResponse(http.StatusCreated, "Job post created successfully", respData)
+	base.Logger.Info("Job created successfully")
+	rd := utility.BuildSuccessResponse(http.StatusCreated, "Job created successfully", respData)
 	c.JSON(http.StatusCreated, rd)
 
 }
@@ -53,7 +55,7 @@ func (base *Controller) FetchAllJobPost(c *gin.Context) {
 	jobPosts, paginationResponse, err := service.GetPaginatedJobPosts(c, base.Db.Postgresql)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "No Job post not found", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Jobs not found", err, nil)
 			c.JSON(http.StatusNotFound, rd)
 		} else {
 			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch job post", err, nil)

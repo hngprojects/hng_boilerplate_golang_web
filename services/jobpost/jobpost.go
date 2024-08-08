@@ -24,34 +24,20 @@ type JobPostSummary struct {
 }
 
 func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, error) {
-	// 	jobpost := models.JobPost{
-	// 	ID:          		utility.GenerateUUID(),
-	// 	Title:       		req.Title,
-	// 	Salary:      		req.Salary,
-	// 	JobType:     		req.JobType,
-	// 	Location:    		req.Location,
-	// 	Deadline:    		req.Deadline,
-	//     WorkMode:       	req.WorkMode,
-	// 	Experience:			req.Experience,        
-	// 	HowToApply:     	req.HowToApply,
-	//     JobBenefits:		req.JobBenefits,         
-	// 	Description: 		req.Description,
-	// 	CompanyName: 		req.CompanyName,
-	//     KeyResponsibilities: req.KeyResponsibilities,
-	// 	Qualifications:		req.Qualifications,
-	// }
-
 	jobpost := models.JobPost{
-		ID:          		utility.GenerateUUID(),
-		Title:       		req.Title,
-		JobMode:       	    req.JobMode,
-		JobType:     		req.JobType,
-		Location:    		req.Location,
-		Deadline:    		req.Deadline,
-		SalaryRange:        req.SalaryRange,
-		Experience:			req.Experience,                 
-		Description: 		req.Description,
-		CompanyName: 		req.CompanyName,
+		ID:          			utility.GenerateUUID(),
+		Title:       			req.Title,
+		JobMode:       	    	req.JobMode,
+		JobType:     			req.JobType,
+		Location:    			req.Location,
+		Deadline:    			req.Deadline,
+		Benefits:				req.Benefits,
+		SalaryRange:        	req.SalaryRange,
+		Description: 			req.Description,
+		CompanyName: 			req.CompanyName,
+		ExperienceLevel: 		req.ExperienceLevel,
+		KeyResponsibilities: 	req.KeyResponsibilities,
+		Qualifications:			req.Qualifications,
 	}
 
 	if err := jobpost.CreateJobPost(db); 
@@ -77,13 +63,6 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgr
 
 	var jobPostSummaries []JobPostSummary
 	for _, job := range jobPosts {
-		// summary := JobPostSummary{
-		// 	ID: 		 job.ID,
-		// 	Title:       job.Title,
-		// 	Description: job.Description,
-		// 	Location:    job.Location,
-		// 	Salary:      job.Salary,
-		// }
 		summary := JobPostSummary{
 			ID: 		 	  job.ID,
 			Title:       	  job.Title,
