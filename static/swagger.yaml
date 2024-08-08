@@ -700,9 +700,7 @@ paths:
       summary: Enable two-factor authentication
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        responses:
+      responses:
           '201':
             description: Two-factor authentication enabled successfully
             content:
@@ -719,7 +717,7 @@ paths:
                     statusCode:
                       type: integer
                       example: 201
-                      data:
+                    data:
                         type: object
                         properties:
                           secret:
