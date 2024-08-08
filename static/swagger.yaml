@@ -2189,15 +2189,15 @@ paths:
           example: 6
       responses:
         '200':
-          description: A list of job posts
+          description: A list of paginated job posts
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/JobPost'
-        '500':
-          description: Failed to fetch job posts
+        '404':
+          description: Jobs not found
           content:
             application/json:
               schema:
@@ -2264,7 +2264,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Job post not found
+          description: Job not found
           content:
             application/json:
               schema:
@@ -5989,7 +5989,7 @@ components:
       properties:
         title:
           type: string
-        salary:
+        salary_range:
           type: string
         job_type:
           type: string
@@ -5997,13 +5997,11 @@ components:
           type: string
         deadline:
           type: string
-        work_mode:
+        job_mode:
           type: string
-        experience:
+        experience_level:
           type: string
-        how_to_apply:
-          type: string
-        job_benefits:
+        benefits:
           type: string
         company_name:
           type: string
@@ -6020,7 +6018,7 @@ components:
         title:
           type: string
           example: Updated Software Engineer Intern
-        salary:
+        salary_range:
           type: string
           example: 6000-8000 USD
         job_type:
@@ -6033,16 +6031,13 @@ components:
           type: string
           format: date-time
           example: 2024-12-31T23:59:59Z
-        work_mode:
+        job_mode:
           type: string
           example: hybrid
-        experience:
+        experience_level:
           type: string
           example: Entry level (0-3 years)
-        how_to_apply:
-          type: string
-          example: Submit your resume and cover letter to hr@company.com
-        job_benefits:
+        benefits:
           type: string
           example: Flexible hours, Health insurance, Stock options
         company_name:
@@ -6067,7 +6062,7 @@ components:
         title:
           type: string
           example: Junior Backend intern
-        salary:
+        salary_range:
           type: string
           example: 500,000 NGN
         job_type:
@@ -6080,16 +6075,16 @@ components:
           type: string
           format: date-time
           example: 2024-12-31T23:59:59Z
-        work_mode:
+        job_mode:
           type: string
           example: remote
-        experience:
+        experience_level:
           type: string
-          example: Entry level (0-2 years)
+          example:  0-2 years
         how_to_apply:
           type: string
           example: Submit your resume and cover letter to hr@company.com
-        job_benefits:
+        benefits:
           type: string
           example: Flexible hours, Remote work, Health insurance
         company_name:
@@ -6124,7 +6119,7 @@ components:
           example: 201
         message:
           type: string
-          example: Job post created successfully
+          example: Job created successfully
         data:
           $ref: '#/components/schemas/JobPost'
 
