@@ -8,6 +8,7 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -53,9 +54,18 @@ func (base *Controller) GetAUser(c *gin.Context) {
 
 func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 
-	var (
-		userID = c.Param("user_id")
-	)
+	userId, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
+	if err != nil {
+		if err.Error() == "user claims not found" {
+			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to retrieve organisations", nil)
+			c.JSON(http.StatusNotFound, rd)
+			return
+		}
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "failed to retrieve organisations", nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+	userID := userId.(string)
 
 	userData, code, err := service.GetAUserOrganisation(userID, base.Db.Postgresql, c)
 	if err != nil {
