@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,10 @@ type NotificationReq struct {
 	Message string `json:"message"`
 }
 
+type UpdateNotificationReq struct {
+	IsRead bool `json:"is_read"`
+}
+
 func (n *Notification) CreateNotification(db *gorm.DB) (Notification, error) {
 
 	err := postgresql.CreateOneRecord(db, &n)
@@ -40,7 +45,7 @@ func (n *Notification) CreateNotification(db *gorm.DB) (Notification, error) {
 	notification := Notification{
 		ID:      n.ID,
 		UserID:  n.UserID,
-		Message: n.UserID,
+		Message: n.Message,
 	}
 
 	if err != nil {
@@ -49,16 +54,31 @@ func (n *Notification) CreateNotification(db *gorm.DB) (Notification, error) {
 	return notification, nil
 }
 
-func (n *Notification) FetchAllNotifications(db *gorm.DB, c *gin.Context) ([]Notification, map[string]interface{}, error) {
-	var notifications []Notification
-	type additionalData map[string]interface{}
+func (n *Notification) GetNotificationByID(db *gorm.DB, ID string) (Notification, error) {
+	var notification Notification
 
-	totalCount, err := postgresql.CountRecords(db, &n)
+	err, _ := postgresql.SelectOneFromDb(db, &notification, "id = ?", ID)
+	if err != nil {
+		return notification, err
+	}
+	return notification, nil
+}
+
+func (n *Notification) FetchAllNotifications(db *gorm.DB, c *gin.Context) ([]Notification, map[string]int64, error) {
+	var notifications []Notification
+	type additionalData map[string]int64
+
+	err := postgresql.SelectAllFromDb(db, "", &notifications, "")
 	if err != nil {
 		return nil, additionalData{}, err
 	}
 
-	unreadCount, err := postgresql.CountSpecificRecords(db, &n, "is_read = false")
+	totalCount, err := postgresql.CountRecords(db, &notifications)
+	if err != nil {
+		return nil, additionalData{}, err
+	}
+
+	unreadCount, err := postgresql.CountSpecificRecords(db, &notifications, "is_read = false")
 	if err != nil {
 		return nil, additionalData{}, err
 	}
@@ -68,16 +88,12 @@ func (n *Notification) FetchAllNotifications(db *gorm.DB, c *gin.Context) ([]Not
 		"unread_count": unreadCount,
 	}
 
-	err = postgresql.SelectAllFromDb(db, "", &notifications, "")
-	if err != nil {
-		return nil, additionalData{}, err
-	}
 	return notifications, data, nil
 }
 
-func (n *Notification) FetchUnReadNotifications(db *gorm.DB, c *gin.Context) ([]Notification, map[string]interface{}, error) {
+func (n *Notification) FetchUnReadNotifications(db *gorm.DB, c *gin.Context) ([]Notification, map[string]int64, error) {
 	var notifications []Notification
-	type additionalData map[string]interface{}
+	type additionalData map[string]int64
 
 	totalCount, err := postgresql.CountRecords(db, &n)
 	if err != nil {
@@ -101,53 +117,55 @@ func (n *Notification) FetchUnReadNotifications(db *gorm.DB, c *gin.Context) ([]
 	return notifications, data, nil
 }
 
-func (n *Notification) UpdateNotification(db *gorm.DB, ID string) (Notification, error) {
-	n.ID = ID
-
-	exists := postgresql.CheckExists(db, &Notification{}, "id = ?", ID)
-	if !exists {
-		return Notification{}, gorm.ErrRecordNotFound
-	}
-
-	err, nerr := postgresql.SelectOneFromDb(db, &n, "id = ?", ID)
-	if err != nil {
-		return Notification{}, nerr
-	}
-
-	_, err = postgresql.SaveAllFields(db, n)
-	if err != nil {
-		return Notification{}, err
-	}
-
-	updatedNotification := Notification{}
-	err = db.First(&updatedNotification, "id = ?", ID).Error
-	if err != nil {
-		return Notification{}, err
-	}
-	updatedNotification.UserID = n.UserID
-	updatedNotification.Message = n.Message
-	updatedNotification.IsRead = n.IsRead
-
-	return updatedNotification, nil
-}
-
-func (n *Notification) DeleteNotificationByID(db *gorm.DB, ID string) error {
+func (n *Notification) UpdateNotification(db *gorm.DB, notifReq UpdateNotificationReq, ID string) (*Notification, error) {
 
 	exists := postgresql.CheckExists(db, &n, "id = ?", ID)
+	if !exists {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	oldNotification, err := n.GetNotificationByID(db, ID)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := postgresql.UpdateFields(db, &n, notifReq, ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.RowsAffected == 0 {
+		return nil, errors.New("failed to update notification")
+	}
+
+	n.ID = oldNotification.ID
+	n.UserID = oldNotification.UserID
+	n.Message = oldNotification.Message
+
+	return n, nil
+}
+
+func (n *Notification) DeleteNotificationByUserID(db *gorm.DB, ID string) error {
+	var notifications []Notification
+
+	exists := postgresql.CheckExists(db, &notifications, "user_id = ?", ID)
 	if !exists {
 		return gorm.ErrRecordNotFound
 	}
 
-	err := postgresql.DeleteRecordFromDb(db, &n)
-
+	err := postgresql.SelectAllFromDb(db, "", &notifications, "user_id = ?", ID)
 	if err != nil {
 		return err
 	}
 
+	err = postgresql.DeleteRecordFromDb(db, &notifications)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (n *NotificationSettings) GetNotificationByID(db *gorm.DB, ID string) (NotificationSettings, error) {
+func (n *NotificationSettings) GetNotificationSettingsByID(db *gorm.DB, ID string) (NotificationSettings, error) {
 	var notificationSettings NotificationSettings
 
 	err, nerr := postgresql.SelectOneFromDb(db, &notificationSettings, "user_id = ?", ID)
