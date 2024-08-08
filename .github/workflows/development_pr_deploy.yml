@@ -1,4 +1,4 @@
-name: PR Deploy
+name: PR Deploy for Development
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
@@ -14,7 +14,7 @@ jobs:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
 
     steps:
       - name: Checkout to branch
@@ -25,7 +25,7 @@ jobs:
         with:
           server_host: ${{ env.SSH_HOST }}
           server_username: ${{ env.SSH_USERNAME }}
-          server_password: ${{ secrets.SERVER_PASSWORD }}
+          server_password: ${{ env.SSH_PASSWORD }}
           server_port: ${{ env.SSH_PORT }}
           comment: true
           context: '.'
