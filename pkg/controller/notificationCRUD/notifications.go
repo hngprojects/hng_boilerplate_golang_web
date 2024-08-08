@@ -22,96 +22,6 @@ type Controller struct {
 	ExtReq    request.ExternalRequest
 }
 
-func (base *Controller) UpdateNotificationSettings(c *gin.Context) {
-	var req models.NotificationSettings
-
-	claims, exists := c.Get("userClaims")
-	if !exists {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-	userClaims := claims.(jwt.MapClaims)
-	userId := userClaims["user_id"].(string)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid request body", err, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-
-	if err := base.Validator.Struct(&req); err != nil {
-		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
-		c.JSON(http.StatusUnprocessableEntity, rd)
-		return
-	}
-
-	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
-
-	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notification settings", err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
-		return
-	}
-
-	updated, err := notificationcrud.UpdateNotificationSettings(base.Db.Postgresql, req, userId)
-	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to update notification settings", err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
-		return
-	}
-
-	base.Logger.Info("Notification settings updated successfully")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "Notification settings updated successfully", updated)
-	c.JSON(http.StatusOK, rd)
-}
-
-func (base *Controller) GetNotificationSettings(c *gin.Context) {
-	claims, exists := c.Get("userClaims")
-	if !exists {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
-	userClaims := claims.(jwt.MapClaims)
-	userId := userClaims["user_id"].(string)
-
-	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
-	if err != nil {
-		notificationSettings := models.NotificationSettings{
-			ID:                                   utility.GenerateUUID(),
-			UserID:                               userId,
-			MobilePushNotifications:              false,
-			EmailNotificationActivityInWorkspace: false,
-			EmailNotificationAlwaysSendEmailNotifications:  false,
-			EmailNotificationEmailDigest:                   false,
-			EmailNotificationAnnouncementAndUpdateEmails:   false,
-			SlackNotificationsActivityOnYourWorkspace:      false,
-			SlackNotificationsAlwaysSendEmailNotifications: false,
-			SlackNotificationsAnnouncementAndUpdateEmails:  false,
-		}
-
-		_, err := notificationSettings.CreateNotificationSettings(base.Db.Postgresql)
-		if err != nil {
-			base.Logger.Info("Failed to create notification settings")
-			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to create notification settings", err, nil)
-			c.JSON(http.StatusInternalServerError, rd)
-			return
-		}
-	}
-
-	notificationSettings, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
-	if err != nil {
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notification settings", err, nil)
-		c.JSON(http.StatusInternalServerError, rd)
-		return
-	}
-
-	base.Logger.Info("Notification settings retrieved successfully")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "Notification settings retrieved successfully", notificationSettings)
-	c.JSON(http.StatusOK, rd)
-}
-
 func (base *Controller) CreateNotification(c *gin.Context) {
 	var req models.NotificationReq
 
@@ -155,6 +65,7 @@ func (base *Controller) CreateNotification(c *gin.Context) {
 func (base *Controller) FetchAllNotifications(c *gin.Context) {
 	respData, addedData, err := notificationcrud.GetAllNotifications(c, base.Db.Postgresql)
 	if err != nil {
+		base.Logger.Error("Failed to fetch notifications", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notifications", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
 		return
@@ -172,16 +83,10 @@ func (base *Controller) FetchAllNotifications(c *gin.Context) {
 }
 
 func (base *Controller) FetchUnReadNotifications(c *gin.Context) {
-	is_read := c.Param("is_read")
-
-	if is_read != "true" && is_read != "false" {
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid Query Parameter", nil, nil)
-		c.JSON(http.StatusBadRequest, rd)
-		return
-	}
 
 	respData, addedData, err := notificationcrud.GetUnreadNotifications(c, base.Db.Postgresql)
 	if err != nil {
+		base.Logger.Error("Failed to fetch unread notifications", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch unread notifications", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
 		return
@@ -199,22 +104,25 @@ func (base *Controller) FetchUnReadNotifications(c *gin.Context) {
 }
 
 func (base *Controller) UpdateNotification(c *gin.Context) {
-	var req models.Notification
-	id := c.Param("notification_id")
+	var req models.UpdateNotificationReq
+	id := c.Param("notificationId")
 
 	if _, err := uuid.Parse(id); err != nil {
+		base.Logger.Error("Invalid ID format", err)
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid ID format", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		base.Logger.Error("Invalid request body", err)
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
 	if err := base.Validator.Struct(&req); err != nil {
+		base.Logger.Error("Validation failed", err)
 		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
@@ -223,9 +131,11 @@ func (base *Controller) UpdateNotification(c *gin.Context) {
 	result, err := notificationcrud.UpdateNotification(base.Db.Postgresql, req, id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
+			base.Logger.Error("Notification not found", err)
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "notification not found", err, nil)
 			c.JSON(http.StatusNotFound, rd)
 		} else {
+			base.Logger.Error("Failed to update notification", err)
 			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to update notification", err, nil)
 			c.JSON(http.StatusInternalServerError, rd)
 		}
@@ -238,27 +148,34 @@ func (base *Controller) UpdateNotification(c *gin.Context) {
 }
 
 func (base *Controller) DeleteNotification(c *gin.Context) {
-	id := c.Param("notification_id")
+	claims, exists := c.Get("userClaims")
+	if !exists {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", nil, nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+	userClaims := claims.(jwt.MapClaims)
+	userId := userClaims["user_id"].(string)
 
-	if _, err := uuid.Parse(id); err != nil {
+	if _, err := uuid.Parse(userId); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid ID format", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	err := notificationcrud.DeleteNotification(base.Db.Postgresql, id)
+	err := notificationcrud.DeleteNotification(base.Db.Postgresql, userId)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Notification not found", err, nil)
 			c.JSON(http.StatusNotFound, rd)
 		} else {
-			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to delete Notification", err, nil)
+			rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to clear Notifications", err, []models.Notification{})
 			c.JSON(http.StatusInternalServerError, rd)
 		}
 		return
 	}
 
-	base.Logger.Info("Notification deleted successfully")
+	base.Logger.Info("Notifications cleared successfully")
 	rd := utility.BuildSuccessResponse(http.StatusNoContent, "", nil)
 	c.JSON(http.StatusNoContent, rd)
 
