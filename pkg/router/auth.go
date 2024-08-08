@@ -9,6 +9,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/key"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -17,6 +18,7 @@ import (
 func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	auth := auth.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+	key := key.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
 	authUrl := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
@@ -26,6 +28,8 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		authUrl.POST("/password-reset/verify", auth.VerifyResetToken)
 		authUrl.POST("/magick-link", auth.RequestMagicLink)
 		authUrl.POST("/magick-link/verify", auth.VerifyMagicLink)
+		authUrl.POST("/2fa/enable", key.CreateKey)
+		authUrl.POST("/2fa/verify", key.VerifyKey)
 	}
 
 	authUrlSec := r.Group(fmt.Sprintf("%v/auth", ApiVersion),
