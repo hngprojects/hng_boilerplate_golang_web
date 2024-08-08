@@ -179,7 +179,6 @@ jobs:
           password: ${{ env.PASSWORD }}
           script: |
             gunzip -c /tmp/golang_dev.tar.gz | docker load
-            docker ps
-            # rm -f /tmp/golang_dev.tar.gz
-            # cd ~/deployments/development
-            # docker compose -f docker-compose-development.yml up -d
+            rm -f /tmp/golang_dev.tar.gz
+            cd ~/deployments/development
+            docker compose -f docker-compose-development.yml up -d
