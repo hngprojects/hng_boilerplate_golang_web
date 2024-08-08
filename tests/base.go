@@ -16,6 +16,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/migrations"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models/seed"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/auth"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/notificationCRUD"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/organisation"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
@@ -162,4 +163,32 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org o
 	dataM := data["data"].(map[string]interface{})
 	orgID := dataM["id"].(string)
 	return orgID
+}
+
+func CreateNotification(t *testing.T, r *gin.Engine, db *storage.Database, not notificationCRUD.Controller, notData models.NotificationReq, token string) string {
+	var (
+		orgPath = "/api/v1/notifications"
+		orgURI  = url.URL{Path: orgPath}
+	)
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+	{
+		orgUrl.POST("/notifications", not.CreateNotification)
+	}
+	var b bytes.Buffer
+	json.NewEncoder(&b).Encode(notData)
+	req, err := http.NewRequest(http.MethodPost, orgURI.String(), &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	//get the response
+	data := ParseResponse(rr)
+	dataM := data["data"].(map[string]interface{})
+	notID := dataM["id"].(string)
+	return notID
 }
