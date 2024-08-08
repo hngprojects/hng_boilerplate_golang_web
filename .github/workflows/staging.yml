@@ -54,48 +54,28 @@ jobs:
       - name: Run the application
         run: nohup ./staging_app > /dev/null 2>&1 &
       - name: Wait for application to start
-        run: sleep 30s
-      - name: Test for reachability
-        run: curl http://localhost:8019
+        run: |
+          for i in {1..30}; do
+            curl -s http://localhost:8019 && break
+            sleep 1
+          done
       - name: Run All Tests
-        run: go test ./... -timeout 99999s
+        run: go test ./... -timeout 300s
 
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_test
     if: github.event_name == 'push'
     environment: staging
-    env:
-      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_PORT: ${{ secrets.SSH_PORT }}
-      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      SERVER_PORT: 8000
-      DB_NAME: "staging_db"
-      USERNAME: "staging_user"
-      APP_NAME: "staging"
-      APP_URL: "https://staging.api-golang.boilerplate.hng.tech"
-      REDIS_PORT: 6131
-      REDIS_HOST: "0.0.0.0"
-      REDIS_DB: 0
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
-      FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
-      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-      MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
     steps:
       - name: SSH into server and deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ env.SSH_HOST }}
-          username: ${{ env.SSH_USERNAME }}
-          password: ${{ env.SSH_PASSWORD }}
-          port: ${{ env.SSH_PORT }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             export APPROOT=~/deployments/staging
             mkdir -p $APPROOT
@@ -110,22 +90,22 @@ jobs:
               git clone -b staging https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}}
-              SERVER_PORT=${{ env.SERVER_PORT }} \
-              DB_NAME=${{ env.DB_NAME }} \
-              USERNAME=${{ env.USERNAME }} \
-              APP_NAME=${{ env.APP_NAME }} \
-              APP_URL=${{ env.APP_URL }} \
-              REDIS_PORT=${{ env.REDIS_PORT }} \
-              REDIS_HOST=${{ env.REDIS_HOST }} \
-              REDIS_DB=${{ env.REDIS_DB }} \
-              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
-              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
-              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
-              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
-              SESSION_SECRET=${{ env.SESSION_SECRET }} \
-              MAIL_SERVER=${{ env.MAIL_SERVER }} \
-              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-              MAIL_PORT=${{ env.MAIL_PORT }} \
+            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}} \
+              SERVER_PORT=${{ secrets.SERVER_PORT }} \
+              DB_NAME=${{ secrets.DB_NAME }} \
+              USERNAME=${{ secrets.USERNAME }} \
+              APP_NAME="staging" \
+              APP_URL="https://staging.api-golang.boilerplate.hng.tech" \
+              REDIS_PORT=${{ secrets.REDIS_PORT }} \
+              REDIS_HOST=${{ secrets.REDIS_HOST }} \
+              REDIS_DB="0" \
+              GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ secrets.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ secrets.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ secrets.SESSION_SECRET }} \
+              MAIL_SERVER=${{ secrets.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ secrets.MAIL_PORT }} \
               MIGRATE=true
