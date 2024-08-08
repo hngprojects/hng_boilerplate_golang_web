@@ -181,4 +181,4 @@ jobs:
             gunzip -c /tmp/golang_dev.tar.gz | docker load
             rm -f /tmp/golang_dev.tar.gz
             cd ~/deployments/development
-            docker compose -f docker-compose-development.yml up -d
+            docker compose -f docker-compose.yml up -d

@@ -31,14 +31,14 @@ services:
     env_file:
       - app.env
 
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "8001:80"
-  #   depends_on:
-  #     - backend
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8116:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf
 
 volumes:
   db_data:
