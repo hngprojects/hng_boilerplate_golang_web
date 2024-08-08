@@ -24,10 +24,12 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 		userUrl.GET("/users/:user_id", user.GetAUser)
 		userUrl.DELETE("/users/:user_id", user.DeleteAUser)
 		userUrl.PUT("/users/:user_id", user.UpdateAUser)
-		userUrl.GET("/users/:user_id/organizations", user.GetAUserOrganisation)
+		userUrl.GET("/organizations", user.GetAUserOrganisation)
 		userUrl.PUT("/users/:user_id/roles/:role_id", user.AssignRoleToUser)
 		userUrl.PUT("/users/:user_id/regions", user.UpdateUserRegion)
 		userUrl.GET("/users/:user_id/regions", user.GetUserRegion)
+		userUrl.GET("/users/:user_id/data-privacy-settings", user.GetUserDataPrivacySettings)
+		userUrl.PUT("/users/:user_id/data-privacy-settings", user.UpdateUserDataPrivacySettings)
 	}
 	adminUrl.GET("/users", user.GetAllUsers)
 

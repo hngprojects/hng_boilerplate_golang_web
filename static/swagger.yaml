@@ -263,7 +263,7 @@ paths:
                         properties:
                           id:
                             type: string
-                            example: "user_id_here"
+                            example: "userId_here"
                           email:
                             type: string
                             example: "user@example.com"
@@ -355,7 +355,7 @@ paths:
                         properties:
                           id:
                             type: string
-                            example: "user_id_here"
+                            example: "userId_here"
                           email:
                             type: string
                             example: "user@example.com"
@@ -845,59 +845,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
-
-  /users/{userId}/organisations:
-    get:
-      tags:
-        - user
-        #- super admin
-      summary: Query organisations where a user belongs
-      security:
-        - bearerAuth: []
-      description: Retrieves a list of organisations where the specified user belongs.
-      operationId: getUserorganisations
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID of the user to query organisations for
-      responses:
-        '200':
-          description: A list of organisations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Organisation'
-        '401':
-          description: Authentication error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedErrorSchema'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFoundErrorSchema'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequestErrorSchema'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServerErrorSchema'
                 
-
   /users/{userId}/role/{roleId}:
     put:
       tags:
@@ -1144,7 +1092,7 @@ paths:
                 $ref: '#/components/schemas/ServerErrorSchema'
 
 
-    /newsletter-subscription/deleted:
+  /newsletter-subscription/deleted:
     get:
       tags:
         - newsletter
@@ -1491,7 +1439,7 @@ paths:
         - bearerAuth: []
       description: Update an existing timezone entry.
       parameters:
-        - name: timezone_id
+        - name: id
           in: path
           required: true
           schema:
@@ -1681,7 +1629,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
 
-  /users/{user_id}/regions:
+  /users/{userId}/regions:
     get:
       tags:
         - user
@@ -1690,7 +1638,7 @@ paths:
         - bearerAuth: []
       description: Retrieves the region information for a specific user.
       parameters:
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -1737,7 +1685,7 @@ paths:
         - bearerAuth: []
       description: Updates the region for a specific user.
       parameters:
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -1756,6 +1704,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserRegionUpdateResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessedEntityErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+  /users/{userId}/data-privacy-settings:
+    get:
+      tags:
+        - user
+      summary: Get user data privacy settings
+      security:
+        - bearerAuth: []
+      description: Retrieves the data privacy information for a specific user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the user to retrieve the data privacy information for.
+      responses:
+        '200':
+          description: User data privacy settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataPrivacyResponseSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    put:
+      tags:
+        - user
+      summary: Update user data privacy settings
+      security:
+        - bearerAuth: []
+      description: Updates the data privacy settings for a specific user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to update the data privacy info for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDataPrivacyUpdateSchema'
+      responses:
+        '200':
+          description: User data privacy updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataPrivacyResponseSchema'
         '400':
           description: Bad request
           content:
@@ -2141,15 +2189,15 @@ paths:
           example: 6
       responses:
         '200':
-          description: A list of job posts
+          description: A list of paginated job posts
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/JobPost'
-        '500':
-          description: Failed to fetch job posts
+        '404':
+          description: Jobs not found
           content:
             application/json:
               schema:
@@ -2216,7 +2264,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Job post not found
+          description: Job not found
           content:
             application/json:
               schema:
@@ -2351,6 +2399,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    get:
+      tags:
+        - organization
+      summary: Query organisations where a user belongs
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of organisations where the specified user belongs.
+      operationId: getUserorganisations
+      responses:
+        '200':
+          description: A list of organisations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organisation'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
         '500':
           description: Server error
           content:
@@ -4322,7 +4412,7 @@ paths:
                             notification_id:
                               type: string
                               example: 01910c39-01e0-73b7-bed9-d326a6ea5197
-                            user_id:
+                            userId:
                               type: string
                               example: 01910b39-01e0-73b7-bed9-d326a6ea5197
                             message:
@@ -5766,7 +5856,7 @@ components:
               type: string
               format: uuid
               example: 019109d8-a5a6-7f4d-a3ec-ee3bd0383ee5
-            user_id:
+            userId:
               type: string
               format: uuid
               example: 019109d8-a5a6-7f47-8cc5-d9b3f62293f8
@@ -5899,7 +5989,7 @@ components:
       properties:
         title:
           type: string
-        salary:
+        salary_range:
           type: string
         job_type:
           type: string
@@ -5907,13 +5997,11 @@ components:
           type: string
         deadline:
           type: string
-        work_mode:
+        job_mode:
           type: string
-        experience:
+        experience_level:
           type: string
-        how_to_apply:
-          type: string
-        job_benefits:
+        benefits:
           type: string
         company_name:
           type: string
@@ -5930,7 +6018,7 @@ components:
         title:
           type: string
           example: Updated Software Engineer Intern
-        salary:
+        salary_range:
           type: string
           example: 6000-8000 USD
         job_type:
@@ -5943,16 +6031,13 @@ components:
           type: string
           format: date-time
           example: 2024-12-31T23:59:59Z
-        work_mode:
+        job_mode:
           type: string
           example: hybrid
-        experience:
+        experience_level:
           type: string
           example: Entry level (0-3 years)
-        how_to_apply:
-          type: string
-          example: Submit your resume and cover letter to hr@company.com
-        job_benefits:
+        benefits:
           type: string
           example: Flexible hours, Health insurance, Stock options
         company_name:
@@ -5977,7 +6062,7 @@ components:
         title:
           type: string
           example: Junior Backend intern
-        salary:
+        salary_range:
           type: string
           example: 500,000 NGN
         job_type:
@@ -5990,16 +6075,16 @@ components:
           type: string
           format: date-time
           example: 2024-12-31T23:59:59Z
-        work_mode:
+        job_mode:
           type: string
           example: remote
-        experience:
+        experience_level:
           type: string
-          example: Entry level (0-2 years)
+          example:  0-2 years
         how_to_apply:
           type: string
           example: Submit your resume and cover letter to hr@company.com
-        job_benefits:
+        benefits:
           type: string
           example: Flexible hours, Remote work, Health insurance
         company_name:
@@ -6034,7 +6119,7 @@ components:
           example: 201
         message:
           type: string
-          example: Job post created successfully
+          example: Job created successfully
         data:
           $ref: '#/components/schemas/JobPost'
 
@@ -6055,7 +6140,7 @@ components:
     addUserToOrganizationReq:
       type: object
       properties:
-        user_id:
+        userId:
           type: string
           format: uuid
           example: 01910544-d1e1-7ada-bdac-c761e527ec91
@@ -6221,6 +6306,84 @@ components:
         - email
         - subject
         - message
+
+    UserDataPrivacyResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        status_code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: User data privacy settings retrieved successfully
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 01913139-0969-7ed5-a830-2f20f6b2c4e7
+            user_id:
+              type: string
+              format: uuid
+              example: 0191289e-fba3-7674-85bb-0c4a63ed8ebf
+            profile_visibility:
+              type: boolean
+              example: false
+            share_data_with_partners:
+              type: boolean
+              example: false
+            receive_email_updates:
+              type: boolean
+              example: false
+            enable_2fa:
+              type: boolean
+              example: false
+            use_data_encryption:
+              type: boolean
+              example: false
+            allow_analytics:
+              type: boolean
+              example: false
+            personalized_ads:
+              type: boolean
+              example: false
+            created_at:
+              type: string
+              format: date-time
+              example: 2024-08-08T10:01:47.242+01:00
+            updated_at:
+              type: string
+              format: date-time
+              example: 2024-08-08T10:01:47.242+01:00
+
+    UserDataPrivacyUpdateSchema:
+      type: object
+      properties:
+        profile_visibility:
+          type: boolean
+          example: false
+        share_data_with_partners:
+          type: boolean
+          example: false
+        receive_email_updates:
+          type: boolean
+          example: false
+        enable_2fa:
+          type: boolean
+          example: true
+        use_data_encryption:
+          type: boolean
+          example: false
+        allow_analytics:
+          type: boolean
+          example: true
+        personalized_ads:
+          type: boolean
+          example: true
 
   responses:
     UnauthorizedError:
