@@ -67,7 +67,7 @@ func TestDeleteNewsletter(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter/%s", newsletter.ID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter-subscription/%s", newsletter.ID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -82,7 +82,7 @@ func TestDeleteNewsletter(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter/%s", newsletter.ID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter-subscription/%s", newsletter.ID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -103,7 +103,7 @@ func TestDeleteNewsletter(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter/%s", newsletter.ID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/newsletter-subscription/%s", newsletter.ID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
