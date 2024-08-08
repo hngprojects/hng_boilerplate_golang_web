@@ -845,59 +845,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerErrorSchema'
-
-  /users/{userId}/organisations:
-    get:
-      tags:
-        - user
-        #- super admin
-      summary: Query organisations where a user belongs
-      security:
-        - bearerAuth: []
-      description: Retrieves a list of organisations where the specified user belongs.
-      operationId: getUserorganisations
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID of the user to query organisations for
-      responses:
-        '200':
-          description: A list of organisations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Organisation'
-        '401':
-          description: Authentication error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedErrorSchema'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFoundErrorSchema'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequestErrorSchema'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServerErrorSchema'
                 
-
   /users/{userId}/role/{roleId}:
     put:
       tags:
@@ -1491,7 +1439,7 @@ paths:
         - bearerAuth: []
       description: Update an existing timezone entry.
       parameters:
-        - name: timezone_id
+        - name: id
           in: path
           required: true
           schema:
@@ -2451,6 +2399,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundErrorSchema'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorSchema'
+
+    get:
+      tags:
+        - organization
+      summary: Query organisations where a user belongs
+      security:
+        - bearerAuth: []
+      description: Retrieves a list of organisations where the specified user belongs.
+      operationId: getUserorganisations
+      responses:
+        '200':
+          description: A list of organisations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organisation'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorSchema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorSchema'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorSchema'
         '500':
           description: Server error
           content:
