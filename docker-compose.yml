@@ -4,11 +4,7 @@ services:
   db:
     image: postgres:16
     env_file:
-      - app.env
-    environment:
-      POSTGRES_USER: ${USERNAME}
-      POSTGRES_PASSWORD: ${PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      - ./app.env
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -16,14 +12,14 @@ services:
     image: redis:latest
 
   backend:
-    image: ${COMPOSE_PROJECT_NAME}
+    image: golang_backend
     build:
       context: .
     depends_on:
       - db
       - redis
     env_file:
-      - app.env
+      - ./app.env
     
   nginx:
     image: nginx:latest
