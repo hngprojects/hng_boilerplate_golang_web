@@ -1,6 +1,7 @@
 name: PR Deploy for Development
 on:
   pull_request:
+    branches: [dev]
     types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
 
