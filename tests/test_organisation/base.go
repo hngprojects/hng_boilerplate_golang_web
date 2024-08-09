@@ -72,10 +72,10 @@ func SetupOrgRoutes(r *gin.Engine, orgController *organisation.Controller) {
 	orgUrl := r.Group("/api/v1",
 		middleware.Authorize(orgController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 
-	orgUrl.POST("/organizations/:org_id/roles", orgController.CreateOrgRole)
-	orgUrl.GET("/organizations/:org_id/roles", orgController.GetOrgRoles)
-	orgUrl.GET("/organizations/:org_id/roles/:role_id", orgController.GetAOrgRole)
-	orgUrl.DELETE("/organizations/:org_id/roles/:role_id", orgController.DeleteOrgRole)
-	orgUrl.PATCH("/organizations/:org_id/roles/:role_id", orgController.UpdateOrgRole)
-	orgUrl.PATCH("/organizations/:org_id/roles/:role_id/permissions", orgController.UpdateOrgPermissions)
+	orgUrl.POST("/organisations/:org_id/roles", orgController.CreateOrgRole)
+	orgUrl.GET("/organisations/:org_id/roles", orgController.GetOrgRoles)
+	orgUrl.GET("/organisations/:org_id/roles/:role_id", orgController.GetAOrgRole)
+	orgUrl.DELETE("/organisations/:org_id/roles/:role_id", orgController.DeleteOrgRole)
+	orgUrl.PATCH("/organisations/:org_id/roles/:role_id", orgController.UpdateOrgRole)
+	orgUrl.PATCH("/organisations/:org_id/roles/:role_id/permissions", orgController.UpdateOrgPermissions)
 }
