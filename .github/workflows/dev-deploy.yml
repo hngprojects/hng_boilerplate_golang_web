@@ -1,0 +1,62 @@
+name: Dev Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: docker build -t golang_backend .
+
+      - name: Save and compress Docker image
+        run: docker save golang_backend | gzip > golang_backend.tar.gz
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v2
+        with:
+          name: golang_backend
+          path: golang_backend.tar.gz
+        
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: "development"
+      url: ${{ vars.URL }}
+
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: golang_backend
+          path: .
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: golang_backend.tar.gz
+          target: "/tmp"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            gunzip -c /tmp/golang_backend.tar.gz | docker load
+            rm -f /tmp/golang_backend.tar.gz
+            cd ~/hng_boilerplate_golang_web
+            docker compose -p golang up -d
