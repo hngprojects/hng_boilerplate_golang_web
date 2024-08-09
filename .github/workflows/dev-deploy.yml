@@ -62,7 +62,7 @@ jobs:
     
     steps:
       - name: Create app.env file
-        uses: ./actions/create-env-action
+        uses: ../actions/create-env-action
         with:
           APP_NAME: "development"
           APP_URL: "https://deployment.api-golang.boilerplate.hng.tech"
@@ -83,6 +83,15 @@ jobs:
           MAIL_PORT: ${{ secrets.MAIL_PORT }}
           MIGRATE: "true"
 
+      - name: Copy app.env to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          password: ${{ env.SSH_PASSWORD }}
+          source: app.env
+          target: "~/deployments/development"
+
       - name: Update app with latest changes
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -93,15 +102,6 @@ jobs:
             cd ~/deployments/development
             git reset --hard
             git pull origin dev
-
-      - name: Copy app.env to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.SSH_HOST }}
-          username: ${{ env.SSH_USERNAME }}
-          password: ${{ env.SSH_PASSWORD }}
-          source: app.env
-          target: "~/deployments/development"
 
       - name: Restart containers
         uses: appleboy/ssh-action@v1.0.3
