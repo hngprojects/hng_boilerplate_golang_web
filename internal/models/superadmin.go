@@ -31,9 +31,9 @@ type Language struct {
 
 type Timezone struct {
 	ID          string         `gorm:"type:uuid;primary_key" json:"timezone_id"`
-	Timezone    string         `gorm:"type:varchar(40);unique;not null" json:"timezone" validate:"required"`
-	GmtOffset   string         `gorm:"type:varchar(20);unique;not null" json:"gmt_offset" validate:"required"`
-	Description string         `gorm:"type:varchar(100);not null" json:"description" validate:"required"`
+	Timezone    string         `gorm:"type:varchar(40);unique;null" json:"timezone" validate:"required"`
+	GmtOffset   string         `gorm:"type:varchar(20);unique;null" json:"gmt_offset" validate:"required"`
+	Description string         `gorm:"type:varchar(100);null" json:"description" validate:"required"`
 	CreatedAt   time.Time      `gorm:"column:created_at;not null;autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at;not null;autoUpdateTime" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
