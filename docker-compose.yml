@@ -5,6 +5,10 @@ services:
     image: postgres:16
     env_file:
       - app.env
+    environment:
+      POSTGRES_DB: development_db
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: development_user
     volumes:
       - ../pgsql_volumes/golang_dev/:/var/lib/postgresql/data
     healthcheck:
