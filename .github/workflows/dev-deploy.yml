@@ -67,5 +67,8 @@ jobs:
             gunzip -c /tmp/golang_dev.tar.gz | docker load
             rm -f /tmp/golang_dev.tar.gz
             cd ~/deployments/development
-            bash ./scripts/map_envs.sh app.env POSTGRES_USER=DB_USER POSTGRES_DB=DB_NAME POSTGRES_PASSWORD=PASSWORD
+            git reset --hard
+            git pull origin dev
+            bash ./scripts/map_envs.sh app.env POSTGRES_USER=USERNAME POSTGRES_DB=DB_NAME POSTGRES_PASSWORD=PASSWORD
+            docker compose down
             docker compose -f docker-compose.yml up -d
