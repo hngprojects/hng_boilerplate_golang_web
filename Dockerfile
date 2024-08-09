@@ -14,8 +14,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 # Build the Go app
-RUN if test -e app.env; then echo 'found app.env'; else mv app-sample.env app.env; fi; \
-    go build -v -o /dist/app-name
+RUN go build -v -o /dist/golang_app
 
 # Wait-for-it stage
 FROM alpine:3.17 as wait
@@ -27,12 +26,12 @@ RUN chmod +x /wait-for-it.sh
 FROM alpine:3.17
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app ./
-COPY --from=build /dist/app-name /usr/local/bin/app-name
+COPY --from=build /dist/golang_app /usr/local/bin/golang_app
 COPY --from=wait /wait-for-it.sh /wait-for-it.sh
 
 # Install bash (required for wait-for-it script)
 RUN apk add --no-cache bash
 
 # Wait for DB and Redis, then start the application
-# CMD /wait-for-it.sh $DB_HOST:$DB_PORT -t 10 -- /wait-for-it.sh $REDIS_HOST:$REDIS_PORT -t 10 -- app-name
-CMD app-name
+# CMD /wait-for-it.sh $DB_HOST:$DB_PORT -t 10 -- /wait-for-it.sh $REDIS_HOST:$REDIS_PORT -t 10 -- golang_app
+CMD golang_app

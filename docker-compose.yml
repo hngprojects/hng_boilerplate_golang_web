@@ -1,14 +1,18 @@
-name: golang_staging
+name: golang_dev
 
 services:
   db:
     image: postgres:16
     env_file:
       - app.env
+    environment:
+      POSTGRES_DB: development_db
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: development_user
     volumes:
-      - ../pgsql_volumes/golang_staging/:/var/lib/postgresql/data
+      - ../pgsql_volumes/golang_dev/:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U staging_user"]
+      test: ["CMD-SHELL", "pg_isready -U development_user"]
       interval: 10s
       timeout: 5s
       retries: 2
@@ -17,7 +21,7 @@ services:
     image: redis:latest
 
   backend:
-    image: golang_staging
+    image: golang_dev
     build:
       context: .
     depends_on:
@@ -33,6 +37,6 @@ services:
     depends_on:
       - backend
     ports:
-      - "7001:80"
+      - "7000:80"
     volumes:
-      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf

@@ -181,4 +181,5 @@ jobs:
             gunzip -c /tmp/golang_staging.tar.gz | docker load
             rm -f /tmp/golang_staging.tar.gz
             cd ~/deployments/staging
+            bash ./scripts/map_envs.sh app.env POSTGRES_USER=DB_USER POSTGRES_DB=DB_NAME POSTGRES_PASSWORD=PASSWORD
             docker compose -f docker-compose-staging.yml up -d
