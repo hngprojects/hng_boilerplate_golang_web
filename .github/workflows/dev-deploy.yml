@@ -69,6 +69,4 @@ jobs:
             cd ~/deployments/development
             git reset --hard
             git pull origin dev
-            bash ./scripts/map_envs.sh app.env POSTGRES_USER=USERNAME POSTGRES_DB=DB_NAME POSTGRES_PASSWORD=PASSWORD
-            docker compose down
             docker compose -f docker-compose.yml up -d
