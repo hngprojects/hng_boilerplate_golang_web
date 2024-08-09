@@ -30,8 +30,6 @@ func (base *Controller) CreateJobPost(c *gin.Context) {
 		return
 	}
 
-	// req.Sanitize()
-
 	if err := base.Validator.Struct(&req); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)

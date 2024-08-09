@@ -11,6 +11,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
+type JobPostSummary struct {
+	ID				 string `json:"id"`
+	Title       	 string `json:"title"`
+	Location    	 string `json:"location"`
+	Description 	 string `json:"description"`
+	SalaryRange      string `json:"salary_range"`
+}
+
 type JobPost struct {
 	ID                  string    `gorm:"type:uuid; primaryKey" json:"id"`
 	Title               string    `gorm:"column:title; type:varchar(255); not null" json:"title"`

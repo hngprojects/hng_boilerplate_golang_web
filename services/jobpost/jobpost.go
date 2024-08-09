@@ -8,20 +8,6 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
-// type JobPostSummary struct {
-// 	ID			string `json:"id"`
-// 	Title       string `json:"title"`
-// 	Description string `json:"description"`
-// 	Location    string `json:"location"`
-// 	Salary      string `json:"salary"`
-// }
-type JobPostSummary struct {
-	ID				 string `json:"id"`
-	Title       	 string `json:"title"`
-	Location    	 string `json:"location"`
-	Description 	 string `json:"description"`
-	SalaryRange      string `json:"salary_range"`
-}
 
 func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, error) {
 	jobpost := models.JobPost{
@@ -49,7 +35,7 @@ func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, 
 	return jobpost, nil
 }
 
-func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgresql.PaginationResponse, error) {
+func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]models.JobPostSummary, postgresql.PaginationResponse, error) {
 	jobpost := models.JobPost{}
 	jobPosts, paginationResponse, err := jobpost.FetchAllJobPost(db, c)
 
@@ -58,12 +44,12 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgr
 	}
 
 	if len(jobPosts) == 0 {
-		return nil, paginationResponse, gorm.ErrRecordNotFound
+	 	return []models.JobPostSummary{}, paginationResponse, nil
 	}
 
-	var jobPostSummaries []JobPostSummary
+	var jobPostSummaries []models.JobPostSummary
 	for _, job := range jobPosts {
-		summary := JobPostSummary{
+		summary := models.JobPostSummary{
 			ID: 		 	  job.ID,
 			Title:       	  job.Title,
 			Description: 	  job.Description,
