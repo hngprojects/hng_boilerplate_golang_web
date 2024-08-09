@@ -20,23 +20,23 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 
 	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
-		organisationUrl.POST("/organizations", organisation.CreateOrganisation)
-		organisationUrl.GET("/organizations/:org_id", organisation.GetOrganisation)
-		organisationUrl.DELETE("/organizations/:org_id", organisation.DeleteOrganisation)
-		organisationUrl.PATCH("/organizations/:org_id", organisation.UpdateOrganisation)
-		organisationUrl.GET("/organizations/:org_id/users", organisation.GetUsersInOrganisation)
-		organisationUrl.POST("/organizations/:org_id/roles", organisation.CreateOrgRole)
-		organisationUrl.GET("/organizations/:org_id/roles", organisation.GetOrgRoles)
-		organisationUrl.GET("/organizations/:org_id/roles/:role_id", organisation.GetAOrgRole)
-		organisationUrl.DELETE("/organizations/:org_id/roles/:role_id", organisation.DeleteOrgRole)
-		organisationUrl.PATCH("/organizations/:org_id/roles/:role_id", organisation.UpdateOrgRole)
-		organisationUrl.PATCH("/organizations/:org_id/roles/:role_id/permissions", organisation.UpdateOrgPermissions)
+		organisationUrl.POST("/organisations", organisation.CreateOrganisation)
+		organisationUrl.GET("/organisations/:org_id", organisation.GetOrganisation)
+		organisationUrl.DELETE("/organisations/:org_id", organisation.DeleteOrganisation)
+		organisationUrl.PATCH("/organisations/:org_id", organisation.UpdateOrganisation)
+		organisationUrl.GET("/organisations/:org_id/users", organisation.GetUsersInOrganisation)
+		organisationUrl.POST("/organisations/:org_id/roles", organisation.CreateOrgRole)
+		organisationUrl.GET("/organisations/:org_id/roles", organisation.GetOrgRoles)
+		organisationUrl.GET("/organisations/:org_id/roles/:role_id", organisation.GetAOrgRole)
+		organisationUrl.DELETE("/organisations/:org_id/roles/:role_id", organisation.DeleteOrgRole)
+		organisationUrl.PATCH("/organisations/:org_id/roles/:role_id", organisation.UpdateOrgRole)
+		organisationUrl.PATCH("/organisations/:org_id/roles/:role_id/permissions", organisation.UpdateOrgPermissions)
 	}
 
 	organisationUrlSec := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
 
 	{
-		organisationUrlSec.POST("/organizations/:org_id/users", organisation.AddUserToOrganisation)
+		organisationUrlSec.POST("/organisations/:org_id/users", organisation.AddUserToOrganisation)
 	}
 	return r
 }

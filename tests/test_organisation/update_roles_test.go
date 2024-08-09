@@ -87,7 +87,7 @@ func TestUpdateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(updatedRole)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -108,7 +108,7 @@ func TestUpdateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(updatedRole)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -135,7 +135,7 @@ func TestUpdateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(updatedRole)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -161,7 +161,7 @@ func TestUpdateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(invalidRole)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -250,7 +250,7 @@ func TestUpdateOrgPermissions(t *testing.T) {
 		}
 		permissionsJSON, _ := json.Marshal(updatedPermissions)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -275,7 +275,7 @@ func TestUpdateOrgPermissions(t *testing.T) {
 		}
 		permissionsJSON, _ := json.Marshal(updatedPermissions)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -306,7 +306,7 @@ func TestUpdateOrgPermissions(t *testing.T) {
 		}
 		permissionsJSON, _ := json.Marshal(updatedPermissions)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -333,7 +333,7 @@ func TestUpdateOrgPermissions(t *testing.T) {
 		}
 		permissionsJSON, _ := json.Marshal(invalidPermissions)
 
-		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
+		req, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s/permissions", orgID, roleID), bytes.NewBuffer(permissionsJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
