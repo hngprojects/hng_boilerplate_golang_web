@@ -176,7 +176,7 @@ func (base *Controller) UpdateBlogById(c *gin.Context){
 			c.JSON(http.StatusNotFound, rd)
 			return
 		}
-		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update blog", nil)
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "failed to update blog", nil)
 		c.JSON(http.StatusInternalServerError, rd)
 		return
 	}

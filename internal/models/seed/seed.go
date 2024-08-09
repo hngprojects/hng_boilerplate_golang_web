@@ -38,9 +38,14 @@ func SeedDatabase(db *gorm.DB) {
 		},
 		Region: models.UserRegionTimezoneLanguage{
 			ID:         utility.GenerateUUID(),
+			UserID:     Userid1,
 			RegionID:   utility.GenerateUUID(),
 			LanguageID: utility.GenerateUUID(),
 			TimezoneID: utility.GenerateUUID(),
+		},
+		DataPrivacy: models.DataPrivacySettings{
+			ID:     utility.GenerateUUID(),
+			UserID: Userid1,
 		},
 		Products: []models.Product{
 			{ID: utility.GenerateUUID(), Name: "Product1", Description: "Description1", Price: 45.33, OwnerID: Userid1},
@@ -60,6 +65,10 @@ func SeedDatabase(db *gorm.DB) {
 			LastName:  "Doe",
 			Phone:     "0987654321",
 			AvatarURL: "http://example.com/avatar2.jpg",
+		},
+		DataPrivacy: models.DataPrivacySettings{
+			ID:     utility.GenerateUUID(),
+			UserID: Userid1,
 		},
 		Products: []models.Product{
 			{ID: utility.GenerateUUID(), Name: "Product3", Description: "Description3", Price: 45.33, OwnerID: Userid2},

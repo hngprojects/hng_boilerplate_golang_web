@@ -15,7 +15,9 @@ type User struct {
 	Email         string                     `gorm:"column:email; type:varchar(255)" json:"email"`
 	Password      string                     `gorm:"column:password; type:text; not null" json:"-"`
 	Profile       Profile                    `gorm:"foreignKey:Userid;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"profile"`
+	Key           Key                        `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"key"`
 	Region        UserRegionTimezoneLanguage `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"region"`
+	DataPrivacy   DataPrivacySettings        `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"data_privacy"`
 	Organisations []Organisation             `gorm:"many2many:user_organisations;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"organisations" ` // many to many relationship
 	Products      []Product                  `gorm:"foreignKey:OwnerID" json:"products"`
 	Blogs         []Blog                     `gorm:"foreignKey:AuthorID" json:"blogs"`

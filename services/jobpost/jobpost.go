@@ -8,30 +8,36 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
+// type JobPostSummary struct {
+// 	ID			string `json:"id"`
+// 	Title       string `json:"title"`
+// 	Description string `json:"description"`
+// 	Location    string `json:"location"`
+// 	Salary      string `json:"salary"`
+// }
 type JobPostSummary struct {
-	ID			string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Location    string `json:"location"`
-	Salary      string `json:"salary"`
+	ID				 string `json:"id"`
+	Title       	 string `json:"title"`
+	Location    	 string `json:"location"`
+	Description 	 string `json:"description"`
+	SalaryRange      string `json:"salary_range"`
 }
 
 func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, error) {
-		jobpost := models.JobPost{
-		ID:          		utility.GenerateUUID(),
-		Title:       		req.Title,
-		Salary:      		req.Salary,
-		JobType:     		req.JobType,
-		Location:    		req.Location,
-		Deadline:    		req.Deadline,
-	    WorkMode:       	req.WorkMode,
-		Experience:			req.Experience,        
-		HowToApply:     	req.HowToApply,
-	    JobBenefits:		req.JobBenefits,         
-		Description: 		req.Description,
-		CompanyName: 		req.CompanyName,
-	    KeyResponsibilities: req.KeyResponsibilities,
-		Qualifications:		req.Qualifications,
+	jobpost := models.JobPost{
+		ID:          			utility.GenerateUUID(),
+		Title:       			req.Title,
+		JobMode:       	    	req.JobMode,
+		JobType:     			req.JobType,
+		Location:    			req.Location,
+		Deadline:    			req.Deadline,
+		Benefits:				req.Benefits,
+		SalaryRange:        	req.SalaryRange,
+		Description: 			req.Description,
+		CompanyName: 			req.CompanyName,
+		ExperienceLevel: 		req.ExperienceLevel,
+		KeyResponsibilities: 	req.KeyResponsibilities,
+		Qualifications:			req.Qualifications,
 	}
 
 	if err := jobpost.CreateJobPost(db); 
@@ -51,14 +57,18 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]JobPostSummary, postgr
 		return nil, paginationResponse, err
 	}
 
+	if len(jobPosts) == 0 {
+		return nil, paginationResponse, gorm.ErrRecordNotFound
+	}
+
 	var jobPostSummaries []JobPostSummary
 	for _, job := range jobPosts {
 		summary := JobPostSummary{
-			ID: 		 job.ID,
-			Title:       job.Title,
-			Description: job.Description,
-			Location:    job.Location,
-			Salary:      job.Salary,
+			ID: 		 	  job.ID,
+			Title:       	  job.Title,
+			Description: 	  job.Description,
+			Location:    	  job.Location,
+			SalaryRange:      job.SalaryRange,
 		}
 		jobPostSummaries = append(jobPostSummaries, summary)
 	}

@@ -77,6 +77,10 @@ func SearchHelpCenterTopics(c *gin.Context, db *gorm.DB, query string) ([]HelpCn
 		return nil, paginationResponse, err
 	}
 
+	if len(topics) == 0 {
+		return nil, paginationResponse, gorm.ErrRecordNotFound
+	}
+
 	var topicSummaries []HelpCntSummary
 	for _, topic := range topics {
 		summary := HelpCntSummary{

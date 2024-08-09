@@ -76,7 +76,7 @@ func TestHelpCenterCreate(t *testing.T) {
 				Content:     "",
 			},
 			ExpectedCode: http.StatusUnprocessableEntity,
-			Message:      "Validation failed",
+			Message:      "Input validation failed",
 			ErrorField:   "CreateHelpCenter.Content",
 			ErrorMessage: "Content is a required field",
 			Headers: map[string]string{

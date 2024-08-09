@@ -39,6 +39,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	Health(r, ApiVersion, validator, db, logger)
 	Seed(r, ApiVersion, validator, db, logger)
 	Invite(r, ApiVersion, validator, db, logger)
+	Testimonial(r, ApiVersion, validator, db, logger)
 	Squeeze(r, ApiVersion, validator, db, logger)
 	Blog(r, ApiVersion, validator, db, logger)
 	Waitlist(r, ApiVersion, validator, db, logger)
@@ -57,6 +58,7 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	HelpCenter(r, ApiVersion, validator, db, logger)
 	Profile(r, ApiVersion, validator, db, logger)
 	Contact(r, ApiVersion, validator, db, logger)
+	NotificationSettings(r, ApiVersion, validator, db, logger)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -9,6 +9,45 @@ on:
       - staging
 
 jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t golang_staging .
+      - name: Save and compress Docker image
+        run: docker save golang_staging | gzip > golang_staging.tar.gz
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: golang_staging
+          path: golang_staging.tar.gz
+
+  upload_docker_image:
+    runs-on: ubuntu-latest
+    needs: build_docker_image
+    if: github.event.repository.fork == false && github.event_name == 'push'
+    environment:
+      name: "staging"
+      url: ${{ vars.URL }}
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: golang_staging
+          path: .
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: golang_staging.tar.gz
+          target: "/tmp"
+
   build_and_test:
     runs-on: ubuntu-latest
     environment: staging
@@ -22,6 +61,10 @@ jobs:
       TEST_TIMEZONE: Africa/Lagos
       TEST_SSLMODE: disable
       TEST_MIGRATE: true
+      REDIS_PORT: 6379
+      REDIS_HOST: localhost
+      REDIS_DB: 0
+
     services:
       postgres:
         image: postgres:latest
@@ -40,6 +83,7 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -54,11 +98,13 @@ jobs:
       - name: Run the application
         run: nohup ./staging_app > /dev/null 2>&1 &
       - name: Wait for application to start
-        run: sleep 30s
-      - name: Test for reachability
-        run: curl http://localhost:8019
+        run: |
+          for i in {1..30}; do
+            curl -s http://localhost:8019 && break
+            sleep 1
+          done
       - name: Run All Tests
-        run: go test ./... -timeout 99999s
+        run: go test ./... -timeout 300s
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,23 +116,6 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-      SERVER_PORT: 8000
-      DB_NAME: "staging_db"
-      USERNAME: "staging_user"
-      APP_NAME: "staging"
-      APP_URL: "https://staging.api-golang.boilerplate.hng.tech"
-      REDIS_PORT: 6131
-      REDIS_HOST: "0.0.0.0"
-      REDIS_DB: 0
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_CLIENT_ID }}
-      FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
-      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-      MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
     steps:
       - name: SSH into server and deploy
@@ -110,22 +139,46 @@ jobs:
               git clone -b staging https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
             fi
 
-            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}}
-              SERVER_PORT=${{ env.SERVER_PORT }} \
-              DB_NAME=${{ env.DB_NAME }} \
-              USERNAME=${{ env.USERNAME }} \
-              APP_NAME=${{ env.APP_NAME }} \
-              APP_URL=${{ env.APP_URL }} \
-              REDIS_PORT=${{ env.REDIS_PORT }} \
-              REDIS_HOST=${{ env.REDIS_HOST }} \
-              REDIS_DB=${{ env.REDIS_DB }} \
-              GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
-              GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
-              FACEBOOK_CLIENT_ID=${{ env.FACEBOOK_CLIENT_ID }} \
-              FACEBOOK_CLIENT_SECRET=${{ env.FACEBOOK_CLIENT_SECRET }} \
-              SESSION_SECRET=${{ env.SESSION_SECRET }} \
-              MAIL_SERVER=${{ env.MAIL_SERVER }} \
-              MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-              MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-              MAIL_PORT=${{ env.MAIL_PORT }} \
+            bash ./scripts/deploy_app.sh staging https://github.com/${{ github.repository}} \
+              SERVER_PORT=${{ secrets.SERVER_PORT }} \
+              DB_NAME=${{ secrets.DB_NAME }} \
+              USERNAME=${{ secrets.USERNAME }} \
+              APP_NAME="staging" \
+              APP_URL="https://staging.api-golang.boilerplate.hng.tech" \
+              REDIS_PORT=${{ secrets.REDIS_PORT }} \
+              REDIS_HOST=${{ secrets.REDIS_HOST }} \
+              REDIS_DB="0" \
+              GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+              GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              FACEBOOK_CLIENT_ID=${{ secrets.FACEBOOK_CLIENT_ID }} \
+              FACEBOOK_CLIENT_SECRET=${{ secrets.FACEBOOK_CLIENT_SECRET }} \
+              SESSION_SECRET=${{ secrets.SESSION_SECRET }} \
+              MAIL_SERVER=${{ secrets.MAIL_SERVER }} \
+              MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
+              MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+              MAIL_PORT=${{ secrets.MAIL_PORT }} \
               MIGRATE=true
+
+
+  run_docker_container:
+    runs-on: ubuntu-latest
+    needs: upload_docker_image
+    if: github.event.repository.fork == false && github.event_name == 'push'
+    environment: staging
+    env:
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+
+    steps:
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.HOST }}
+          username: ${{ env.USERNAME }}
+          password: ${{ env.PASSWORD }}
+          script: |
+            gunzip -c /tmp/golang_staging.tar.gz | docker load
+            rm -f /tmp/golang_staging.tar.gz
+            cd ~/deployments/staging
+            docker compose -f docker-compose-staging.yml up -d

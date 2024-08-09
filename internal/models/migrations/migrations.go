@@ -4,6 +4,7 @@ import "github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 
 func AuthMigrationModels() []interface{} {
 	return []interface{}{
+		models.Testimonial{},
 		models.SqueezeUser{},
 		models.Blog{},
 		models.AccessToken{},
@@ -31,6 +32,8 @@ func AuthMigrationModels() []interface{} {
 		models.HelpCenter{},
 		models.ContactUs{},
 		models.Billing{},
+		models.DataPrivacySettings{},
+		models.Key{},
 	} // an array of db models, example: User{}
 }
 

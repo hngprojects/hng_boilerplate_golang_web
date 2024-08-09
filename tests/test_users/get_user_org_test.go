@@ -19,14 +19,6 @@ func TestGetUserOrganisations(t *testing.T) {
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 
-	// Creating test users and organisations
-	adminUser := models.User{
-		ID:       utility.GenerateUUID(),
-		Name:     "Admin User",
-		Email:    fmt.Sprintf("admin%v+1@qa1.team", utility.GenerateUUID()),
-		Password: password,
-		Role:     int(models.RoleIdentity.SuperAdmin),
-	}
 	regularUser := models.User{
 		ID:       utility.GenerateUUID(),
 		Name:     "Regular User",
@@ -38,16 +30,15 @@ func TestGetUserOrganisations(t *testing.T) {
 		ID:      utility.GenerateUUID(),
 		Name:    "Organisation 1",
 		Email:   fmt.Sprintf("admorg1%v+2@qa1.team", utility.GenerateUUID()),
-		OwnerID: adminUser.ID,
+		OwnerID: regularUser.ID,
 	}
 	org2 := models.Organisation{
 		ID:      utility.GenerateUUID(),
 		Name:    "Organisation 2",
 		Email:   fmt.Sprintf("adorg%v+1@qa1.team", utility.GenerateUUID()),
-		OwnerID: adminUser.ID,
+		OwnerID: regularUser.ID,
 	}
 
-	db.Create(&adminUser)
 	db.Create(&regularUser)
 	db.Create(&org1)
 	db.Create(&org2)
@@ -79,12 +70,12 @@ func TestGetUserOrganisations(t *testing.T) {
 		router, authController := setup()
 
 		loginData := models.LoginRequestModel{
-			Email:    adminUser.Email,
+			Email:    regularUser.Email,
 			Password: "password",
 		}
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/users/%s/organizations", regularUser.ID), nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/organizations", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -96,31 +87,10 @@ func TestGetUserOrganisations(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "User organisations retrieved successfully")
 	})
 
-	t.Run("User Not Found", func(t *testing.T) {
-		router, authController := setup()
-
-		loginData := models.LoginRequestModel{
-			Email:    adminUser.Email,
-			Password: "password",
-		}
-		token := tests.GetLoginToken(t, router, *authController, loginData)
-
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/users/%s/organizations", utility.GenerateUUID()), nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
-		resp := httptest.NewRecorder()
-		router.ServeHTTP(resp, req)
-
-		tests.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
-		response := tests.ParseResponse(resp)
-		tests.AssertResponseMessage(t, response["message"].(string), "user not found")
-	})
-
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/users/%s/organizations", regularUser.ID), nil)
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/organizations", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
