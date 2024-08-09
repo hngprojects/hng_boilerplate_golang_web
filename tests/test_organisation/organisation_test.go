@@ -27,7 +27,7 @@ func TestOrganizationCreate(t *testing.T) {
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	requestURI := url.URL{Path: "/api/v1/organizations"}
+	requestURI := url.URL{Path: "/api/v1/organisations"}
 	currUUID := utility.GenerateUUID()
 	userSignUpData := models.CreateUserRequestModel{
 		Email:       fmt.Sprintf("testuser%v@qa.team", currUUID),
@@ -150,7 +150,7 @@ func TestOrganizationCreate(t *testing.T) {
 
 		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 		{
-			orgUrl.POST("/organizations", org.CreateOrganisation)
+			orgUrl.POST("/organisations", org.CreateOrganisation)
 
 		}
 
@@ -246,12 +246,12 @@ func TestGetOrganisation(t *testing.T) {
 
 	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
-		orgUrl.GET("/organizations/:org_id", org.GetOrganisation)
+		orgUrl.GET("/organisations/:org_id", org.GetOrganisation)
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s", test.OrgID), nil)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s", test.OrgID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -386,7 +386,7 @@ func TestOrganisationUpdate(t *testing.T) {
 
 	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
-		orgUrl.PATCH("/organizations/:org_id", org.UpdateOrganisation)
+		orgUrl.PATCH("/organisations/:org_id", org.UpdateOrganisation)
 	}
 
 	for _, test := range tests {
@@ -394,7 +394,7 @@ func TestOrganisationUpdate(t *testing.T) {
 			var b bytes.Buffer
 			json.NewEncoder(&b).Encode(test.RequestBody)
 
-			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organizations/%s", test.OrgID), &b)
+			req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s", test.OrgID), &b)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -498,12 +498,12 @@ func TestOrganisationDelete(t *testing.T) {
 
 	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
-		orgUrl.DELETE("/organizations/:org_id", org.DeleteOrganisation)
+		orgUrl.DELETE("/organisations/:org_id", org.DeleteOrganisation)
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organizations/%s", test.OrgID), nil)
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s", test.OrgID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -616,11 +616,11 @@ func TestGetUsersInOrg(t *testing.T) {
 
 		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql,models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 		{
-			orgUrl.GET("/organizations/:org_id/users", org.GetUsersInOrganisation)
+			orgUrl.GET("/organisations/:org_id/users", org.GetUsersInOrganisation)
 		}
 
 		t.Run(test.Name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodGet,fmt.Sprintf("/api/v1/organizations/%s/users", test.OrgID), nil)
+			req, err := http.NewRequest(http.MethodGet,fmt.Sprintf("/api/v1/organisations/%s/users", test.OrgID), nil)
 			if err != nil {
 				t.Fatal(err)
 			}

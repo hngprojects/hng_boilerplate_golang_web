@@ -87,7 +87,7 @@ func TestGetOrgRoles(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -102,7 +102,7 @@ func TestGetOrgRoles(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -123,7 +123,7 @@ func TestGetOrgRoles(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -202,7 +202,7 @@ func TestGetAOrgRole(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -217,7 +217,7 @@ func TestGetAOrgRole(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -238,7 +238,7 @@ func TestGetAOrgRole(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 

@@ -76,7 +76,7 @@ func TestCreateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(role)
 
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -97,7 +97,7 @@ func TestCreateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(role)
 
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
@@ -125,7 +125,7 @@ func TestCreateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(role)
 
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
@@ -152,7 +152,7 @@ func TestCreateOrgRole(t *testing.T) {
 		}
 		roleJSON, _ := json.Marshal(role)
 
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organizations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 

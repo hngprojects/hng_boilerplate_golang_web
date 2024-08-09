@@ -79,7 +79,7 @@ func TestDeleteOrgRole(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 		resp := httptest.NewRecorder()
@@ -93,7 +93,7 @@ func TestDeleteOrgRole(t *testing.T) {
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		router, _ := setup()
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Authorization", "Bearer invalid_token")
 
 		resp := httptest.NewRecorder()
@@ -113,7 +113,7 @@ func TestDeleteOrgRole(t *testing.T) {
 		}
 		token := tests.GetLoginToken(t, router, *orgController, loginData)
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, roleID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 		resp := httptest.NewRecorder()
@@ -135,7 +135,7 @@ func TestDeleteOrgRole(t *testing.T) {
 
 		nonExistentRoleID := utility.GenerateUUID()
 
-		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organizations/%s/roles/%s", orgID, nonExistentRoleID), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, nonExistentRoleID), nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 		resp := httptest.NewRecorder()
