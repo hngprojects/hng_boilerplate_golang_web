@@ -6,45 +6,6 @@ on:
       - dev
 
 jobs:
-  build_docker_image:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t golang_dev .
-      - name: Save and compress Docker image
-        run: docker save golang_dev | gzip > golang_dev.tar.gz
-      - name: Upload Docker image
-        uses: actions/upload-artifact@v4
-        with:
-          name: golang_dev
-          path: golang_dev.tar.gz
-
-  upload_docker_image:
-    runs-on: ubuntu-latest
-    needs: build_docker_image
-    if: github.event.repository.fork == false && github.event_name == 'push'
-    environment:
-      name: "development"
-      url: ${{ vars.URL }}
-    steps:
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: golang_dev
-          path: .
-
-      - name: Copy image to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          source: golang_dev.tar.gz
-          target: "/tmp"
-
   build_and_test:
     runs-on: ubuntu-latest
     environment: development
@@ -157,26 +118,3 @@ jobs:
               MIGRATE=true
 
 
-  run_docker_container:
-    runs-on: ubuntu-latest
-    needs: upload_docker_image
-    if: github.event.repository.fork == false && github.event_name == 'push'
-    environment: development
-    env:
-      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-
-    steps:
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.HOST }}
-          username: ${{ env.USERNAME }}
-          password: ${{ env.PASSWORD }}
-          script: |
-            gunzip -c /tmp/golang_dev.tar.gz | docker load
-            rm -f /tmp/golang_dev.tar.gz
-            cd ~/deployments/development
-            bash ./scripts/map_envs.sh app.env POSTGRES_USER=DB_USER POSTGRES_DB=DB_NAME POSTGRES_PASSWORD=PASSWORD
-            docker compose -f docker-compose.yml up -d
