@@ -4463,7 +4463,7 @@ paths:
       security:
         - bearerAuth: []
         
-  /api/v1/notifications:
+  /notifications/global:
     post:
       tags:
         - notifications
@@ -4556,6 +4556,7 @@ paths:
       security:
         - bearerAuth: []
 
+  /notifications/all:
     get:
       tags:
         - notifications
@@ -4639,7 +4640,7 @@ paths:
       security:
         - bearerAuth: []
 
-  /api/v1/notifications/:
+  /notifications/unread:
     get:
       tags:
         - notifications
@@ -4730,13 +4731,13 @@ paths:
       security:
         - bearerAuth: []
 
-  /api/v1/notifications/{notification_id}:
+  /notifications/{notification_id}:
     patch:
       tags:
         - notifications
       summary: Mark a notification as read
       parameters:
-        - name: notification_id
+        - name: notificationId
           in: path
           required: true
           schema:
@@ -4920,7 +4921,7 @@ paths:
       security:
         - bearerAuth: []
 
-  /api/v1/notification-settings:
+  /settings/notification-settings:
     patch:
       tags:
         - notification_settings
