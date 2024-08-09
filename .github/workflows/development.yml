@@ -6,45 +6,6 @@ on:
       - dev
 
 jobs:
-  build_docker_image:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t golang_dev .
-      - name: Save and compress Docker image
-        run: docker save golang_dev | gzip > golang_dev.tar.gz
-      - name: Upload Docker image
-        uses: actions/upload-artifact@v4
-        with:
-          name: golang_dev
-          path: golang_dev.tar.gz
-
-  upload_docker_image:
-    runs-on: ubuntu-latest
-    needs: build_docker_image
-    if: github.event.repository.fork == false && github.event_name == 'push'
-    environment:
-      name: "development"
-      url: ${{ vars.URL }}
-    steps:
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: golang_dev
-          path: .
-
-      - name: Copy image to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          source: golang_dev.tar.gz
-          target: "/tmp"
-
   build_and_test:
     runs-on: ubuntu-latest
     environment: development
@@ -103,55 +64,5 @@ jobs:
       - name: Run All Tests
         run: go test ./... -timeout 300s
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build_and_test
-    if: github.event_name == 'push'
-    environment: development
-    env:
-      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_PORT: ${{ secrets.SSH_PORT }}
-      SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
 
-    steps:
-      - name: SSH into server and deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.SSH_HOST }}
-          username: ${{ env.SSH_USERNAME }}
-          password: ${{ env.SSH_PASSWORD }}
-          port: ${{ env.SSH_PORT }}
-          script: |
-            export APPROOT=~/deployments/development
-            mkdir -p $APPROOT
-            cd $APPROOT
-
-            if [ -d "$APPROOT/.git" ]; then
-              # Navigate to the repository directory and pull changes
-              cd $APPROOT || { echo "Failed to navigate to web root directory"; exit 1; }
-              git reset --hard HEAD || { echo "Failed to reset local changes"; exit 1; }
-              git pull origin dev || { echo "Failed to pull latest changes"; exit 1; }
-            else
-              git clone -b dev https://github.com/${{ github.repository}} . || { echo "Failed to clone repository"; exit 1; }
-            fi
-
-            bash ./scripts/deploy_app.sh development https://github.com/${{ github.repository}} \
-              SERVER_PORT=${{ secrets.SERVER_PORT }} \
-              DB_NAME=${{ secrets.DB_NAME }} \
-              USERNAME=${{ secrets.USERNAME }} \
-              APP_NAME="development" \
-              APP_URL="https://deployment.api-golang.boilerplate.hng.tech" \
-              REDIS_PORT=${{ secrets.REDIS_PORT }} \
-              REDIS_HOST=${{ secrets.REDIS_HOST }} \
-              REDIS_DB="0" \
-              GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-              FACEBOOK_CLIENT_ID=${{ secrets.FACEBOOK_CLIENT_ID }} \
-              FACEBOOK_CLIENT_SECRET=${{ secrets.FACEBOOK_CLIENT_SECRET }} \
-              SESSION_SECRET=${{ secrets.SESSION_SECRET }} \
-              MAIL_SERVER=${{ secrets.MAIL_SERVER }} \
-              MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
-              MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
-              MAIL_PORT=${{ secrets.MAIL_PORT }} \
-              MIGRATE=true
+ 

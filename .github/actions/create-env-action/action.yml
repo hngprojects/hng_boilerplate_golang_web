@@ -1,0 +1,50 @@
+name: 'Create .env file'
+description: 'An action that creates an .env file from the provided environment variables'
+inputs:
+  env_file_name: 
+    description: 'The env file name that is created'
+    default: 'app.env'
+  APP_NAME:
+    description: 'The name of the Golang app'
+  APP_URL:
+    description: 'The URL of the app'
+  SERVER_PORT:
+    description: 'The server port'
+  DB_NAME:
+    description: 'The name of the database'
+  USERNAME:
+    description: 'The database username'
+  REDIS_PORT:
+    description: 'The port for Redis'
+  REDIS_HOST:
+    description: 'The host for Redis'
+  REDIS_DB:
+    description: 'The Redis database number'
+  GOOGLE_CLIENT_ID:
+    description: 'The Google client ID'
+  GOOGLE_CLIENT_SECRET:
+    description: 'The Google client secret'
+  FACEBOOK_CLIENT_ID:
+    description: 'The Facebook client ID'
+  FACEBOOK_CLIENT_SECRET:
+    description: 'The Facebook client secret'
+  SESSION_SECRET:
+    description: 'The session secret key'
+  MAIL_SERVER:
+    description: 'The mail server'
+  MAIL_USERNAME:
+    description: 'The mail server username'
+  MAIL_PASSWORD:
+    description: 'The mail server password'
+  MAIL_PORT:
+    description: 'The mail server port'
+  MIGRATE:
+    description: 'Flag indicating whether to run migrations'
+
+outputs:
+  env_file:
+    description: 'The created .env file'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
