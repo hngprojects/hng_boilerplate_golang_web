@@ -39,7 +39,7 @@ func NewIpstackRequest(name, path, method, decodeMethod string, successCode int,
 }
 
 func (ir *IpstackRequest) SetupExternalRequest(name string, data any) error {
-	config := config.GetConfig()
+	config := config.Setup(ir.Logger, "./../../app")
 
 	key := config.IPStack.Key
 	logger := ir.Logger

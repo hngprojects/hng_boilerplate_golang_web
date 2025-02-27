@@ -58,6 +58,7 @@ func NewExternalRequest(logger *utility.Logger, opts ...sendExtReqOpts) *Externa
 func (sr *ExternalRequest) SetupExternalRequest(name string, data any) error {
 	switch name {
 	case external.IpstackResolveIp:
+		sr.requestName = external.IpstackResolveIp
 		err := sr.Ipstack.SetupExternalRequest(name, data)
 		if err != nil {
 			return err
