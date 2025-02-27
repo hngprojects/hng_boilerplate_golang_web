@@ -3,6 +3,7 @@ package external
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,11 +18,17 @@ var (
 	ResponseBody string
 
 	// serializers
-	JsonDecodeMethod    string = "json"
-	PhpSerializerMethod string = "phpserializer"
+	JsonDecodeMethod    = "json"
+	PhpSerializerMethod = "phpserializer"
 
 	// requests
-	IpstackResolveIp string = "ipstack_resolve_ip"
+	IpstackResolveIp                = "ipstack_resolve_ip"
+	ErrNoSuchHost                   = errors.New("no such host")
+	ErrFailedToReadReqBody          = errors.New("failed to read request body")
+	ErrFaildToUnmarshalJsonResponse = errors.New("failed to unmarshal json")
+	ErrFailedToCreateHttpRequest    = errors.New("failed to create http request")
+	ErrFailedToEncodeData           = errors.New("faild to encode request data")
+	ErrFailedToUnmarshalPhpResponse = errors.New("failed to unmarshal php response")
 )
 
 type SendRequestObject struct {
@@ -50,6 +57,7 @@ func (r *SendRequestObject) SendRequest() (any, error) {
 	err = json.NewEncoder(buf).Encode(data)
 	if err != nil {
 		logger.Error("encoding error", name, err.Error())
+		return nil, ErrFailedToEncodeData
 	}
 
 	logger.Info("before prefix", name, r.Path, data, buf)
@@ -62,7 +70,7 @@ func (r *SendRequestObject) SendRequest() (any, error) {
 	req, err := http.NewRequest(r.Method, r.Path, buf)
 	if err != nil {
 		logger.Error("request creation error", name, err.Error())
-		return nil, err
+		return nil, ErrFailedToCreateHttpRequest
 	}
 
 	for key, value := range r.Headers {
@@ -74,31 +82,32 @@ func (r *SendRequestObject) SendRequest() (any, error) {
 	res, err := client.Do(req)
 	if err != nil {
 		logger.Error("client do", name, err.Error())
-		return nil, err
+		return nil, ErrNoSuchHost
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		logger.Error("reading body error", name, err.Error())
-		return nil, err
+		return nil, ErrFailedToReadReqBody
 	}
-
 	var response any
+	fmt.Println(body)
 	if r.DecodeMethod != PhpSerializerMethod {
-		err = json.Unmarshal(body, response)
+
+		err = json.Unmarshal(body, &response)
 		if err != nil {
 			logger.Error("json decoding error", name, err.Error())
-			return nil, err
+			return nil, ErrFaildToUnmarshalJsonResponse
 		}
 	}
 
 	logger.Info("response body", name, r.Path, string(body))
 
 	if r.DecodeMethod == PhpSerializerMethod {
-		err := phpserialize.Unmarshal(body, response)
+		err := phpserialize.Unmarshal(body, &response)
 		if err != nil {
 			logger.Error("php serializer decoding error", name, err.Error())
-			return nil, err
+			return nil, ErrFailedToUnmarshalPhpResponse
 		}
 	}
 

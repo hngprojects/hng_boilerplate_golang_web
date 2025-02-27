@@ -43,6 +43,7 @@ func WithIPstack(ir *ipstack.IpstackRequest) sendExtReqOpts {
 	}
 }
 
+// NewExternalRequest creates an external request with logger and configures it with opts
 func NewExternalRequest(logger *utility.Logger, opts ...sendExtReqOpts) *ExternalRequest {
 	sendExtRequest := ExternalRequest{
 		Logger: logger,
