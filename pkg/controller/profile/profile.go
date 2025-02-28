@@ -15,10 +15,11 @@ import (
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Validator *validator.Validate
-	Logger    *utility.Logger
-	ExtReq    request.ExternalRequest
+	Db             *storage.Database
+	Validator      *validator.Validate
+	Logger         *utility.Logger
+	ExtReq         request.ExternalRequest
+	ProfileService profile.ProfileService
 }
 
 func (base *Controller) UpdateProfile(c *gin.Context) {
@@ -50,7 +51,7 @@ func (base *Controller) UpdateProfile(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, code, err := profile.UpdateProfile(req, userId, base.Db.Postgresql.DB())
+	respData, code, err := base.ProfileService.UpdateProfile(req, userId)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
