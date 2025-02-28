@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	templateService "github.com/hngprojects/hng_boilerplate_golang_web/services/templates"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func (base *Controller) DeleteTemplate(c *gin.Context) {
@@ -18,7 +18,7 @@ func (base *Controller) DeleteTemplate(c *gin.Context) {
 		return
 	}
 
-	err := templateService.DeleteTemplate(base.Db.Postgresql, id)
+	err := templateService.DeleteTemplate(base.Db.Postgresql.DB(), id)
 	if err != nil {
 		base.Logger.Error("Failed to delete template")
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to delete template", err, nil)

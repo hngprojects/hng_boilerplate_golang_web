@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
@@ -25,7 +26,7 @@ type UpdateFAQ struct {
 	Category string `json:"category" validate:"required"`
 }
 
-func (f *FAQ) BeforeCreate(tx *gorm.DB) (err error) {
+func (f *FAQ) BeforeCreate(tx database.DatabaseManager) (err error) {
 
 	if f.ID == "" {
 		f.ID = utility.GenerateUUID()
@@ -33,19 +34,19 @@ func (f *FAQ) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (f *FAQ) GetFaqById(db *gorm.DB, ID string) (FAQ, error) {
+func (f *FAQ) GetFaqById(db database.DatabaseManager, ID string) (FAQ, error) {
 	var faq FAQ
 
-	err, nerr := postgresql.SelectOneFromDb(db, &faq, "id = ?", ID)
+	err, nerr := db.SelectOneFromDb(&faq, "id = ?", ID)
 	if nerr != nil {
 		return faq, err
 	}
 	return faq, nil
 }
 
-func (f *FAQ) CreateFaq(db *gorm.DB) error {
+func (f *FAQ) CreateFaq(db database.DatabaseManager) error {
 
-	err := postgresql.CreateOneRecord(db, &f)
+	err := db.CreateOneRecord(&f)
 
 	if err != nil {
 		return err
@@ -54,14 +55,14 @@ func (f *FAQ) CreateFaq(db *gorm.DB) error {
 	return nil
 }
 
-func (f *FAQ) UpdateFaq(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &f)
+func (f *FAQ) UpdateFaq(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&f)
 	return err
 }
 
-func (f *FAQ) DeleteFaq(db *gorm.DB) error {
+func (f *FAQ) DeleteFaq(db database.DatabaseManager) error {
 
-	err := postgresql.DeleteRecordFromDb(db, &f)
+	err := db.DeleteRecordFromDb(&f)
 
 	if err != nil {
 		return err
@@ -70,13 +71,13 @@ func (f *FAQ) DeleteFaq(db *gorm.DB) error {
 	return nil
 }
 
-func (n *FAQ) FetchAllFaq(db *gorm.DB, c *gin.Context) ([]FAQ, postgresql.PaginationResponse, error) {
+func (n *FAQ) FetchAllFaq(db database.DatabaseManager, c *gin.Context) ([]FAQ, database.PaginationResponse, error) {
 	var faqs []FAQ
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
+		nil,
 		"created_at",
 		"desc",
 		pagination,

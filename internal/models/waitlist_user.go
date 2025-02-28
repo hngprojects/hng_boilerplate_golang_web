@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
@@ -27,8 +28,8 @@ type CreateWaitlistUserRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, w)
+func (w *WaitlistUser) CreateWaitlistUser(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(w)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return ErrWaitlistUserExist
@@ -38,8 +39,8 @@ func (w *WaitlistUser) CreateWaitlistUser(db *gorm.DB) error {
 	return err
 }
 
-func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
-	err, nerr := postgresql.SelectOneFromDb(db, &w, "email = ?", w.Email)
+func (w *WaitlistUser) GetWaitlistUserByEmail(db database.DatabaseManager) (int, error) {
+	err, nerr := db.SelectOneFromDb(&w, "email = ?", w.Email)
 	if nerr != nil {
 		return http.StatusBadRequest, nerr
 	}
@@ -52,8 +53,8 @@ func (w *WaitlistUser) GetWaitlistUserByEmail(db *gorm.DB) (int, error) {
 }
 
 // added this function to check if waitlist user exists already
-func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
-	exists := postgresql.CheckExists(db, &w, "email = ?", w.Email)
+func (w *WaitlistUser) CheckExistsByEmail(db database.DatabaseManager) (int, error) {
+	exists := db.CheckExists(&w, "email = ?", w.Email)
 	if exists {
 		return http.StatusBadRequest, errors.New("User exists")
 	}
@@ -61,13 +62,13 @@ func (w *WaitlistUser) CheckExistsByEmail(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
-func (n *WaitlistUser) FetchAllWaitList(db *gorm.DB, c *gin.Context) ([]WaitlistUser, postgresql.PaginationResponse, error) {
+func (n *WaitlistUser) FetchAllWaitList(db database.DatabaseManager, c *gin.Context) ([]WaitlistUser, database.PaginationResponse, error) {
 	var waitLists []WaitlistUser
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
+		nil,
 		"created_at",
 		"desc",
 		pagination,
@@ -78,6 +79,5 @@ func (n *WaitlistUser) FetchAllWaitList(db *gorm.DB, c *gin.Context) ([]Waitlist
 	if err != nil {
 		return nil, paginationResponse, err
 	}
-
 	return waitLists, paginationResponse, nil
 }

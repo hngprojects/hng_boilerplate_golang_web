@@ -53,7 +53,7 @@ func CreateBlog(t *testing.T, r *gin.Engine, db *storage.Database, blog blog.Con
 		blogPath = "/api/v1/blogs"
 		blogURI  = url.URL{Path: blogPath}
 	)
-	blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		blogUrl.POST("/blogs", blog.CreateBlog)
 	}

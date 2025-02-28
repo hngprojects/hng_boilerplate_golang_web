@@ -18,11 +18,11 @@ func JobPost(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	controller := jobpost.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 	jobPostUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		jobPostUrl.POST("/jobs", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.CreateJobPost)
+		jobPostUrl.POST("/jobs", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.CreateJobPost)
 		jobPostUrl.GET("/jobs", controller.FetchAllJobPost)
 		jobPostUrl.GET("/jobs/:job_id", controller.FetchJobPostByID)
-		jobPostUrl.PATCH("/jobs/:job_id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.UpdateJobPostByID)
-		jobPostUrl.DELETE("/jobs/:job_id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.DeleteJobPostByID)
+		jobPostUrl.PATCH("/jobs/:job_id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.UpdateJobPostByID)
+		jobPostUrl.DELETE("/jobs/:job_id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.DeleteJobPostByID)
 	}
 	return r
 }

@@ -2,12 +2,10 @@ package postgresql
 
 import (
 	"fmt"
-
-	"gorm.io/gorm"
 )
 
-func CreateOneRecord(db *gorm.DB, model interface{}) error {
-	result := db.Create(model)
+func (p *Postgresql) CreateOneRecord(model interface{}) error {
+	result := p.Db.Create(model)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -17,8 +15,8 @@ func CreateOneRecord(db *gorm.DB, model interface{}) error {
 	return nil
 }
 
-func CreateMultipleRecords(db *gorm.DB, model interface{}, length int) error {
-	result := db.Create(model)
+func (p *Postgresql) CreateMultipleRecords(model interface{}, length int) error {
+	result := p.Db.Create(model)
 	if result.Error != nil {
 		return result.Error
 	}

@@ -19,7 +19,7 @@ func SendNotifications(extReq request.ExternalRequest, db storage.Database) {
 
 	extReq.Logger.Error("Sending records found: ", res)
 
-	err = actions.Send(extReq, db.Postgresql, db.Redis, &res)
+	err = actions.Send(extReq, db.Postgresql.DB(), db.Redis.RedisDb(), &res)
 
 	if err != nil {
 		extReq.Logger.Error("error getting notificatin records: ", err.Error())

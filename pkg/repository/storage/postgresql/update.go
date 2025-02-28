@@ -4,25 +4,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func SaveAllFields(db *gorm.DB, model interface{}) (*gorm.DB, error) {
-	result := db.Save(model)
+func (p *Postgresql) SaveAllFields(model interface{}) (*gorm.DB, error) {
+	result := p.Db.Save(model)
 	if result.Error != nil {
 		return result, result.Error
 	}
 	return result, nil
 }
 
-func UpdateFields(db *gorm.DB, model interface{}, updates interface{}, id string) (*gorm.DB, error) {
-	result := db.Model(model).Where("id = ?", id).Updates(updates)
+func (p *Postgresql) UpdateFields(model interface{}, updates interface{}, id string) (*gorm.DB, error) {
+	result := p.Db.Model(model).Where("id = ?", id).Updates(updates)
 	if result.Error != nil {
 		return result, result.Error
 	}
 	return result, nil
 }
 
-func SaveAllModelsFields(db *gorm.DB, models []interface{}) (*gorm.DB, error) {
+func (p *Postgresql) SaveAllModelsFields(models []interface{}) (*gorm.DB, error) {
 	// Use a transaction to ensure atomicity of updates
-	tx := db.Begin()
+	tx := p.Db.Begin()
 	if tx.Error != nil {
 		return tx, tx.Error
 	}

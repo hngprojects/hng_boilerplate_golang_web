@@ -15,7 +15,7 @@ import (
 func Notification(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	controller := notificationCRUD.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
-	notificationUrl := r.Group(fmt.Sprintf("%v/notifications", ApiVersion), middleware.Authorize(db.Postgresql))
+	notificationUrl := r.Group(fmt.Sprintf("%v/notifications", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		notificationUrl.POST("/global", controller.CreateNotification)
 		notificationUrl.GET("/all", controller.FetchAllNotifications)
@@ -30,7 +30,7 @@ func Notification(r *gin.Engine, ApiVersion string, validator *validator.Validat
 func NotificationSettings(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	controller := notificationCRUD.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
-	notificationUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db.Postgresql))
+	notificationUrl := r.Group(fmt.Sprintf("%v/settings", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		notificationUrl.GET("/notification-settings", controller.GetNotificationSettings)
 		notificationUrl.PATCH("/notification-settings", controller.UpdateNotificationSettings)

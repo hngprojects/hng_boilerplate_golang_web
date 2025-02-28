@@ -87,7 +87,7 @@ func TestCreateSqueezeUser_CheckDuplicateEmail(t *testing.T) {
 	currUUID := utility.GenerateUUID()
 	phone := fmt.Sprintf("+234%v", utility.GetRandomNumbersInRange(7000000000, 9099999999))
 
-	db := squeezeController.Db.Postgresql
+	db := squeezeController.Db.Postgresql.DB()
 	db.Create(&models.SqueezeUser{
 		ID:             currUUID,
 		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),
@@ -129,9 +129,8 @@ func TestCreateSqueezeUser_CheckDuplicatePhoneNumber(t *testing.T) {
 	router, squeezeController := SetupSqueezeTestRouter()
 
 	currUUID := utility.GenerateUUID()
-	
 
-	db := squeezeController.Db.Postgresql
+	db := squeezeController.Db.Postgresql.DB()
 	db.Create(&models.SqueezeUser{
 		ID:             currUUID,
 		Email:          fmt.Sprintf("testuser%v@qa.team", currUUID),

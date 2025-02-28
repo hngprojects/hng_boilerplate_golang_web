@@ -21,7 +21,7 @@ type Controller struct {
 
 func (base *Controller) GetRegion(c *gin.Context) {
 
-	regionData, err := service.GetRegions(base.Db.Postgresql)
+	regionData, err := service.GetRegions(base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -35,7 +35,7 @@ func (base *Controller) GetRegion(c *gin.Context) {
 
 func (base *Controller) GetTimeZone(c *gin.Context) {
 
-	timezoneData, err := service.GetTimeZones(base.Db.Postgresql)
+	timezoneData, err := service.GetTimeZones(base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -49,7 +49,7 @@ func (base *Controller) GetTimeZone(c *gin.Context) {
 
 func (base *Controller) GetLanguage(c *gin.Context) {
 
-	languageData, err := service.GetLanguages(base.Db.Postgresql)
+	languageData, err := service.GetLanguages(base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -81,7 +81,7 @@ func (base *Controller) AddToRegion(c *gin.Context) {
 		return
 	}
 
-	err = service.AddToRegion(&req, base.Db.Postgresql)
+	err = service.AddToRegion(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -115,7 +115,7 @@ func (base *Controller) AddToTimeZone(c *gin.Context) {
 		return
 	}
 
-	err = service.AddToTimeZone(&req, base.Db.Postgresql)
+	err = service.AddToTimeZone(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -149,7 +149,7 @@ func (base *Controller) AddToLanguage(c *gin.Context) {
 		return
 	}
 
-	err = service.AddToLanguage(&req, base.Db.Postgresql)
+	err = service.AddToLanguage(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -184,7 +184,7 @@ func (base *Controller) UpdateTimeZone(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateATimeZone(&req, reqID, base.Db.Postgresql)
+	respData, code, err := service.UpdateATimeZone(&req, reqID, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)

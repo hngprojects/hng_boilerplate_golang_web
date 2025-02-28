@@ -89,7 +89,7 @@ func TestProductCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		productUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		productUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			productUrl.POST("/products", product.CreateProduct)
 
@@ -176,7 +176,7 @@ func TestProductGet(t *testing.T) {
 
 	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
 
-	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 	{
 		productUrl.POST("/products", product.CreateProduct)
 	}
@@ -244,7 +244,7 @@ func TestProductGet(t *testing.T) {
 
 	for _, test := range tests {
 		r := gin.Default()
-		productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+		productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 		{
 			productUrl.GET("/products/:product_id", product.GetProduct)
 		}
@@ -293,7 +293,7 @@ func TestProductUpdate(t *testing.T) {
 		Category:    "Fashion",
 	}
 	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql))
+	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 	{
 		productUrl.POST("/products", product.CreateProduct)
 		productUrl.PUT("/products/:product_id", product.UpdateProduct)

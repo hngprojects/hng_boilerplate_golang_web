@@ -17,7 +17,7 @@ import (
 
 func TestAddToTimezone(t *testing.T) {
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
@@ -117,7 +117,7 @@ func TestAddToTimezone(t *testing.T) {
 			GmtOffset:   fmt.Sprintf("-05:00+%s", utility.RandomString(5)),
 			Description: fmt.Sprintf("western -%s", utility.RandomString(3)),
 		}
-		authController.Db.Postgresql.Create(&timezone)
+		authController.Db.Postgresql.DB().Create(&timezone)
 
 		duplicateTimezone := models.Timezone{
 			Timezone:    fmt.Sprintf("UTC-%s", theRandom),
@@ -173,7 +173,7 @@ func TestGetTimezones(t *testing.T) {
 	}
 
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

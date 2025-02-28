@@ -3,8 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"gorm.io/gorm"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type Invitation struct {
@@ -38,22 +37,22 @@ type InvitationCreateReq struct {
 	Email          string `json:"email" validate:"required,email"`
 }
 
-func (i *Invitation) CreateInvitation(db *gorm.DB) error {
+func (i *Invitation) CreateInvitation(db database.DatabaseManager) error {
 	//set the expiration time to 24 hours
 	i.ExpiresAt = time.Now().Add(24 * time.Hour)
 
-	err := postgresql.CreateOneRecord(db, &i)
+	err := db.CreateOneRecord(&i)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i *Invitation) GetInvitationsByID(db *gorm.DB, user_id string) ([]Invitation, error) {
+func (i *Invitation) GetInvitationsByID(db database.DatabaseManager, user_id string) ([]Invitation, error) {
 	//get all invitations with the user_id
 	var invitations []Invitation
 
-	err := postgresql.SelectAllFromDb(db.Preload("Organisation"), "", &invitations, "user_id = ?", user_id)
+	err := db.SelectAllFromDb(db.DB().Preload("Organisation"), "", &invitations, "user_id = ?", user_id)
 	if err != nil {
 		return nil, err
 	}

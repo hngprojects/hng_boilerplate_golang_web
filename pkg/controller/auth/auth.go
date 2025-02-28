@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ type Controller struct {
 func (base *Controller) CreateUser(c *gin.Context) {
 	var req models.CreateUserRequestModel
 
+	fmt.Println("============> user  ===========>")
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
@@ -38,14 +40,15 @@ func (base *Controller) CreateUser(c *gin.Context) {
 		return
 	}
 
-	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql)
+	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	respData, code, err := auth.CreateUser(reqData, base.Db.Postgresql)
+	fmt.Println("=========> auth create =======>")
+	respData, code, err := auth.CreateUser(reqData, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -74,14 +77,14 @@ func (base *Controller) CreateAdmin(c *gin.Context) {
 		return
 	}
 
-	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql)
+	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	respData, code, err := auth.CreateAdmin(reqData, base.Db.Postgresql)
+	respData, code, err := auth.CreateAdmin(reqData, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -110,7 +113,7 @@ func (base *Controller) LoginUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.LoginUser(req, base.Db.Postgresql)
+	respData, code, err := auth.LoginUser(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -141,7 +144,7 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.LogoutUser(access_uuid, owner_id, base.Db.Postgresql)
+	respData, code, err := auth.LogoutUser(access_uuid, owner_id, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)

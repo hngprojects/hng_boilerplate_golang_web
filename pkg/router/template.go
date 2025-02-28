@@ -17,7 +17,7 @@ func Template(r *gin.Engine, ApiVersion string, validator *validator.Validate, d
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	template := templates.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	templateUrl := r.Group(fmt.Sprintf("%v/", ApiVersion), middleware.Authorize(db.Postgresql))
+	templateUrl := r.Group(fmt.Sprintf("%v/", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		templateUrl.POST("/template", template.CreateTemplate)
 		templateUrl.GET("/template", template.GetTemplates)

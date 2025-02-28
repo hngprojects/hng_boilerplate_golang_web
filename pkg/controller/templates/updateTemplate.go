@@ -5,9 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	templateService "github.com/hngprojects/hng_boilerplate_golang_web/services/templates"
-
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func (base *Controller) UpdateTemplate(c *gin.Context) {
@@ -38,8 +37,7 @@ func (base *Controller) UpdateTemplate(c *gin.Context) {
 		return
 	}
 
-
-	template, err := templateService.UpdateTemplate(base.Db.Postgresql, id, req)
+	template, err := templateService.UpdateTemplate(base.Db.Postgresql.DB(), id, req)
 	if err != nil {
 		base.Logger.Error("Failed to update template")
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to update template", err, nil)

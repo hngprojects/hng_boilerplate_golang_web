@@ -35,7 +35,7 @@ func (base *Controller) Create(c *gin.Context) {
 		return
 	}
 
-	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
+	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql.DB(), "user_id")
 	if err != nil {
 		if err.Error() == "user claims not found" {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to create testimonial", nil)
@@ -48,7 +48,7 @@ func (base *Controller) Create(c *gin.Context) {
 	}
 	userId := userID.(string)
 
-	testimonial, err := service.CreateTestimonial(base.Db.Postgresql, req, userId)
+	testimonial, err := service.CreateTestimonial(base.Db.Postgresql.DB(), req, userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to create testimonial", nil)

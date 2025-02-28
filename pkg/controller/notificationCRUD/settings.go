@@ -34,7 +34,7 @@ func (base *Controller) UpdateNotificationSettings(c *gin.Context) {
 		return
 	}
 
-	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
+	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql.DB(), userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notification settings", err, nil)
@@ -42,7 +42,7 @@ func (base *Controller) UpdateNotificationSettings(c *gin.Context) {
 		return
 	}
 
-	updated, err := notificationcrud.UpdateNotificationSettings(base.Db.Postgresql, req, userId)
+	updated, err := notificationcrud.UpdateNotificationSettings(base.Db.Postgresql.DB(), req, userId)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to update notification settings", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
@@ -64,7 +64,7 @@ func (base *Controller) GetNotificationSettings(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
+	_, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql.DB(), userId)
 	if err != nil {
 		notificationSettings := models.NotificationSettings{
 			ID:                                   utility.GenerateUUID(),
@@ -88,7 +88,7 @@ func (base *Controller) GetNotificationSettings(c *gin.Context) {
 		}
 	}
 
-	notificationSettings, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql, userId)
+	notificationSettings, err := notificationcrud.GetNotificationSettings(base.Db.Postgresql.DB(), userId)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notification settings", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)

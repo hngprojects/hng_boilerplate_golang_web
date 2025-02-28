@@ -4,15 +4,16 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"gorm.io/gorm"
 )
 
 type HelpCntSummary struct {
-	ID			string `json:"id"`
-	Title       string `json:"title"`
-	Content 	string `json:"content"`
-	Author      string `json:"author"`
+	ID      string `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Author  string `json:"author"`
 }
 
 type HelpCenter struct {
@@ -25,13 +26,13 @@ type HelpCenter struct {
 }
 
 type CreateHelpCenter struct {
-	Title string `json:"title" validate:"required,min=2,max=255"`
+	Title   string `json:"title" validate:"required,min=2,max=255"`
 	Content string `json:"content" validate:"required,min=2,max=255"`
-	Author string `json:"author" validate:"required,min=2,max=255"`
+	Author  string `json:"author" validate:"required,min=2,max=255"`
 }
 
-func (j *HelpCenter) CreateHelpCenterTopic(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &j)
+func (j *HelpCenter) CreateHelpCenterTopic(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&j)
 
 	if err != nil {
 		return err
@@ -40,44 +41,44 @@ func (j *HelpCenter) CreateHelpCenterTopic(db *gorm.DB) error {
 	return nil
 }
 
-func (j *HelpCenter) FetchAllTopics(db *gorm.DB, c *gin.Context) ([]HelpCenter, postgresql.PaginationResponse, error) {
+func (j *HelpCenter) FetchAllTopics(db database.DatabaseManager, c *gin.Context) ([]HelpCenter, database.PaginationResponse, error) {
 	var helpCntTopics []HelpCenter
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
-		"created_at", 
-		"desc",       
-		pagination,   
-		&helpCntTopics,  
-		nil,          
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
+		nil,
+		"created_at",
+		"desc",
+		pagination,
+		&helpCntTopics,
+		nil,
 	)
 
 	if err != nil {
 		return nil, paginationResponse, err
 	}
-	
+
 	return helpCntTopics, paginationResponse, nil
 }
 
-func (j *HelpCenter) FetchTopicByID(db *gorm.DB ) error {
-		err := postgresql.SelectFirstFromDb(db, &j);
+func (j *HelpCenter) FetchTopicByID(db database.DatabaseManager) error {
+	err := db.SelectFirstFromDb(&j)
 
-		if err != nil {
-		return  err
+	if err != nil {
+		return err
 	}
 
-	return  nil
+	return nil
 }
 
-func (h *HelpCenter) SearchHelpCenterTopics(db *gorm.DB, c *gin.Context, query string) ([]HelpCenter, postgresql.PaginationResponse, error) {
+func (h *HelpCenter) SearchHelpCenterTopics(db database.DatabaseManager, c *gin.Context, query string) ([]HelpCenter, database.PaginationResponse, error) {
 	var helpCntTopics []HelpCenter
 	pagination := postgresql.GetPagination(c)
 	searchQuery := "%" + query + "%"
 	whereClause := "title ILIKE ?"
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
+		nil,
 		"created_at",
 		"desc",
 		pagination,
@@ -88,40 +89,40 @@ func (h *HelpCenter) SearchHelpCenterTopics(db *gorm.DB, c *gin.Context, query s
 	if err != nil {
 		return nil, paginationResponse, err
 	}
-	
+
 	return helpCntTopics, paginationResponse, nil
 }
 
-func (j *HelpCenter) UpdateTopicByID(db *gorm.DB, ID string) (HelpCenter, error) {
-	j.ID = ID 
-	
-    exists := postgresql.CheckExists(db, &HelpCenter{}, "id = ?", ID)
-    if !exists {
-        return HelpCenter{}, gorm.ErrRecordNotFound
-    }
+func (j *HelpCenter) UpdateTopicByID(db database.DatabaseManager, ID string) (HelpCenter, error) {
+	j.ID = ID
 
-    _, err := postgresql.SaveAllFields(db, j)
-    if err != nil {
-        return HelpCenter{}, err
-    }
+	exists := db.CheckExists(&HelpCenter{}, "id = ?", ID)
+	if !exists {
+		return HelpCenter{}, gorm.ErrRecordNotFound
+	}
 
-    updatedHelpCenter := HelpCenter{}
-    err = db.First(&updatedHelpCenter, "id = ?", ID).Error
-    if err != nil {
-        return HelpCenter{}, err
-    }
+	_, err := db.SaveAllFields(j)
+	if err != nil {
+		return HelpCenter{}, err
+	}
 
-    return updatedHelpCenter, nil
+	updatedHelpCenter := HelpCenter{}
+	err = db.DB().First(&updatedHelpCenter, "id = ?", ID).Error
+	if err != nil {
+		return HelpCenter{}, err
+	}
+
+	return updatedHelpCenter, nil
 }
 
-func (j *HelpCenter) DeleteTopicByID(db *gorm.DB, ID string) error {
+func (j *HelpCenter) DeleteTopicByID(db database.DatabaseManager, ID string) error {
 
-	exists := postgresql.CheckExists(db, &HelpCenter{}, "id = ?", ID)
+	exists := db.CheckExists(&HelpCenter{}, "id = ?", ID)
 	if !exists {
 		return gorm.ErrRecordNotFound
 	}
 
-	err := postgresql.DeleteRecordFromDb(db, &j)
+	err := db.DeleteRecordFromDb(&j)
 
 	if err != nil {
 		return err

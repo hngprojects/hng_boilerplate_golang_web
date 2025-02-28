@@ -3,12 +3,12 @@ package redis
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -22,29 +22,13 @@ func ConnectToRedis(logger *utility.Logger, configDatabases config.Redis) *redis
 	dbsCV := configDatabases
 	utility.LogAndPrint(logger, "connecting to redis server")
 	connectedServer := connectToDb(dbsCV.REDIS_HOST, dbsCV.REDIS_PORT, dbsCV.REDIS_DB, logger)
-
 	utility.LogAndPrint(logger, "connected to redis server")
-
-	storage.DB.Redis = connectedServer
-
+	storage.DB.Redis = NewRedisConnection(connectedServer)
 	return connectedServer
 }
 
 func connectToDb(host, port, db string, logger *utility.Logger) *redis.Client {
-	if _, err := strconv.Atoi(port); err != nil {
-		u, err := url.Parse(port)
-		if err != nil {
-			utility.LogAndPrint(logger, fmt.Sprintf("parsing url %v to get port failed with: %v", port, err))
-			panic(err)
-		}
-
-		detectedPort := u.Port()
-		if detectedPort == "" {
-			utility.LogAndPrint(logger, fmt.Sprintf("detecting port from url %v failed with: %v", port, err))
-			panic(err)
-		}
-		port = detectedPort
-	}
+	port = repository.ResolvePortParsing(port, logger)
 	dbInst, err := strconv.Atoi(db)
 	if err != nil {
 		utility.LogAndPrint(logger, fmt.Sprintf("parsing url %v to get port failed with: %v", port, err))

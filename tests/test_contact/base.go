@@ -30,13 +30,13 @@ func SetupContactTestRouter() (*gin.Engine, *contact.Controller) {
 
 func SetupContactRoutes(r *gin.Engine, contactController *contact.Controller) {
 	r.POST("/api/v1/contact", contactController.AddToContactUs)
-	r.DELETE("/api/v1/contact/:id", middleware.Authorize(contactController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.DELETE("/api/v1/contact/:id", middleware.Authorize(contactController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		contactController.DeleteContactUs)
 	r.GET("/api/v1/contact",
-		middleware.Authorize(contactController.Db.Postgresql, models.RoleIdentity.SuperAdmin), contactController.GetAllContactUs)
-	r.GET("/api/v1/contact/id/:id", middleware.Authorize(contactController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+		middleware.Authorize(contactController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), contactController.GetAllContactUs)
+	r.GET("/api/v1/contact/id/:id", middleware.Authorize(contactController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		contactController.GetContactUsById)
-	r.GET("/api/v1/contact/email/:email", middleware.Authorize(contactController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.GET("/api/v1/contact/email/:email", middleware.Authorize(contactController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		contactController.GetContactUsByEmail)
 
 }

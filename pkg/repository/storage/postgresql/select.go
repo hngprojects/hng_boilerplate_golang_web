@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"gorm.io/gorm"
 )
 
@@ -15,17 +16,7 @@ var (
 	defaultLimit = 20
 )
 
-type Pagination struct {
-	Page  int
-	Limit int
-}
-type PaginationResponse struct {
-	CurrentPage     int `json:"current_page"`
-	PageCount       int `json:"page_count"`
-	TotalPagesCount int `json:"total_pages_count"`
-}
-
-func GetPagination(c *gin.Context) Pagination {
+func GetPagination(c *gin.Context) database.Pagination {
 	var (
 		page  *int
 		limit *int
@@ -44,17 +35,23 @@ func GetPagination(c *gin.Context) Pagination {
 	}
 
 	if page != nil && limit != nil {
-		return Pagination{Page: *page, Limit: *limit}
+		return database.Pagination{Page: *page, Limit: *limit}
 	} else if page == nil && limit != nil {
-		return Pagination{Page: defaultPage, Limit: *limit}
+		return database.Pagination{Page: defaultPage, Limit: *limit}
 	} else if page != nil && limit == nil {
-		return Pagination{Page: *page, Limit: defaultLimit}
+		return database.Pagination{Page: *page, Limit: defaultLimit}
 	} else {
-		return Pagination{Page: defaultPage, Limit: defaultLimit}
+		return database.Pagination{Page: defaultPage, Limit: defaultLimit}
 	}
 }
 
-func SelectAllFromDb(db *gorm.DB, order string, receiver interface{}, query interface{}, args ...interface{}) error {
+func (p *Postgresql) SelectAllFromDb(d *gorm.DB, order string, receiver interface{}, query interface{}, args ...interface{}) error {
+	var db *gorm.DB
+	if d != nil {
+		db = d
+	} else {
+		db = p.Db
+	}
 	if order == "" {
 		order = "desc"
 	}
@@ -62,26 +59,26 @@ func SelectAllFromDb(db *gorm.DB, order string, receiver interface{}, query inte
 	return tx.Error
 }
 
-func SelectAllFromDbWithLimit(db *gorm.DB, order string, limit int, receiver interface{}, query interface{}, args ...interface{}) error {
+func (p *Postgresql) SelectAllFromDbWithLimit(order string, limit int, receiver interface{}, query interface{}, args ...interface{}) error {
 	if order == "" {
 		order = "desc"
 	}
-	tx := db.Order("id "+order).Where(query, args...).Limit(limit).Find(receiver)
+	tx := p.Db.Order("id "+order).Where(query, args...).Limit(limit).Find(receiver)
 	return tx.Error
 }
 
-func SelectAllFromDbOrderBy(db *gorm.DB, orderBy, order string, receiver interface{}, query interface{}, args ...interface{}) error {
+func (p *Postgresql) SelectAllFromDbOrderBy(orderBy, order string, receiver interface{}, query interface{}, args ...interface{}) error {
 	if order == "" {
 		order = "desc"
 	}
 	if orderBy == "" {
 		orderBy = "id"
 	}
-	tx := db.Order(orderBy+" "+order).Where(query, args...).Find(receiver)
+	tx := p.Db.Order(orderBy+" "+order).Where(query, args...).Find(receiver)
 	return tx.Error
 }
 
-func SelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagination, receiver interface{}, query interface{}, groupColumn string, args ...interface{}) (PaginationResponse, error) {
+func (p *Postgresql) SelectAllFromByGroup(orderBy, order string, pagination *database.Pagination, receiver interface{}, query interface{}, groupColumn string, args ...interface{}) (database.PaginationResponse, error) {
 
 	if order == "" {
 		order = "desc"
@@ -91,14 +88,14 @@ func SelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagina
 	}
 
 	if pagination == nil {
-		tx := db.Order(orderBy+" "+order).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
-		return PaginationResponse{}, tx.Error
+		tx := p.Db.Order(orderBy+" "+order).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+		return database.PaginationResponse{}, tx.Error
 	}
 
 	var count int64
-	err := db.Model(receiver).Where(query, args...).Group(groupColumn + ", id").Count(&count).Error
+	err := p.Db.Model(receiver).Where(query, args...).Group(groupColumn + ", id").Count(&count).Error
 	if err != nil {
-		return PaginationResponse{
+		return database.PaginationResponse{
 			CurrentPage:     pagination.Page,
 			PageCount:       pagination.Limit,
 			TotalPagesCount: 0,
@@ -107,15 +104,15 @@ func SelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagina
 
 	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
 
-	tx := db.Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
-	return PaginationResponse{
+	tx := p.Db.Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+	return database.PaginationResponse{
 		CurrentPage:     pagination.Page,
 		PageCount:       int(tx.RowsAffected),
 		TotalPagesCount: totalPages,
 	}, tx.Error
 }
 
-func RawSelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pagination, model interface{}, receiver interface{}, groupColumn string, selectQuery string, query string, args ...interface{}) (PaginationResponse, error) {
+func (p *Postgresql) RawSelectAllFromByGroup(orderBy, order string, pagination *database.Pagination, model interface{}, receiver interface{}, groupColumn string, selectQuery string, query string, args ...interface{}) (database.PaginationResponse, error) {
 
 	if order == "" {
 		order = "desc"
@@ -125,14 +122,14 @@ func RawSelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pag
 	}
 
 	if pagination == nil {
-		tx := db.Model(model).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
-		return PaginationResponse{}, tx.Error
+		tx := p.Db.Model(model).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+		return database.PaginationResponse{}, tx.Error
 	}
 
 	var count int64
-	err := db.Model(model).Where(query, args...).Group(groupColumn + ", id").Count(&count).Error
+	err := p.Db.Model(model).Where(query, args...).Group(groupColumn + ", id").Count(&count).Error
 	if err != nil {
-		return PaginationResponse{
+		return database.PaginationResponse{
 			CurrentPage:     pagination.Page,
 			PageCount:       pagination.Limit,
 			TotalPagesCount: 0,
@@ -141,16 +138,23 @@ func RawSelectAllFromByGroup(db *gorm.DB, orderBy, order string, pagination *Pag
 
 	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
 
-	tx := db.Model(model).Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
-	return PaginationResponse{
+	tx := p.Db.Model(model).Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Select(selectQuery).Where(query, args...).Group(groupColumn + ", id").Find(receiver)
+	return database.PaginationResponse{
 		CurrentPage:     pagination.Page,
 		PageCount:       int(tx.RowsAffected),
 		TotalPagesCount: totalPages,
 	}, tx.Error
 }
 
-func SelectAllFromDbOrderByPaginated(db *gorm.DB, orderBy, order string, pagination Pagination, receiver interface{}, query interface{}, args ...interface{}) (PaginationResponse, error) {
+func (p *Postgresql) SelectAllFromDbOrderByPaginated(d *gorm.DB, orderBy, order string, pagination database.Pagination, receiver interface{}, query interface{}, args ...interface{}) (database.PaginationResponse, error) {
 
+	var db *gorm.DB
+
+	if d != nil {
+		db = d
+	} else {
+		db = p.Db
+	}
 	if order == "" {
 		order = "desc"
 	}
@@ -167,7 +171,7 @@ func SelectAllFromDbOrderByPaginated(db *gorm.DB, orderBy, order string, paginat
 	var count int64
 	err := db.Model(receiver).Where(query, args...).Count(&count).Error
 	if err != nil {
-		return PaginationResponse{
+		return database.PaginationResponse{
 			CurrentPage:     pagination.Page,
 			PageCount:       pagination.Limit,
 			TotalPagesCount: 0,
@@ -176,55 +180,55 @@ func SelectAllFromDbOrderByPaginated(db *gorm.DB, orderBy, order string, paginat
 
 	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
 
-	tx := db.Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Where(query, args...).Find(receiver)
-	return PaginationResponse{
+	tx := p.Db.Limit(pagination.Limit).Offset((pagination.Page-1)*pagination.Limit).Order(orderBy+" "+order).Where(query, args...).Find(receiver)
+	return database.PaginationResponse{
 		CurrentPage:     pagination.Page,
 		PageCount:       int(tx.RowsAffected),
 		TotalPagesCount: totalPages,
 	}, tx.Error
 }
 
-func SelectOneFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
+func (p *Postgresql) SelectOneFromDb(receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
-	tx := db.Where(query, args...).First(receiver)
+	tx := p.Db.Where(query, args...).First(receiver)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return tx.Error, tx.Error
 	}
 	return tx.Error, nil
 }
 
-func SelectLatestFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
+func (p *Postgresql) SelectLatestFromDb(receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
-	tx := db.Order("id desc").Where(query, args...).First(receiver)
+	tx := p.Db.Order("id desc").Where(query, args...).First(receiver)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return tx.Error, tx.Error
 	}
 	return tx.Error, nil
 }
 
-func SelectRandomFromDb(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) (error, error) {
+func (p *Postgresql) SelectRandomFromDb(receiver interface{}, query interface{}, args ...interface{}) (error, error) {
 
-	tx := db.Order("rand()").Where(query, args...).First(receiver)
+	tx := p.Db.Order("rand()").Where(query, args...).First(receiver)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return tx.Error, tx.Error
 	}
 	return tx.Error, nil
 }
 
-func SelectFirstFromDb(db *gorm.DB, receiver interface{}) error {
-	tx := db.First(receiver)
+func (p *Postgresql) SelectFirstFromDb(receiver interface{}) error {
+	tx := p.Db.First(receiver)
 	return tx.Error
 }
 
-func CheckExists(db *gorm.DB, receiver interface{}, query interface{}, args ...interface{}) bool {
+func (p *Postgresql) CheckExists(receiver interface{}, query interface{}, args ...interface{}) bool {
 
-	tx := db.Where(query, args...).First(receiver)
+	tx := p.Db.Where(query, args...).First(receiver)
 	return !errors.Is(tx.Error, gorm.ErrRecordNotFound)
 }
 
-func CheckExistsInTable1(db *gorm.DB, table string, query interface{}, args ...interface{}) bool {
+func (p *Postgresql) CheckExistsInTable1(table string, query interface{}, args ...interface{}) bool {
 	var result interface{}
-	tx := db.Table(table).Where(query, args...).Take(&result)
+	tx := p.Db.Table(table).Where(query, args...).Take(&result)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return false
@@ -236,13 +240,16 @@ func CheckExistsInTable1(db *gorm.DB, table string, query interface{}, args ...i
 	return true
 }
 
-func CheckExistsInTable(db *gorm.DB, table string, query interface{}, args ...interface{}) bool {
+func (p *Postgresql) CheckExistsInTable(table string, query interface{}, args ...interface{}) bool {
 	var result map[string]interface{}
-	tx := db.Table(table).Where(query, args...).Take(&result)
+	tx := p.Db.Table(table).Where(query, args...).Take(&result)
 	return tx.RowsAffected != 0
 }
 
-func PreloadEntities(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+func (p *Postgresql) PreloadEntities(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+	if db == nil {
+		db = p.Db
+	}
 	for _, preload := range preloads {
 		db = db.Preload(preload)
 	}

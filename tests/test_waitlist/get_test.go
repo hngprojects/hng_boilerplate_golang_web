@@ -15,7 +15,7 @@ import (
 
 func TestGetAllWaitList(t *testing.T) {
 	_, wlController := SetupWLTestRouter()
-	db := wlController.DB.Postgresql
+	db := wlController.DB.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

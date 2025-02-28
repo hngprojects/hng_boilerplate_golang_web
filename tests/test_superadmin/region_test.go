@@ -17,7 +17,7 @@ import (
 
 func TestAddToRegion(t *testing.T) {
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
@@ -111,7 +111,7 @@ func TestAddToRegion(t *testing.T) {
 			Name: fmt.Sprintf("North Amercia-%s", theRandom),
 			Code: fmt.Sprintf("NA-%s", utility.RandomString(5)),
 		}
-		authController.Db.Postgresql.Create(&region)
+		authController.Db.Postgresql.DB().Create(&region)
 
 		duplicateRegion := models.Region{
 			Name: fmt.Sprintf("North Amercia-%s", theRandom),
@@ -164,7 +164,7 @@ func TestGetRegions(t *testing.T) {
 	}
 
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

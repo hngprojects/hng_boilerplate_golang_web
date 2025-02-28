@@ -14,7 +14,7 @@ func (base *Controller) GetUserDataPrivacySettings(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	respData, code, err := service.GetUserDataPrivacySettings(userID, base.Db.Postgresql, c)
+	respData, code, err := service.GetUserDataPrivacySettings(userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -47,7 +47,7 @@ func (base *Controller) UpdateUserDataPrivacySettings(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateUserDataPrivacySettings(req, userID, base.Db.Postgresql, c)
+	respData, code, err := service.UpdateUserDataPrivacySettings(req, userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

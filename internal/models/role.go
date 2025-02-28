@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type RoleName string
@@ -73,8 +73,8 @@ func (p PermissionList) Value() (driver.Value, error) {
 	return json.Marshal(p)
 }
 
-func (r *OrgRole) CreateOrgRole(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &r)
+func (r *OrgRole) CreateOrgRole(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&r)
 
 	if err != nil {
 		return err
@@ -83,28 +83,28 @@ func (r *OrgRole) CreateOrgRole(db *gorm.DB) error {
 	return nil
 }
 
-func (r *OrgRole) DeleteOrgRole(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, &r)
+func (r *OrgRole) DeleteOrgRole(db database.DatabaseManager) error {
+	err := db.DeleteRecordFromDb(&r)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *OrgRole) UpdateOrgRole(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &r)
+func (r *OrgRole) UpdateOrgRole(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&r)
 	return err
 }
 
-func (rp *Permission) UpdateOrgPermissions(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &rp)
+func (rp *Permission) UpdateOrgPermissions(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&rp)
 	return err
 }
 
-func (r *OrgRole) GetOrgRoles(db *gorm.DB, orgID string) ([]OrgRole, error) {
+func (r *OrgRole) GetOrgRoles(db database.DatabaseManager, orgID string) ([]OrgRole, error) {
 	var orgRoles []OrgRole
 
-	query := db.Where("organisation_id = ?", orgID)
+	query := db.DB().Where("organisation_id = ?", orgID)
 	err := query.Find(&orgRoles).Error
 
 	if err != nil {
@@ -117,11 +117,11 @@ func (r *OrgRole) GetOrgRoles(db *gorm.DB, orgID string) ([]OrgRole, error) {
 	return orgRoles, nil
 }
 
-func (r *OrgRole) GetAOrgRole(db *gorm.DB, orgID, roleID string) (OrgRole, error) {
+func (r *OrgRole) GetAOrgRole(db database.DatabaseManager, orgID, roleID string) (OrgRole, error) {
 	var orgRole OrgRole
 
-	query := db.Where("organisation_id = ?", orgID).Where("id = ?", roleID)
-	query = postgresql.PreloadEntities(query, &orgRole, "Permissions")
+	query := db.DB().Where("organisation_id = ?", orgID).Where("id = ?", roleID)
+	query = db.PreloadEntities(query, &orgRole, "Permissions")
 
 	err := query.First(&orgRole).Error
 
@@ -132,7 +132,7 @@ func (r *OrgRole) GetAOrgRole(db *gorm.DB, orgID, roleID string) (OrgRole, error
 	return orgRole, nil
 }
 
-func (r *Role) UpdateUserRole(db *gorm.DB, userId string, roleId int) (*User, error) {
+func (r *Role) UpdateUserRole(db database.DatabaseManager, userId string, roleId int) (*User, error) {
 	var user User
 
 	user, err := user.GetUserByID(db, userId)
@@ -142,7 +142,7 @@ func (r *Role) UpdateUserRole(db *gorm.DB, userId string, roleId int) (*User, er
 
 	user.Role = roleId
 
-	if _, err := postgresql.SaveAllFields(db, &user); err != nil {
+	if _, err := db.SaveAllFields(&user); err != nil {
 		return nil, err
 	}
 

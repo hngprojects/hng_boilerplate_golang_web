@@ -21,7 +21,7 @@ type Controller struct {
 
 func (base *Controller) GetAllContactUs(c *gin.Context) {
 
-	contactsData, paginationResponse, code, err := service.GetAllContactUs(c, base.Db.Postgresql)
+	contactsData, paginationResponse, code, err := service.GetAllContactUs(c, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -39,7 +39,7 @@ func (base *Controller) GetContactUsById(c *gin.Context) {
 		reqID = c.Param("id")
 	)
 
-	contactData, err := service.GetContactUsById(reqID, base.Db.Postgresql)
+	contactData, err := service.GetContactUsById(reqID, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -56,7 +56,7 @@ func (base *Controller) GetContactUsByEmail(c *gin.Context) {
 		reqEmail = c.Param("email")
 	)
 
-	contactData, err := service.GetContactUsByEmail(reqEmail, base.Db.Postgresql)
+	contactData, err := service.GetContactUsByEmail(reqEmail, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -73,7 +73,7 @@ func (base *Controller) DeleteContactUs(c *gin.Context) {
 		reqID = c.Param("id")
 	)
 
-	code, err := service.DeleteContactUs(reqID, base.Db.Postgresql)
+	code, err := service.DeleteContactUs(reqID, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -104,7 +104,7 @@ func (base *Controller) AddToContactUs(c *gin.Context) {
 		return
 	}
 
-	err = service.AddToContactUs(&req, base.Db.Postgresql)
+	err = service.AddToContactUs(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)

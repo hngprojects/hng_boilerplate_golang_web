@@ -50,7 +50,7 @@ func (base *Controller) CreateBlog(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := service.CreateBlog(blogReq, base.Db.Postgresql, userId)
+	respData, err := service.CreateBlog(blogReq, base.Db.Postgresql.DB(), userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -84,7 +84,7 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	if err := service.DeleteBlog(blogID, userId, base.Db.Postgresql); err != nil {
+	if err := service.DeleteBlog(blogID, userId, base.Db.Postgresql.DB()); err != nil {
 		if err.Error() == "blog not found" {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete blog", nil)
 			c.JSON(http.StatusNotFound, rd)
@@ -107,7 +107,7 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 }
 
 func (base *Controller) GetBlogs(c *gin.Context) {
-	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql, c)
+	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch blogs", err, nil)
 		c.JSON(http.StatusNotFound, rd)
@@ -135,7 +135,7 @@ func (base *Controller) GetBlogById(c *gin.Context) {
 		return
 	}
 
-	blog, err := service.GetBlogById(blogID, base.Db.Postgresql)
+	blog, err := service.GetBlogById(blogID, base.Db.Postgresql.DB())
 
 	if err != nil {
 		if err.Error() == "blog not found" {
@@ -153,7 +153,7 @@ func (base *Controller) GetBlogById(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 }
 
-func (base *Controller) UpdateBlogById(c *gin.Context){
+func (base *Controller) UpdateBlogById(c *gin.Context) {
 	blogID := c.Param("id")
 	var req models.UpdateBlogRequest
 
@@ -169,7 +169,7 @@ func (base *Controller) UpdateBlogById(c *gin.Context){
 		return
 	}
 
-	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
+	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql.DB(), "user_id")
 	if err != nil {
 		if err.Error() == "user claims not found" {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update blog", nil)
@@ -182,9 +182,9 @@ func (base *Controller) UpdateBlogById(c *gin.Context){
 	}
 	userId := userID.(string)
 
-	blog, err := service.UpdateBlogById(blogID, userId, req, base.Db.Postgresql)
+	blog, err := service.UpdateBlogById(blogID, userId, req, base.Db.Postgresql.DB())
 
-	if err !=nil {
+	if err != nil {
 		if err.Error() == "blog not found" {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to update blog", nil)
 			c.JSON(http.StatusNotFound, rd)

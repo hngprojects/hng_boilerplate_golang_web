@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -20,6 +20,7 @@ import (
 func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.SqueezeUserReq, int, error) {
 
 	squeezeUser := models.SqueezeUser{}
+	pdb := inst.InitDB(db)
 
 	if req.Email != "" {
 		req.Email = strings.ToLower(req.Email)
@@ -28,7 +29,7 @@ func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.
 			return req, http.StatusUnprocessableEntity, fmt.Errorf("email address is invalid")
 		}
 		req.Email = formattedMail
-		exists := postgresql.CheckExists(db, &squeezeUser, "email = ?", req.Email)
+		exists := pdb.CheckExists(&squeezeUser, "email = ?", req.Email)
 		if exists {
 			return req, http.StatusBadRequest, errors.New("user already exists with the given email")
 		}
@@ -38,7 +39,7 @@ func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.
 		req.Phone = strings.ToLower(req.Phone)
 		phone, _ := utility.PhoneValid(req.Phone)
 		req.Phone = phone
-		exists := postgresql.CheckExists(db, &squeezeUser, "phone = ?", req.Phone)
+		exists := pdb.CheckExists(&squeezeUser, "phone = ?", req.Phone)
 		if exists {
 			return req, http.StatusBadRequest, errors.New("user already exists with the given phone")
 		}
@@ -61,8 +62,9 @@ func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.Squee
 		Interests:      pq.StringArray(req.Interests),
 		ReferralSource: strings.ToLower(req.ReferralSource),
 	}
+	pdb := inst.InitDB(db)
 
-	err := squeezeUser.Create(db)
+	err := squeezeUser.Create(pdb)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +76,7 @@ func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.Squee
 		LastName:  squeezeUser.LastName,
 	}
 
-	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendSqueeze, squeezeUserReq)
+	err = actions.AddNotificationToQueue(storage.DB.Redis.RedisDb(), names.SendSqueeze, squeezeUserReq)
 	if err != nil {
 		extReq.Logger.Error("Failed to send welcome email:", err)
 	}

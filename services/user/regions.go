@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
@@ -39,18 +40,19 @@ func UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string,
 		return &theData, code, err
 	}
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	pdb := inst.InitDB(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if !isSuperAdmin && currentUserID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
 	}
 
-	if theData, err = regionData.GetUserRegionByID(db, userIDStr); err != nil {
+	if theData, err = regionData.GetUserRegionByID(pdb, userIDStr); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
 			userData.UserID = userIDStr
 			userData.ID = utility.GenerateUUID()
 
-			if err := userData.CreateUserRegion(db); err != nil {
+			if err := userData.CreateUserRegion(pdb); err != nil {
 
 				return nil, http.StatusBadRequest, err
 			}
@@ -66,7 +68,7 @@ func UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string,
 		theData.RegionID = userData.RegionID
 		theData.TimezoneID = userData.TimezoneID
 
-		if err := theData.UpdateUserRegion(db); err != nil {
+		if err := theData.UpdateUserRegion(pdb); err != nil {
 			return &theData, http.StatusBadRequest, err
 		}
 		return &theData, http.StatusOK, nil
@@ -101,13 +103,14 @@ func GetUserRegion(userIDStr string,
 	if err != nil {
 		return &theData, code, err
 	}
+	pdb := inst.InitDB(db)
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if !isSuperAdmin && currentUserID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
 	}
 
-	if theData, err = regionData.GetUserRegionByID(db, userIDStr); err != nil {
+	if theData, err = regionData.GetUserRegionByID(pdb, userIDStr); err != nil {
 		return &theData, http.StatusBadRequest, err
 	}
 

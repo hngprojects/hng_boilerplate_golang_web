@@ -60,8 +60,8 @@ func TestHelpCenterCreate(t *testing.T) {
 		{
 			Name: "Successful help center post creation",
 			RequestBody: models.CreateHelpCenter{
-				Title:       "How to reset password",
-				Content:     "To reset your password, go to the settings page and click 'Reset Password'.",
+				Title:   "How to reset password",
+				Content: "To reset your password, go to the settings page and click 'Reset Password'.",
 			},
 			ExpectedCode: http.StatusCreated,
 			Message:      "Topic added successfully",
@@ -72,8 +72,8 @@ func TestHelpCenterCreate(t *testing.T) {
 		}, {
 			Name: "Invalid content",
 			RequestBody: models.CreateHelpCenter{
-				Title:       "How to reset password",
-				Content:     "",
+				Title:   "How to reset password",
+				Content: "",
 			},
 			ExpectedCode: http.StatusUnprocessableEntity,
 			Message:      "Input validation failed",
@@ -83,7 +83,7 @@ func TestHelpCenterCreate(t *testing.T) {
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + token,
 			},
-		}, 
+		},
 	}
 
 	helpCenterController := helpcenter.Controller{Db: db, Validator: validatorRef, Logger: logger}
@@ -91,7 +91,7 @@ func TestHelpCenterCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		helpCenterUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		helpCenterUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			helpCenterUrl.POST("/help-center/topics", helpCenterController.CreateHelpCenterTopic)
 		}
@@ -218,7 +218,7 @@ func TestFetchHelpCenterPostById(t *testing.T) {
 
 	helpCenterController := helpcenter.Controller{Db: db, Validator: validatorRef, Logger: logger}
 
-	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql), helpCenterController.CreateHelpCenterTopic)
+	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql.DB()), helpCenterController.CreateHelpCenterTopic)
 
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(helpCenterData)
@@ -315,7 +315,7 @@ func TestUpdateHelpCenterPost(t *testing.T) {
 
 	helpCenterController := helpcenter.Controller{Db: db, Validator: validatorRef, Logger: logger}
 
-	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql), helpCenterController.CreateHelpCenterTopic)
+	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql.DB()), helpCenterController.CreateHelpCenterTopic)
 
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(helpCenterData)
@@ -365,7 +365,7 @@ func TestUpdateHelpCenterPost(t *testing.T) {
 		},
 	}
 
-	r.PATCH("/api/v1/help-center/topics/:id", middleware.Authorize(db.Postgresql), helpCenterController.UpdateHelpCenterByID)
+	r.PATCH("/api/v1/help-center/topics/:id", middleware.Authorize(db.Postgresql.DB()), helpCenterController.UpdateHelpCenterByID)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -426,7 +426,7 @@ func TestDeleteHelpCenterPost(t *testing.T) {
 
 	helpCenterController := helpcenter.Controller{Db: db, Validator: validatorRef, Logger: logger}
 
-	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql), helpCenterController.CreateHelpCenterTopic)
+	r.POST("/api/v1/help-center/topics", middleware.Authorize(db.Postgresql.DB()), helpCenterController.CreateHelpCenterTopic)
 
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(helpCenterData)
@@ -464,7 +464,7 @@ func TestDeleteHelpCenterPost(t *testing.T) {
 		},
 	}
 
-	r.DELETE("/api/v1/help-center/topics/:id", middleware.Authorize(db.Postgresql), helpCenterController.DeleteTopicByID)
+	r.DELETE("/api/v1/help-center/topics/:id", middleware.Authorize(db.Postgresql.DB()), helpCenterController.DeleteTopicByID)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

@@ -21,7 +21,7 @@ type Controller struct {
 
 func (base *Controller) CreateKey(c *gin.Context) {
 
-	respData, code, err := key.CreateKey(base.Db.Postgresql, c)
+	respData, code, err := key.CreateKey(base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -37,7 +37,7 @@ func (base *Controller) CreateKey(c *gin.Context) {
 func (base *Controller) VerifyKey(c *gin.Context) {
 	req := models.VerifyKeyRequestModel{}
 
-	respData, code, err := key.VerifyKey(req, base.Db.Postgresql, c)
+	respData, code, err := key.VerifyKey(req, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)

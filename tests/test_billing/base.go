@@ -53,7 +53,7 @@ func CreateBilling(t *testing.T, r *gin.Engine, db *storage.Database, Billing bi
 		BillingPath = "/api/v1/billing-plans"
 		BillingURI  = url.URL{Path: BillingPath}
 	)
-	BillingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	BillingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		BillingUrl.POST("/billing-plans", Billing.CreateBilling)
 	}

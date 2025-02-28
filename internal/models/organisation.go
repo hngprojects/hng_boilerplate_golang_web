@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
@@ -62,24 +63,24 @@ type AddUserToOrgRequestModel struct {
 	UserId string `json:"user_id" validate:"required"`
 }
 
-func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &c)
+func (c *Organisation) CreateOrganisation(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&c)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Organisation) Delete(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, &c)
+func (c *Organisation) Delete(db database.DatabaseManager) error {
+	err := db.DeleteRecordFromDb(&c)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Organisation) Update(db *gorm.DB, req UpdateOrgRequestModel, orgId string) (*Organisation, error) {
-	result, err := postgresql.UpdateFields(db, &c, req, orgId)
+func (c *Organisation) Update(db database.DatabaseManager, req UpdateOrgRequestModel, orgId string) (*Organisation, error) {
+	result, err := db.UpdateFields(&c, req, orgId)
 	if err != nil {
 		return nil, err
 	}
@@ -91,10 +92,10 @@ func (c *Organisation) Update(db *gorm.DB, req UpdateOrgRequestModel, orgId stri
 	return c, nil
 }
 
-func (o *Organisation) GetOrgByID(db *gorm.DB, orgID string) (Organisation, error) {
+func (o *Organisation) GetOrgByID(db database.DatabaseManager, orgID string) (Organisation, error) {
 	var org Organisation
 
-	err, nerr := postgresql.SelectOneFromDb(db, &org, "id = ?", orgID)
+	err, nerr := db.SelectOneFromDb(&org, "id = ?", orgID)
 	if nerr != nil {
 		return org, err
 	}
@@ -123,7 +124,7 @@ func (u *Organisation) GetOrganisationsByUserID(db *gorm.DB, userID string) ([]O
 
 	return organisations, nil
 }
-func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterID string) ([]Organisation, error) {
+func (u *Organisation) GetOrganisationsByUserIDs(db database.DatabaseManager, userID, requesterID string) ([]Organisation, error) {
 
 	var (
 		ErrNotFound   = errors.New("user not in your organisation")
@@ -131,7 +132,7 @@ func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterI
 	)
 
 	var isOwner bool
-	err := db.Model(&Organisation{}).
+	err := db.DB().Model(&Organisation{}).
 		Select("count(*) > 0").
 		Where("owner_id = ?", requesterID).
 		Find(&isOwner).
@@ -142,7 +143,7 @@ func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterI
 
 	if isOwner {
 
-		query := db.Model(&Organisation{}).
+		query := db.DB().Model(&Organisation{}).
 			Joins("INNER JOIN user_organisations uo ON organisations.id = uo.organisation_id").
 			Where("uo.user_id = ?", userID).
 			Where("organisations.owner_id = ?", requesterID)
@@ -161,7 +162,7 @@ func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterI
 		return organisations, nil
 	}
 
-	query := db.Model(&Organisation{}).
+	query := db.DB().Model(&Organisation{}).
 		Joins("INNER JOIN user_organisations uo ON organisations.id = uo.organisation_id").
 		Where("uo.user_id = ?", requesterID)
 	if err := query.Find(&organisations).Error; err != nil {
@@ -175,13 +176,13 @@ func (u *Organisation) GetOrganisationsByUserIDs(db *gorm.DB, userID, requesterI
 
 }
 
-func (o *Organisation) GetUsersInOrganisation(c *gin.Context, db *gorm.DB, orgId string) ([]UserInOrgResponse, postgresql.PaginationResponse, error) {
+func (o *Organisation) GetUsersInOrganisation(c *gin.Context, db database.DatabaseManager, orgId string) ([]UserInOrgResponse, database.PaginationResponse, error) {
 	var users []UserInOrgResponse
 	pagination := postgresql.GetPagination(c)
 
 	offset := (pagination.Page - 1) * pagination.Limit
 
-	if err := db.Table("users").
+	if err := db.DB().Table("users").
 		Select("users.id, users.email, profiles.phone as phone_number , users.name").
 		Joins("JOIN user_organisations ON user_organisations.user_id = users.id").
 		Joins("JOIN profiles ON profiles.userid = users.id").
@@ -189,20 +190,20 @@ func (o *Organisation) GetUsersInOrganisation(c *gin.Context, db *gorm.DB, orgId
 		Offset(offset).
 		Limit(pagination.Limit).
 		Find(&users).Error; err != nil {
-		return nil, postgresql.PaginationResponse{}, err
+		return nil, database.PaginationResponse{}, err
 	}
 
 	var totalUsers int64
-	if err := db.Table("users").
+	if err := db.DB().Table("users").
 		Joins("JOIN user_organisations ON user_organisations.user_id = users.id").
 		Joins("JOIN profiles ON profiles.userid = users.id").
 		Where("user_organisations.organisation_id = ?", orgId).
 		Count(&totalUsers).Error; err != nil {
-		return nil, postgresql.PaginationResponse{}, err
+		return nil, database.PaginationResponse{}, err
 	}
 
 	totalPages := int(math.Ceil(float64(totalUsers) / float64(pagination.Limit)))
-	paginationResponse := postgresql.PaginationResponse{
+	paginationResponse := database.PaginationResponse{
 		CurrentPage:     pagination.Page,
 		PageCount:       pagination.Limit,
 		TotalPagesCount: totalPages,
@@ -211,7 +212,7 @@ func (o *Organisation) GetUsersInOrganisation(c *gin.Context, db *gorm.DB, orgId
 	return users, paginationResponse, nil
 }
 
-func (o *Organisation) CheckOrgExists(orgId string, db *gorm.DB) (Organisation, error) {
+func (o *Organisation) CheckOrgExists(orgId string, db database.DatabaseManager) (Organisation, error) {
 	org, err := o.GetOrgByID(db, orgId)
 	if err != nil {
 		return org, err
@@ -220,7 +221,7 @@ func (o *Organisation) CheckOrgExists(orgId string, db *gorm.DB) (Organisation, 
 	return org, nil
 }
 
-func (o *Organisation) CheckUserIsMemberOfOrg(userId string, orgId string, db *gorm.DB) (bool, error) {
+func (o *Organisation) CheckUserIsMemberOfOrg(userId string, orgId string, db database.DatabaseManager) (bool, error) {
 	var user User
 
 	_, err := o.GetOrgByID(db, orgId)
@@ -242,9 +243,9 @@ func (o *Organisation) CheckUserIsMemberOfOrg(userId string, orgId string, db *g
 	return false, nil
 }
 
-func (o *Organisation) IsOwnerOfOrganisation(db *gorm.DB, requesterID, organisationID string) (bool, error) {
+func (o *Organisation) IsOwnerOfOrganisation(db database.DatabaseManager, requesterID, organisationID string) (bool, error) {
 	var count int64
-	err := db.Model(&Organisation{}).
+	err := db.DB().Model(&Organisation{}).
 		Where("id = ? AND owner_id = ?", organisationID, requesterID).
 		Count(&count).
 		Error

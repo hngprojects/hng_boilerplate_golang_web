@@ -10,7 +10,7 @@ import (
 
 func (base *Controller) GetTemplates(c *gin.Context) {
 
-	templates, err := templateService.GetTemplates(base.Db.Postgresql)
+	templates, err := templateService.GetTemplates(base.Db.Postgresql.DB())
 	if err != nil {
 		base.Logger.Error("Failed to retrieve templates")
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), err, nil)
@@ -34,7 +34,7 @@ func (base *Controller) GetTemplate(c *gin.Context) {
 		return
 	}
 
-	template, err := templateService.GetTemplate(base.Db.Postgresql, id)
+	template, err := templateService.GetTemplate(base.Db.Postgresql.DB(), id)
 	if err != nil {
 		base.Logger.Error("Failed to retrieve template")
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), err, nil)
@@ -45,6 +45,5 @@ func (base *Controller) GetTemplate(c *gin.Context) {
 	base.Logger.Info("Template Successfully retrieved")
 	rd := utility.BuildSuccessResponse(http.StatusOK, "Template Successfully retrieved", template)
 	c.JSON(http.StatusOK, rd)
-
 
 }

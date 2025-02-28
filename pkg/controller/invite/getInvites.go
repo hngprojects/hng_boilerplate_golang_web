@@ -21,7 +21,7 @@ func (base *Controller) GetInvites(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	user, code, err := user.GetUser(userId, base.Db.Postgresql)
+	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -35,7 +35,7 @@ func (base *Controller) GetInvites(c *gin.Context) {
 		return
 	}
 
-	invitations, err := invite.GetInvitations(user, base.Db.Postgresql)
+	invitations, err := invite.GetInvitations(user, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), err, nil)
 		c.JSON(http.StatusInternalServerError, rd)

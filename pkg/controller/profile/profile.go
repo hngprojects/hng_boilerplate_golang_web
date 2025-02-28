@@ -50,7 +50,7 @@ func (base *Controller) UpdateProfile(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, code, err := profile.UpdateProfile(req, userId, base.Db.Postgresql)
+	respData, code, err := profile.UpdateProfile(req, userId, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -62,4 +62,3 @@ func (base *Controller) UpdateProfile(c *gin.Context) {
 
 	c.JSON(code, rd)
 }
-
