@@ -1,13 +1,14 @@
 package waitlist
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
-	"net/http"
 )
 
 type Controller struct {
@@ -17,7 +18,7 @@ type Controller struct {
 }
 
 func (base *Controller) GetWaitLists(c *gin.Context) {
-	waitlistData, paginationResponse, code, err := service.GetWaitLists(c, base.DB.Postgresql)
+	waitlistData, paginationResponse, code, err := service.GetWaitLists(c, base.DB.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -43,7 +44,7 @@ func (base *Controller) Create(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, v)
 		return
 	}
-	data, code, err := service.SignupWaitlistUserService(base.DB.Postgresql, req)
+	data, code, err := service.SignupWaitlistUserService(base.DB.Postgresql.DB(), req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)

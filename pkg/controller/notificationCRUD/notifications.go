@@ -48,7 +48,7 @@ func (base *Controller) CreateNotification(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := notificationcrud.CreateNotification(base.Db.Postgresql, req, userId)
+	respData, err := notificationcrud.CreateNotification(base.Db.Postgresql.DB(), req, userId)
 	base.Logger.Error("Failed to create notification", err)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to create notification", err, nil)
@@ -63,7 +63,7 @@ func (base *Controller) CreateNotification(c *gin.Context) {
 }
 
 func (base *Controller) FetchAllNotifications(c *gin.Context) {
-	respData, addedData, err := notificationcrud.GetAllNotifications(c, base.Db.Postgresql)
+	respData, addedData, err := notificationcrud.GetAllNotifications(c, base.Db.Postgresql.DB())
 	if err != nil {
 		base.Logger.Error("Failed to fetch notifications", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch notifications", err, nil)
@@ -84,7 +84,7 @@ func (base *Controller) FetchAllNotifications(c *gin.Context) {
 
 func (base *Controller) FetchUnReadNotifications(c *gin.Context) {
 
-	respData, addedData, err := notificationcrud.GetUnreadNotifications(c, base.Db.Postgresql)
+	respData, addedData, err := notificationcrud.GetUnreadNotifications(c, base.Db.Postgresql.DB())
 	if err != nil {
 		base.Logger.Error("Failed to fetch unread notifications", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to fetch unread notifications", err, nil)
@@ -128,7 +128,7 @@ func (base *Controller) UpdateNotification(c *gin.Context) {
 		return
 	}
 
-	result, err := notificationcrud.UpdateNotification(base.Db.Postgresql, req, id)
+	result, err := notificationcrud.UpdateNotification(base.Db.Postgresql.DB(), req, id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			base.Logger.Error("Notification not found", err)
@@ -163,7 +163,7 @@ func (base *Controller) DeleteNotification(c *gin.Context) {
 		return
 	}
 
-	err := notificationcrud.DeleteNotification(base.Db.Postgresql, userId)
+	err := notificationcrud.DeleteNotification(base.Db.Postgresql.DB(), userId)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Notification not found", err, nil)

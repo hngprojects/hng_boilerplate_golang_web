@@ -23,7 +23,7 @@ type Controller struct {
 
 func (base *Controller) GetAllUsers(c *gin.Context) {
 
-	usersData, paginationResponse, code, err := service.GetAllUsers(c, base.Db.Postgresql)
+	usersData, paginationResponse, code, err := service.GetAllUsers(c, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -41,7 +41,7 @@ func (base *Controller) GetAUser(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	userData, code, err := service.GetAUser(userID, base.Db.Postgresql, c)
+	userData, code, err := service.GetAUser(userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -54,7 +54,7 @@ func (base *Controller) GetAUser(c *gin.Context) {
 
 func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 
-	userId, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
+	userId, err := middleware.GetUserClaims(c, base.Db.Postgresql.DB(), "user_id")
 	if err != nil {
 		if err.Error() == "user claims not found" {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to retrieve organisations", nil)
@@ -67,7 +67,7 @@ func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 	}
 	userID := userId.(string)
 
-	userData, code, err := service.GetAUserOrganisation(userID, base.Db.Postgresql, c)
+	userData, code, err := service.GetAUserOrganisation(userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -84,7 +84,7 @@ func (base *Controller) DeleteAUser(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	code, err := service.DeleteAUser(userID, base.Db.Postgresql, c)
+	code, err := service.DeleteAUser(userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -116,7 +116,7 @@ func (base *Controller) UpdateAUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateAUser(req, userID, base.Db.Postgresql, c)
+	respData, code, err := service.UpdateAUser(req, userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

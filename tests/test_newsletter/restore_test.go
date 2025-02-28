@@ -15,7 +15,7 @@ import (
 
 func TestRestoreNewsLetter(t *testing.T) {
 	_, newsController := SetupNewsLetterTestRouter()
-	db := newsController.Db.Postgresql
+	db := newsController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

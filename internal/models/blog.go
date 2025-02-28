@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"gorm.io/gorm"
 )
@@ -37,8 +38,8 @@ type UpdateBlogRequest struct {
 	Image    string `json:"image_url"`
 }
 
-func (b *Blog) Create(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &b)
+func (b *Blog) Create(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&b)
 
 	if err != nil {
 		return err
@@ -47,8 +48,8 @@ func (b *Blog) Create(db *gorm.DB) error {
 	return nil
 }
 
-func (b *Blog) Delete(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, &b)
+func (b *Blog) Delete(db database.DatabaseManager) error {
+	err := db.DeleteRecordFromDb(&b)
 
 	if err != nil {
 		return err
@@ -57,24 +58,24 @@ func (b *Blog) Delete(db *gorm.DB) error {
 	return nil
 }
 
-func (b *Blog) GetBlogById(db *gorm.DB, blogId string) (Blog, error) {
+func (b *Blog) GetBlogById(db database.DatabaseManager, blogId string) (Blog, error) {
 	var blog Blog
-	err, nerr := postgresql.SelectOneFromDb(db, &blog, "id = ?", blogId)
+	err, nerr := db.SelectOneFromDb(&blog, "id = ?", blogId)
 	if nerr != nil {
 		return blog, err
 	}
 	return blog, nil
 }
 
-func (b *Blog) GetAllBlogs(db *gorm.DB, c *gin.Context) ([]Blog, postgresql.PaginationResponse, error) {
+func (b *Blog) GetAllBlogs(db database.DatabaseManager, c *gin.Context) ([]Blog, database.PaginationResponse, error) {
 	var blog []Blog
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&blog,
 		nil,
@@ -87,8 +88,8 @@ func (b *Blog) GetAllBlogs(db *gorm.DB, c *gin.Context) ([]Blog, postgresql.Pagi
 	return blog, paginationResponse, nil
 }
 
-func (b *Blog) UpdateBlogById(db *gorm.DB, req UpdateBlogRequest, blogId string) (*Blog, error) {
-	result, err := postgresql.UpdateFields(db, &b, req, blogId)
+func (b *Blog) UpdateBlogById(db database.DatabaseManager, req UpdateBlogRequest, blogId string) (*Blog, error) {
+	result, err := db.UpdateFields(&b, req, blogId)
 
 	if err != nil {
 		return nil, err
@@ -101,7 +102,7 @@ func (b *Blog) UpdateBlogById(db *gorm.DB, req UpdateBlogRequest, blogId string)
 	return b, nil
 }
 
-func (b *Blog) CheckBlogExists(blogId string, db *gorm.DB) (Blog, error) {
+func (b *Blog) CheckBlogExists(blogId string, db database.DatabaseManager) (Blog, error) {
 	blog, err := b.GetBlogById(db, blogId)
 	if err != nil {
 		return blog, err

@@ -31,7 +31,7 @@ func (base *Controller) GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.CreateGoogleUser(req, base.Db.Postgresql)
+	respData, code, err := auth.CreateGoogleUser(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -63,7 +63,7 @@ func (base *Controller) FacebookLogin(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.CreateFacebookUser(req, base.Db.Postgresql)
+	respData, code, err := auth.CreateFacebookUser(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, respData)
 		c.JSON(code, rd)

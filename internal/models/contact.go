@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
@@ -27,40 +28,29 @@ func (c *ContactUs) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (f *ContactUs) GetContactUsById(db *gorm.DB, ID string) (ContactUs, error) {
+func (f *ContactUs) GetContactUsById(db database.DatabaseManager, ID string) (ContactUs, error) {
 	var contact ContactUs
 
-	err, nerr := postgresql.SelectOneFromDb(db, &contact, "id = ?", ID)
+	err, nerr := db.SelectOneFromDb(&contact, "id = ?", ID)
 	if nerr != nil {
 		return contact, err
 	}
 	return contact, nil
 }
 
-func (f *ContactUs) GetContactUsByEmail(db *gorm.DB, email string) ([]ContactUs, error) {
+func (f *ContactUs) GetContactUsByEmail(db database.DatabaseManager, email string) ([]ContactUs, error) {
 	var contacts []ContactUs
 
-	err := postgresql.SelectAllFromDb(db, "", &contacts, "email = ?", email)
+	err := db.SelectAllFromDb("", "", &contacts, "email = ?", email)
 	if err != nil {
 		return contacts, err
 	}
 	return contacts, nil
 }
 
-func (c *ContactUs) CreateContactUs(db *gorm.DB) error {
+func (c *ContactUs) CreateContactUs(db database.DatabaseManager) error {
 
-	err := postgresql.CreateOneRecord(db, &c)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c ContactUs) DeleteContactUs(db *gorm.DB) error {
-
-	err := postgresql.DeleteRecordFromDb(db, &c)
+	err := db.CreateOneRecord(&c)
 
 	if err != nil {
 		return err
@@ -69,15 +59,26 @@ func (c ContactUs) DeleteContactUs(db *gorm.DB) error {
 	return nil
 }
 
-func (cu *ContactUs) FetchAllContactUs(db *gorm.DB, c *gin.Context) ([]ContactUs, postgresql.PaginationResponse, error) {
+func (c ContactUs) DeleteContactUs(db database.DatabaseManager) error {
+
+	err := db.DeleteRecordFromDb(&c)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cu *ContactUs) FetchAllContactUs(db database.DatabaseManager, c *gin.Context) ([]ContactUs, database.PaginationResponse, error) {
 	var contacts []ContactUs
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&contacts,
 		nil,

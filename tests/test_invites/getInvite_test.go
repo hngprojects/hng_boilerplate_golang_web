@@ -53,7 +53,7 @@ func TestGetInvites(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(setup.DB.Postgresql))
+		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(setup.DB.Postgresql.DB()))
 		{
 			inviteURL.GET("/organization/invitations", setup.InviteController.GetInvites)
 		}

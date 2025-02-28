@@ -25,7 +25,7 @@ func CheckerValidator(base *storage.Database, inviteReq models.InvitationCreateR
 		return orgResp, http.StatusNotFound, "Invalid Organisation ID", err
 	}
 
-	isAdmin, err := CheckUserIsAdmin(base.Postgresql, userId, inviteReq.OrganisationID)
+	isAdmin, err := CheckUserIsAdmin(base.Postgresql.DB(), userId, inviteReq.OrganisationID)
 	if err != nil {
 		return orgResp, http.StatusInternalServerError, "Internal server error", err
 	}
@@ -114,7 +114,7 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 			continue
 		}
 
-		user, err := user.GetUserByEmail(email, base.Postgresql)
+		user, err := user.GetUserByEmail(email, base.Postgresql.DB())
 		if err != nil {
 			inviteErrors = append(
 				inviteErrors,

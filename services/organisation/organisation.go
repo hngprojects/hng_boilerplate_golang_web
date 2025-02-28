@@ -9,13 +9,15 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func ValidateCreateOrgRequest(req models.CreateOrgRequestModel, db *gorm.DB) (models.CreateOrgRequestModel, int, error) {
 
+	pdb := inst.InitDB(db)
 	org := models.Organisation{}
 
 	// Check if the organization already exists
@@ -27,7 +29,7 @@ func ValidateCreateOrgRequest(req models.CreateOrgRequestModel, db *gorm.DB) (mo
 			return req, http.StatusUnprocessableEntity, fmt.Errorf("email address is invalid")
 		}
 		req.Email = formattedMail
-		exists := postgresql.CheckExists(db, &org, "email = ?", req.Email)
+		exists := pdb.CheckExists(&org, "email = ?", req.Email)
 		if exists {
 			return req, http.StatusBadRequest, errors.New("organization already exists with the given email")
 		}
@@ -51,7 +53,8 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 		Country:     strings.ToLower(req.Country),
 	}
 
-	err := org.CreateOrganisation(db)
+	pdb := inst.InitDB(db)
+	err := org.CreateOrganisation(pdb)
 
 	if err != nil {
 		return nil, err
@@ -59,13 +62,13 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 
 	var user models.User
 
-	user, err = user.GetUserByID(db, userId)
+	user, err = user.GetUserByID(pdb, userId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = user.AddUserToOrganisation(db, &user, []interface{}{&org})
+	err = user.AddUserToOrganisation(pdb, &user, []interface{}{&org})
 
 	if err != nil {
 		return nil, err
@@ -76,7 +79,8 @@ func CreateOrganisation(req models.CreateOrgRequestModel, db *gorm.DB, userId st
 
 func GetOrganisation(orgId string, userId string, db *gorm.DB) (*models.Organisation, error) {
 	var org models.Organisation
-	org, err := org.CheckOrgExists(orgId, db)
+	pdb := inst.InitDB(db)
+	org, err := org.CheckOrgExists(orgId, pdb)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -85,7 +89,7 @@ func GetOrganisation(orgId string, userId string, db *gorm.DB) (*models.Organisa
 		return nil, err
 	}
 
-	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, db)
+	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, pdb)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +102,8 @@ func GetOrganisation(orgId string, userId string, db *gorm.DB) (*models.Organisa
 
 func UpdateOrganisation(orgId string, userId string, updateReq models.UpdateOrgRequestModel, db *gorm.DB) (*models.Organisation, error) {
 	var org models.Organisation
-	org, err := org.CheckOrgExists(orgId, db)
+	pdb := inst.InitDB(db)
+	org, err := org.CheckOrgExists(orgId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("organisation not found")
@@ -106,7 +111,7 @@ func UpdateOrganisation(orgId string, userId string, updateReq models.UpdateOrgR
 		return nil, err
 	}
 
-	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, db)
+	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, pdb)
 	if err != nil {
 		return nil, err
 	}
@@ -121,18 +126,19 @@ func UpdateOrganisation(orgId string, userId string, updateReq models.UpdateOrgR
 			return nil, errors.New("email address is invalid")
 		}
 		updateReq.Email = formattedMail
-		exists := postgresql.CheckExists(db, &org, "email = ?", updateReq.Email)
+		exists := pdb.CheckExists(&org, "email = ?", updateReq.Email)
 		if exists {
 			return nil, errors.New("organisation already exists with the given email")
 		}
 	}
 
-	return org.Update(db, updateReq, orgId)
+	return org.Update(pdb, updateReq, orgId)
 }
 
 func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 	var org models.Organisation
-	org, err := org.CheckOrgExists(orgId, db)
+	pdb := inst.InitDB(db)
+	org, err := org.CheckOrgExists(orgId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("organisation not found")
@@ -140,7 +146,7 @@ func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 		return err
 	}
 
-	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, db)
+	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, pdb)
 	if err != nil {
 		return err
 	}
@@ -148,13 +154,14 @@ func DeleteOrganisation(orgId string, userId string, db *gorm.DB) error {
 		return errors.New("user not authorised to delete this organisation")
 	}
 
-	return org.Delete(db)
+	return org.Delete(pdb)
 }
 
 func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db *gorm.DB) error {
 	var user models.User
 	var org models.Organisation
-	org, err := org.CheckOrgExists(orgId, db)
+	pdb := inst.InitDB(db)
+	org, err := org.CheckOrgExists(orgId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("organisation not found")
@@ -162,7 +169,7 @@ func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db
 		return err
 	}
 
-	user, err = user.GetUserByID(db, req.UserId)
+	user, err = user.GetUserByID(pdb, req.UserId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("user not found")
@@ -170,7 +177,7 @@ func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db
 		return err
 	}
 
-	isMember, err := org.CheckUserIsMemberOfOrg(req.UserId, orgId, db)
+	isMember, err := org.CheckUserIsMemberOfOrg(req.UserId, orgId, pdb)
 	if err != nil {
 		return err
 	}
@@ -178,7 +185,7 @@ func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db
 		return errors.New("user already added to organisation")
 	}
 
-	err = user.AddUserToOrganisation(db, &user, []interface{}{&org})
+	err = user.AddUserToOrganisation(pdb, &user, []interface{}{&org})
 
 	if err != nil {
 		return err
@@ -188,28 +195,29 @@ func AddUserToOrganisation(orgId string, req models.AddUserToOrgRequestModel, db
 
 }
 
-func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Context) ([]models.UserInOrgResponse, postgresql.PaginationResponse, error) {
+func GetUsersInOrganisation(orgId string, userId string, db *gorm.DB, c *gin.Context) ([]models.UserInOrgResponse, database.PaginationResponse, error) {
 	var org models.Organisation
-	_, err := org.CheckOrgExists(orgId, db)
+	pdb := inst.InitDB(db)
+	_, err := org.CheckOrgExists(orgId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, postgresql.PaginationResponse{}, errors.New("organisation not found")
+			return nil, database.PaginationResponse{}, errors.New("organisation not found")
 		}
-		return nil, postgresql.PaginationResponse{}, err
+		return nil, database.PaginationResponse{}, err
 	}
 
-	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, db)
+	isMember, err := org.CheckUserIsMemberOfOrg(userId, orgId, pdb)
 	if err != nil {
-		return nil, postgresql.PaginationResponse{}, err
+		return nil, database.PaginationResponse{}, err
 	}
 	if !isMember {
-		return nil, postgresql.PaginationResponse{}, errors.New("user does not have access to the organisation")
+		return nil, database.PaginationResponse{}, errors.New("user does not have access to the organisation")
 	}
 
-	users, paginationResponse, err := org.GetUsersInOrganisation(c, db, orgId)
+	users, paginationResponse, err := org.GetUsersInOrganisation(c, pdb, orgId)
 
 	if err != nil {
-		return nil, postgresql.PaginationResponse{}, err
+		return nil, database.PaginationResponse{}, err
 	}
 
 	return users, paginationResponse, nil

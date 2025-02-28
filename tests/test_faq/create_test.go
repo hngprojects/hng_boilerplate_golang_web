@@ -30,7 +30,7 @@ func TestAddToFaq(t *testing.T) {
 		Role:     int(models.RoleIdentity.SuperAdmin),
 	}
 
-	db.Create(&adminUser)
+	db.DB().Create(&adminUser)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, newsController := SetupFAQTestRouter()
@@ -53,6 +53,7 @@ func TestAddToFaq(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		faq := models.FAQ{
+			ID:       utility.GenerateUUID(),
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(6)),
 			Answer:   "To provide answers to frequently asked questions.",
 			Category: "Policies",
@@ -110,11 +111,12 @@ func TestAddToFaq(t *testing.T) {
 		theRandom := utility.RandomString(6)
 
 		faq := models.FAQ{
+			ID:       utility.GenerateUUID(),
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", theRandom),
 			Answer:   "This is a duplicate question test.",
 			Category: "Policies",
 		}
-		authController.Db.Postgresql.Create(&faq)
+		authController.Db.Postgresql.DB().Create(&faq)
 
 		duplicateFaq := models.FAQ{
 			Question: fmt.Sprintf("What is the purpose of this %s FAQ?", theRandom),

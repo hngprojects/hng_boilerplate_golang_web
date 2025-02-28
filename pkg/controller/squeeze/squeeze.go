@@ -34,14 +34,14 @@ func (base *Controller) Create(c *gin.Context) {
 		return
 	}
 
-	reqData, code, err := service.ValidateSqueezeUserRequest(req, base.Db.Postgresql)
+	reqData, code, err := service.ValidateSqueezeUserRequest(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
 		return
 	}
 
-	squeezeUser, err := service.CreateSqueeze(base.Db.Postgresql, base.ExtReq, reqData)
+	squeezeUser, err := service.CreateSqueeze(base.Db.Postgresql.DB(), base.ExtReq, reqData)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to submit your request", nil)

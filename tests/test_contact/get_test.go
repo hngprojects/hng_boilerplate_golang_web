@@ -34,8 +34,8 @@ func TestGetAllContactUs(t *testing.T) {
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&regularUser)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&regularUser)
 
 	contact1 := models.ContactUs{
 		ID:      utility.GenerateUUID(),
@@ -48,8 +48,8 @@ func TestGetAllContactUs(t *testing.T) {
 		Message: fmt.Sprintf("Second test message - %v ", currUUID),
 	}
 
-	db.Create(&contact1)
-	db.Create(&contact2)
+	db.DB().Create(&contact1)
+	db.DB().Create(&contact2)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, contactController := SetupContactTestRouter()
@@ -141,8 +141,8 @@ func TestGetContactUsById(t *testing.T) {
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&regularUser)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&regularUser)
 
 	contact := models.ContactUs{
 		ID:      utility.GenerateUUID(),
@@ -150,7 +150,7 @@ func TestGetContactUsById(t *testing.T) {
 		Message: fmt.Sprintf("Test message - %v ", currUUID),
 	}
 
-	db.Create(&contact)
+	db.DB().Create(&contact)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, contactController := SetupContactTestRouter()
@@ -242,8 +242,8 @@ func TestGetContactUsByEmail(t *testing.T) {
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&regularUser)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&regularUser)
 
 	contact := models.ContactUs{
 		ID:      utility.GenerateUUID(),
@@ -251,7 +251,7 @@ func TestGetContactUsByEmail(t *testing.T) {
 		Message: fmt.Sprintf("Test message - %v ", currUUID),
 	}
 
-	db.Create(&contact)
+	db.DB().Create(&contact)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, contactController := SetupContactTestRouter()

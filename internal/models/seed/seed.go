@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func SeedDatabase(db *gorm.DB) {
+func SeedDatabase(db database.DatabaseManager) {
 
 	SeedTestDatabase(db)
 
@@ -86,21 +86,21 @@ func SeedDatabase(db *gorm.DB) {
 
 	var existingUser models.User
 
-	query := postgresql.PreloadEntities(db, &existingUser, "Profile", "Products")
+	query := db.PreloadEntities(nil, &existingUser, "Profile", "Products")
 	if err := query.Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed users
-			postgresql.CreateOneRecord(db, &user1)
-			postgresql.CreateOneRecord(db, &user2)
+			db.CreateOneRecord(&user1)
+			db.CreateOneRecord(&user2)
 
 			// Seed organisations
 			for _, org := range organisations {
-				postgresql.CreateOneRecord(db, &org)
+				db.CreateOneRecord(&org)
 			}
 
 			// Seed categories
 			for _, category := range categories {
-				postgresql.CreateOneRecord(db, &category)
+				db.CreateOneRecord(&category)
 			}
 
 			fmt.Println("Users, organisations and categories seeded.")
@@ -135,11 +135,11 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should...", Category: "Policies"},
 	}
 
-	if err := db.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
+	if err := db.DB().Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed faq
 			for _, faq := range faqs {
-				postgresql.CreateOneRecord(db, &faq)
+				db.CreateOneRecord(&faq)
 			}
 		} else {
 			fmt.Println("An error occurred: ", err)
@@ -150,11 +150,11 @@ func SeedDatabase(db *gorm.DB) {
 
 	//seeding templates
 	templates := SeedTemplates()
-	if err := db.Where("name = ?", templates[0].Name).First(&models.EmailTemplate{}).Error; err != nil {
+	if err := db.DB().Where("name = ?", templates[0].Name).First(&models.EmailTemplate{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed templates
 			for _, template := range templates {
-				postgresql.CreateOneRecord(db, &template)
+				db.CreateOneRecord(&template)
 			}
 		} else {
 			fmt.Println("An error occurred: ", err)
@@ -165,7 +165,7 @@ func SeedDatabase(db *gorm.DB) {
 
 }
 
-func SeedTestDatabase(db *gorm.DB) {
+func SeedTestDatabase(db database.DatabaseManager) {
 
 	roles := []models.Role{
 		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
@@ -173,9 +173,10 @@ func SeedTestDatabase(db *gorm.DB) {
 	}
 
 	var existingRole models.Role
-	if err := db.Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
+	if err := db.DB().Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			postgresql.CreateMultipleRecords(db, &roles, len(roles))
+
+			db.CreateMultipleRecords(&roles, len(roles))
 		} else {
 			fmt.Println("An error occurred: ", err)
 		}
@@ -186,10 +187,10 @@ func SeedTestDatabase(db *gorm.DB) {
 
 }
 
-func SeedOrgRolesAndPermissions(db *gorm.DB) {
+func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 
 	var organizations []models.Organisation
-	if err := db.Find(&organizations).Error; err != nil {
+	if err := db.DB().Find(&organizations).Error; err != nil {
 		fmt.Printf("Error fetching organizations: %v\n", err)
 		return
 	}
@@ -201,7 +202,7 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 		}
 
 		for _, role := range roles {
-			if err := postgresql.CreateOneRecord(db, &role); err != nil {
+			if err := db.CreateOneRecord(&role); err != nil {
 				fmt.Printf("Error creating role: %v\n", err)
 				continue
 			}
@@ -212,7 +213,7 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 			}
 
 			for _, permission := range permissions {
-				if err := postgresql.CreateOneRecord(db, &permission); err != nil {
+				if err := db.CreateOneRecord(&permission); err != nil {
 					fmt.Printf("Error creating permission: %v\n", err)
 				}
 			}

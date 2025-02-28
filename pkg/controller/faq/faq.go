@@ -21,7 +21,7 @@ type Controller struct {
 
 func (base *Controller) GetFaq(c *gin.Context) {
 
-	faqsData, paginationResponse, code, err := service.GetFaq(c, base.Db.Postgresql)
+	faqsData, paginationResponse, code, err := service.GetFaq(c, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -39,7 +39,7 @@ func (base *Controller) DeleteFaq(c *gin.Context) {
 		reqID = c.Param("id")
 	)
 
-	code, err := service.DeleteFaq(reqID, base.Db.Postgresql)
+	code, err := service.DeleteFaq(reqID, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -70,7 +70,7 @@ func (base *Controller) AddToFaq(c *gin.Context) {
 		return
 	}
 
-	err = service.AddToFaq(&req, base.Db.Postgresql)
+	err = service.AddToFaq(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -105,7 +105,7 @@ func (base *Controller) UpdateFaq(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateFaq(req, ID, base.Db.Postgresql)
+	respData, code, err := service.UpdateFaq(req, ID, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

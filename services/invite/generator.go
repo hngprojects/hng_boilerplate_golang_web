@@ -17,7 +17,7 @@ func InvitationLinkGenerator(c *gin.Context, base *storage.Database, inviteReq m
 		return "", err
 	}
 
-	err = SaveInvitation(base.Postgresql, userId, token, inviteReq)
+	err = SaveInvitation(base.Postgresql.DB(), userId, token, inviteReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to save invitation", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)

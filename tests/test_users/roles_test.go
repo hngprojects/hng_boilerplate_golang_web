@@ -14,7 +14,7 @@ import (
 
 func TestUpdateUserRole(t *testing.T) {
 	router, userController := SetupUsersTestRouter()
-	db := userController.Db.Postgresql
+	db := userController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	theRole := models.RoleIdentity.SuperAdmin
 	userRole := models.RoleIdentity.User

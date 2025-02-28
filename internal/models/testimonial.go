@@ -3,8 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
-	"gorm.io/gorm"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type Testimonial struct {
@@ -21,8 +20,8 @@ type TestimonialReq struct {
 	Content string `json:"content" validate:"required"`
 }
 
-func (t *Testimonial) Create(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &t)
+func (t *Testimonial) Create(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&t)
 
 	if err != nil {
 		return err

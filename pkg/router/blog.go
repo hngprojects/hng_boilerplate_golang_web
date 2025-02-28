@@ -17,7 +17,7 @@ func Blog(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	blogs := blog.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	blogsAdminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+	blogsAdminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 	blogsUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 
 	{

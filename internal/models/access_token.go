@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"gorm.io/gorm"
-
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type AccessToken struct {
@@ -20,16 +18,16 @@ type AccessToken struct {
 	UpdatedAt                 time.Time `gorm:"column:updated_at; autoUpdateTime" json:"updated_at"`
 }
 
-func (a *AccessToken) GetAccessTokens(db *gorm.DB) error {
-	err := postgresql.SelectFirstFromDb(db, &a)
+func (a *AccessToken) GetAccessTokens(db database.DatabaseManager) error {
+	err := db.SelectFirstFromDb(&a)
 	if err != nil {
 		return fmt.Errorf("token selection failed: %v", err.Error())
 	}
 	return nil
 }
 
-func (a *AccessToken) GetByOwnerID(db *gorm.DB) (int, error) {
-	err, nilErr := postgresql.SelectOneFromDb(db, &a, "owner_id = ? ", a.OwnerID)
+func (a *AccessToken) GetByOwnerID(db database.DatabaseManager) (int, error) {
+	err, nilErr := db.SelectOneFromDb(db, &a, "owner_id = ? ", a.OwnerID)
 	if nilErr != nil {
 		return http.StatusBadRequest, nilErr
 	}
@@ -40,8 +38,8 @@ func (a *AccessToken) GetByOwnerID(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
-func (a *AccessToken) GetByID(db *gorm.DB) (int, error) {
-	err, nilErr := postgresql.SelectOneFromDb(db, &a, "id = ? ", a.ID)
+func (a *AccessToken) GetByID(db database.DatabaseManager) (int, error) {
+	err, nilErr := db.SelectOneFromDb(&a, "id = ? ", a.ID)
 	if nilErr != nil {
 		return http.StatusBadRequest, nilErr
 	}
@@ -52,8 +50,8 @@ func (a *AccessToken) GetByID(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
-func (a *AccessToken) GetLatestByOwnerIDAndIsLive(db *gorm.DB) (int, error) {
-	err, nilErr := postgresql.SelectLatestFromDb(db, &a, "owner_id = ? and is_live = ? ", a.OwnerID, a.IsLive)
+func (a *AccessToken) GetLatestByOwnerIDAndIsLive(db database.DatabaseManager) (int, error) {
+	err, nilErr := db.SelectLatestFromDb(&a, "owner_id = ? and is_live = ? ", a.OwnerID, a.IsLive)
 	if nilErr != nil {
 		return http.StatusBadRequest, nilErr
 	}
@@ -64,7 +62,7 @@ func (a *AccessToken) GetLatestByOwnerIDAndIsLive(db *gorm.DB) (int, error) {
 	return http.StatusOK, nil
 }
 
-func (a *AccessToken) CreateAccessToken(db *gorm.DB, tokenData interface{}) error {
+func (a *AccessToken) CreateAccessToken(db database.DatabaseManager, tokenData interface{}) error {
 	if a.OwnerID == "" {
 		return fmt.Errorf("owner id not provided to create access token")
 	}
@@ -81,18 +79,18 @@ func (a *AccessToken) CreateAccessToken(db *gorm.DB, tokenData interface{}) erro
 	a.IsLive = true
 	a.LoginAccessToken = access_token
 	a.LoginAccessTokenExpiresIn = exp
-	err := postgresql.CreateOneRecord(db, &a)
+	err := db.CreateOneRecord(&a)
 	if err != nil {
 		return fmt.Errorf("user creation failed: %v", err.Error())
 	}
 	return nil
 }
 
-func (a *AccessToken) RevokeAccessToken(db *gorm.DB) error {
+func (a *AccessToken) RevokeAccessToken(db database.DatabaseManager) error {
 	if a.ID == "" {
 		return fmt.Errorf("access token id not provided to revoke access token")
 	}
 	a.IsLive = false
-	_, err := postgresql.SaveAllFields(db, &a)
+	_, err := db.SaveAllFields(&a)
 	return err
 }

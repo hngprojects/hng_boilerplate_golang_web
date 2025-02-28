@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type PasswordReset struct {
@@ -69,16 +69,15 @@ type GoogleClaims struct {
 }
 
 type FacebookClaims struct {
-	
 }
 
 type FacebookRequestModel struct {
 	Token string `json:"id_token" validate:"required"`
 }
 
-func (p *PasswordReset) CreatePasswordReset(db *gorm.DB) error {
+func (p *PasswordReset) CreatePasswordReset(db database.DatabaseManager) error {
 
-	err := postgresql.CreateOneRecord(db, &p)
+	err := db.CreateOneRecord(&p)
 
 	if err != nil {
 		return err
@@ -87,17 +86,17 @@ func (p *PasswordReset) CreatePasswordReset(db *gorm.DB) error {
 	return nil
 }
 
-func (pr *PasswordReset) GetPasswordResetByToken(db *gorm.DB, token string) (PasswordReset, error) {
+func (pr *PasswordReset) GetPasswordResetByToken(db database.DatabaseManager, token string) (PasswordReset, error) {
 	var reset PasswordReset
-	if err := db.Where("token = ? AND expires_at > ?", token, time.Now()).First(&reset).Error; err != nil {
+	if err := db.DB().Where("token = ? AND expires_at > ?", token, time.Now()).First(&reset).Error; err != nil {
 		return reset, err
 	}
 	return reset, nil
 }
 
-func (pr *PasswordReset) GetPasswordResetByEmail(db *gorm.DB, email string) (*PasswordReset, error) {
+func (pr *PasswordReset) GetPasswordResetByEmail(db database.DatabaseManager, email string) (*PasswordReset, error) {
 	var reset PasswordReset
-	if err := db.Where("email = ?", email).First(&reset).Error; err != nil {
+	if err := db.DB().Where("email = ?", email).First(&reset).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -106,20 +105,9 @@ func (pr *PasswordReset) GetPasswordResetByEmail(db *gorm.DB, email string) (*Pa
 	return &reset, nil
 }
 
-func (pr *PasswordReset) DeletePasswordReset(db *gorm.DB) error {
+func (pr *PasswordReset) DeletePasswordReset(db database.DatabaseManager) error {
 
-	err := postgresql.DeleteRecordFromDb(db, pr)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MagicLink) CreateMagicLink(db *gorm.DB) error {
-
-	err := postgresql.CreateOneRecord(db, &m)
+	err := db.DeleteRecordFromDb(pr)
 
 	if err != nil {
 		return err
@@ -128,9 +116,20 @@ func (m *MagicLink) CreateMagicLink(db *gorm.DB) error {
 	return nil
 }
 
-func (m *MagicLink) GetMagicLinkByToken(db *gorm.DB, token string) (MagicLink, error) {
+func (m *MagicLink) CreateMagicLink(db database.DatabaseManager) error {
+
+	err := db.CreateOneRecord(&m)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MagicLink) GetMagicLinkByToken(db database.DatabaseManager, token string) (MagicLink, error) {
 	var magic MagicLink
-	if err := db.Where("token = ? AND expires_at > ?", token, time.Now()).First(&magic).Error; err != nil {
+	if err := db.DB().Where("token = ? AND expires_at > ?", token, time.Now()).First(&magic).Error; err != nil {
 		return magic, err
 	}
 	return magic, nil
@@ -147,9 +146,9 @@ func (m *MagicLink) GetMagicLinkByEmail(db *gorm.DB, email string) (*MagicLink, 
 	return &magic, nil
 }
 
-func (m *MagicLink) DeleteMagicLink(db *gorm.DB) error {
+func (m *MagicLink) DeleteMagicLink(db database.DatabaseManager) error {
 
-	err := postgresql.DeleteRecordFromDb(db, m)
+	err := db.DeleteRecordFromDb(m)
 
 	if err != nil {
 		return err

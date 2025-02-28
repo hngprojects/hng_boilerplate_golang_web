@@ -30,8 +30,8 @@ func SetupTestimonialTestRouter() (*gin.Engine, *testimonial.Controller) {
 
 func SetupTestimonialRoutes(r *gin.Engine, testimonialController *testimonial.Controller) {
 	r.POST(
-		"/api/v1/testimonials", 
-		middleware.Authorize(testimonialController.Db.Postgresql, models.RoleIdentity.User), 
+		"/api/v1/testimonials",
+		middleware.Authorize(testimonialController.Db.Postgresql.DB(), models.RoleIdentity.User),
 		testimonialController.Create,
 	)
 }

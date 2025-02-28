@@ -5,15 +5,18 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	notifications "github.com/hngprojects/hng_boilerplate_golang_web/services/notification"
 )
 
 func Send(extReq request.ExternalRequest, db *gorm.DB, rdb *redis.Client, notification *models.NotificationRecord) error {
+	rd := inst.InitRed(rdb)
+	pdb := inst.InitDB(db)
 	var (
 		err  error
-		req  = notifications.NewNotificationObject(extReq, rdb, db, notification)
+		req  = notifications.NewNotificationObject(extReq, rd, pdb, notification)
 		name = GetName(notification.Name)
 	)
 

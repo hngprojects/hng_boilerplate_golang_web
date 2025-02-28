@@ -55,7 +55,7 @@ func TestNotificationSettings(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		notificationUrl := r.Group(fmt.Sprintf("%v", "/api/v1/settings/"), middleware.Authorize(setup.DB.Postgresql))
+		notificationUrl := r.Group(fmt.Sprintf("%v", "/api/v1/settings/"), middleware.Authorize(setup.DB.Postgresql.DB()))
 		{
 			notificationUrl.GET("/notification-settings", setup.NotificationController.GetNotificationSettings)
 			notificationUrl.PATCH("/notification-settings", setup.NotificationController.UpdateNotificationSettings)

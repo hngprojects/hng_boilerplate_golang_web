@@ -2,6 +2,7 @@ package helpcenter
 
 import (
 	"net/http"
+
 	"github.com/golang-jwt/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -31,8 +32,8 @@ func (base *Controller) CreateHelpCenterTopic(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	
-    claims, exists := c.Get("userClaims")
+
+	claims, exists := c.Get("userClaims")
 
 	if !exists {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "unable to get user claims", exists, nil)
@@ -44,24 +45,23 @@ func (base *Controller) CreateHelpCenterTopic(c *gin.Context) {
 
 	userId := userClaims["user_id"].(string)
 
-
-	user, code, err := user.GetUser(userId, base.Db.Postgresql)
-    if err != nil {
-        c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
-        return
-    }
+	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
+	if err != nil {
+		c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
+		return
+	}
 
 	req.Author = user.Name
 	req.Title = utility.CleanStringInput(req.Title)
-    req.Content = utility.CleanStringInput(req.Content)
-	
+	req.Content = utility.CleanStringInput(req.Content)
+
 	if err := base.Validator.Struct(&req); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusUnprocessableEntity, "error", "Input validation failed", utility.ValidationResponse(err, base.Validator), nil)
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
 
-	respData, err := service.CreateHelpCenterTopic(req, base.Db.Postgresql)
+	respData, err := service.CreateHelpCenterTopic(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to add Topic", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
@@ -74,7 +74,7 @@ func (base *Controller) CreateHelpCenterTopic(c *gin.Context) {
 }
 
 func (base *Controller) FetchAllTopics(c *gin.Context) {
-	topics, paginationResponse, err := service.GetPaginatedTopics(c, base.Db.Postgresql)
+	topics, paginationResponse, err := service.GetPaginatedTopics(c, base.Db.Postgresql.DB())
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topics not found", err, nil)
@@ -97,13 +97,13 @@ func (base *Controller) FetchAllTopics(c *gin.Context) {
 }
 
 func (base *Controller) FetchTopicByID(c *gin.Context) {
-		id := c.Param("id")
+	id := c.Param("id")
 	if _, err := uuid.Parse(id); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Invalid ID format", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	respData, err := service.FetchTopicByID(base.Db.Postgresql, id)
+	respData, err := service.FetchTopicByID(base.Db.Postgresql.DB(), id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topic not found", err, nil)
@@ -127,7 +127,7 @@ func (base *Controller) SearchHelpCenterTopics(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	topics, paginationResponse, err := service.SearchHelpCenterTopics(c, base.Db.Postgresql, query)
+	topics, paginationResponse, err := service.SearchHelpCenterTopics(c, base.Db.Postgresql.DB(), query)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "No topics found", err, nil)
@@ -176,12 +176,11 @@ func (base *Controller) UpdateHelpCenterByID(c *gin.Context) {
 
 	userId := userClaims["user_id"].(string)
 
-
-	user, code, err := user.GetUser(userId, base.Db.Postgresql)
-    if err != nil {
-        c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
-        return
-    }
+	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
+	if err != nil {
+		c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
+		return
+	}
 
 	req.Author = user.Name
 
@@ -191,7 +190,7 @@ func (base *Controller) UpdateHelpCenterByID(c *gin.Context) {
 		return
 	}
 
-	result, err := service.UpdateTopic(base.Db.Postgresql, req, id)
+	result, err := service.UpdateTopic(base.Db.Postgresql.DB(), req, id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topic not found", err, nil)
@@ -217,7 +216,7 @@ func (base *Controller) DeleteTopicByID(c *gin.Context) {
 		return
 	}
 
-	err := service.DeleteTopicByID(base.Db.Postgresql, id)
+	err := service.DeleteTopicByID(base.Db.Postgresql.DB(), id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Topic not found", err, nil)

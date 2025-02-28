@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 )
@@ -21,7 +22,9 @@ func AddNotificationToQueue(rdb *redis.Client, name names.NotificationName, data
 		Sent: false,
 	}
 
-	err = notificationRecord.PushToQueue(rdb)
+	// an instance of redis.Redis struct is passed to the PushToQueue method
+	rd := inst.InitRed(rdb)
+	err = notificationRecord.PushToQueue(rd)
 	if err != nil {
 		return err
 	}

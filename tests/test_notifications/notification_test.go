@@ -36,8 +36,8 @@ func TestNotification(t *testing.T) {
 			RequestBody: models.NotificationReq{
 				Message: "Welcome to HNGi8",
 			},
-			RequestURI:  "/api/v1/notifications/global",
-			Method:      http.MethodPost,
+			RequestURI:   "/api/v1/notifications/global",
+			Method:       http.MethodPost,
 			ExpectedCode: http.StatusCreated,
 			Message:      "Notification created successfully",
 			Headers: map[string]string{
@@ -45,9 +45,9 @@ func TestNotification(t *testing.T) {
 				"Authorization": "Bearer " + setup.Token,
 			},
 		}, {
-			Name: "Fetch All Notifications Action",
-			RequestURI: "/api/v1/notifications/all",
-			Method:     http.MethodGet,
+			Name:         "Fetch All Notifications Action",
+			RequestURI:   "/api/v1/notifications/all",
+			Method:       http.MethodGet,
 			ExpectedCode: http.StatusOK,
 			Message:      "Notifications retrieved successfully",
 			Headers: map[string]string{
@@ -55,22 +55,22 @@ func TestNotification(t *testing.T) {
 				"Authorization": "Bearer " + setup.Token,
 			},
 		}, {
-			Name: "Fetch Unread Notifications Action",
-			RequestURI: "/api/v1/notifications/unread",
-			Method:     http.MethodGet,
+			Name:         "Fetch Unread Notifications Action",
+			RequestURI:   "/api/v1/notifications/unread",
+			Method:       http.MethodGet,
 			ExpectedCode: http.StatusOK,
 			Message:      "Unread Notifications retrieved successfully",
 			Headers: map[string]string{
 				"Content-Type":  "application/json",
 				"Authorization": "Bearer " + setup.Token,
 			},
-		},{
+		}, {
 			Name: "Update Notification Action",
 			RequestBody: models.UpdateNotificationReq{
 				IsRead: true,
 			},
-			RequestURI:  fmt.Sprintf("/api/v1/notifications/%s", setup.NotifID),
-			Method:      http.MethodPut,
+			RequestURI:   fmt.Sprintf("/api/v1/notifications/%s", setup.NotifID),
+			Method:       http.MethodPut,
 			ExpectedCode: http.StatusOK,
 			Message:      "Notification updated successfully",
 			Headers: map[string]string{
@@ -83,7 +83,7 @@ func TestNotification(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		notificationUrl := r.Group(fmt.Sprintf("%v", "/api/v1/notifications"), middleware.Authorize(setup.DB.Postgresql))
+		notificationUrl := r.Group(fmt.Sprintf("%v", "/api/v1/notifications"), middleware.Authorize(setup.DB.Postgresql.DB()))
 		{
 			notificationUrl.POST("/global", setup.NotificationController.CreateNotification)
 			notificationUrl.GET("/all", setup.NotificationController.FetchAllNotifications)
