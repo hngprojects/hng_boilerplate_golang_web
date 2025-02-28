@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
@@ -95,6 +96,22 @@ func (u *UserRegionTimezoneLanguage) CreateUserRegion(db *gorm.DB) error {
 }
 
 func (l *Language) CreateLanguage(db *gorm.DB) error {
+	isUniqueName, errName := utility.IsUniqueSingleField(db, &Language{}, "name", l.Name)
+	isUniqueCode, errCode := utility.IsUniqueSingleField(db, &Language{}, "code", l.Code)
+
+	if errName != nil {
+		return errName
+	}
+	if errCode != nil {
+		return errCode
+	}
+	if !isUniqueName {
+		return fmt.Errorf("the name %s already exists", l.Name)
+	}
+	if !isUniqueCode {
+		return fmt.Errorf("the code %s already exists", l.Code)
+	}
+
 	err := postgresql.CreateOneRecord(db, &l)
 
 	if err != nil {
@@ -105,6 +122,22 @@ func (l *Language) CreateLanguage(db *gorm.DB) error {
 }
 
 func (t *Timezone) CreateTimeZone(db *gorm.DB) error {
+	uniqueTime, uniqueErrTime := utility.IsUniqueSingleField(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.IsUniqueSingleField(db, &Timezone{}, "gmt_offset", t.GmtOffset)
+
+	if uniqueErrTime != nil {
+		return uniqueErrTime
+	}
+	if uniqueErrGmt != nil {
+		return uniqueErrGmt
+	}
+	if !uniqueTime {
+		return fmt.Errorf("the timezone %s already exists", t.Timezone)
+	}
+	if !uniqueGmt {
+		return fmt.Errorf("the timezone %s already exists", t.GmtOffset)
+	}
+
 	err := postgresql.CreateOneRecord(db, &t)
 
 	if err != nil {
@@ -115,13 +148,24 @@ func (t *Timezone) CreateTimeZone(db *gorm.DB) error {
 }
 
 func (r *Region) CreateRegion(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &r)
+	isUniqueName, errName := utility.IsUniqueSingleField(db, &Region{}, "name", r.Name)
+	isUniqueCode, errCode := utility.IsUniqueSingleField(db, &Region{}, "code", r.Code)
 
-	if err != nil {
-		return err
+	if errName != nil {
+		return errName
+	}
+	if errCode != nil {
+		return errCode
+	}
+	if !isUniqueName {
+		return fmt.Errorf("the name %s already exists", r.Name)
+	}
+	if !isUniqueCode {
+		return fmt.Errorf("the code %s already exists", r.Code)
 	}
 
-	return nil
+	err := postgresql.CreateOneRecord(db, &r)
+	return err
 }
 
 func (r *Region) GetRegions(db *gorm.DB) ([]Region, error) {
@@ -181,6 +225,22 @@ func (t *Timezone) GetTimezoneByID(db *gorm.DB, ID string) (Timezone, error) {
 }
 
 func (t *Timezone) UpdateTimeZone(db *gorm.DB) error {
+	uniqueTime, uniqueErrTime := utility.IsUniqueSingleField(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.IsUniqueSingleField(db, &Timezone{}, "gmt_offset", t.GmtOffset)
+
+	if uniqueErrTime != nil {
+		return uniqueErrTime
+	}
+	if uniqueErrGmt != nil {
+		return uniqueErrGmt
+	}
+	if !uniqueTime {
+		return fmt.Errorf("the timezone %s already exists", t.Timezone)
+	}
+	if !uniqueGmt {
+		return fmt.Errorf("the timezone %s already exists", t.GmtOffset)
+	}
+
 	_, err := postgresql.SaveAllFields(db, &t)
 	return err
 }

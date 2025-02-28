@@ -163,4 +163,31 @@ func TestCreateOrgRole(t *testing.T) {
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
+
+	t.Run("Duplicate Create Org Role", func(t *testing.T) {
+		router, orgController := setup()
+
+		loginData := models.LoginRequestModel{
+			Email:    adminUser.Email,
+			Password: "password",
+		}
+		token := tests.GetLoginToken(t, router, *orgController, loginData)
+
+		role := models.OrgRole{
+			Name:        fmt.Sprintf("Admin Role-%v", utility.RandomString(5)),
+			Description: "New role description",
+		}
+		roleJSON, _ := json.Marshal(role)
+
+		duplicateReq, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/organisations/%s/roles", orgID), bytes.NewBuffer(roleJSON))
+		duplicateReq.Header.Set("Content-Type", "application/json")
+		duplicateReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+		duplicateResp := httptest.NewRecorder()
+		router.ServeHTTP(duplicateResp, duplicateReq)
+
+		tests.AssertStatusCode(t, duplicateResp.Code, http.StatusBadRequest)
+		duplicateResponse := tests.ParseResponse(duplicateResp)
+		tests.AssertResponseMessage(t, duplicateResponse["message"].(string), fmt.Sprintf("Role with the name %s already exists in this organisation", role.Name))
+	})
 }

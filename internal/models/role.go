@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type RoleName string
@@ -74,13 +75,21 @@ func (p PermissionList) Value() (driver.Value, error) {
 }
 
 func (r *OrgRole) CreateOrgRole(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &r)
+	isUniqueName, errName := utility.IsUniqueSingleField(db, &OrgRole{}, "name", r.Name)
+	isUniqueId, errId := utility.IsUniqueSingleField(db, &OrgRole{}, "organisation_id", r.OrganisationID)
 
-	if err != nil {
-		return err
+	if errName != nil {
+		return errName
+	}
+	if errId != nil {
+		return errId
+	}
+	if !isUniqueName || !isUniqueId {
+		return fmt.Errorf("Role with the name %s already exists in this organisation", r.Name)
 	}
 
-	return nil
+	createError := postgresql.CreateOneRecord(db, &r)
+	return createError
 }
 
 func (r *OrgRole) DeleteOrgRole(db *gorm.DB) error {
@@ -92,13 +101,13 @@ func (r *OrgRole) DeleteOrgRole(db *gorm.DB) error {
 }
 
 func (r *OrgRole) UpdateOrgRole(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &r)
-	return err
+	_, updateErr := postgresql.SaveAllFields(db, &r)
+	return updateErr
 }
 
 func (rp *Permission) UpdateOrgPermissions(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &rp)
-	return err
+	_, updateErr := postgresql.SaveAllFields(db, &rp)
+	return updateErr
 }
 
 func (r *OrgRole) GetOrgRoles(db *gorm.DB, orgID string) ([]OrgRole, error) {

@@ -4,11 +4,13 @@ import (
 	"errors"
 	"math"
 	"time"
+	"fmt"
 
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Organisation struct {
@@ -63,6 +65,14 @@ type AddUserToOrgRequestModel struct {
 }
 
 func (c *Organisation) CreateOrganisation(db *gorm.DB) error {
+	unique, uniqueErr := utility.IsUniqueSingleField(db, &Organisation{}, "email", c.Email)
+
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("the email %s already exists in this organisation", c.Email)
+	}
 	err := postgresql.CreateOneRecord(db, &c)
 	if err != nil {
 		return err

@@ -54,6 +54,14 @@ func (n *NewsLetter) GetDeletedNewsLetterById(db *gorm.DB, ID string) (NewsLette
 }
 
 func (n *NewsLetter) CreateNewsLetter(db *gorm.DB) error {
+	unique, uniqueErr := utility.IsUniqueSingleField(db, &NewsLetter{}, "email", n.Email)
+
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("the email %s already exists", n.Email)
+	}
 
 	err := postgresql.CreateOneRecord(db, &n)
 
@@ -76,6 +84,15 @@ func (n *NewsLetter) DeleteNewsLetter(db *gorm.DB) error {
 }
 
 func (n *NewsLetter) UpdateNewsLetter(db *gorm.DB) error {
+	unique, uniqueErr := utility.IsUniqueSingleField(db, &NewsLetter{}, "email", n.Email)
+
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("the email %s already exists", n.Email)
+	}
+
 	_, err := postgresql.SaveAllFields(db, &n)
 	return err
 }
