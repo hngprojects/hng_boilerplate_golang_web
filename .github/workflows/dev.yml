@@ -8,7 +8,6 @@ on:
 jobs:
   build_and_upload_artifact:
     runs-on: ubuntu-latest
-    if: github.event.repository.fork == false
     environment: development
     env:
       SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
@@ -22,30 +21,9 @@ jobs:
       - name: Set Golang
         uses: actions/setup-go@v4
         with:
-          go-version: "1.22.1"
-      - name: Create app config file
-        run: cp app-sample.env app.env
+          go-version: "1.23.1"
       - name: Build the application
         run: go build -o development_app
-    
-      - name: Create app.env file
-        uses: vicradon/create-env-action@v1.0.1
-        with:
-          action_input_file: "app-sample.env"
-          action_output_file: "app.env"
-          action_true_string_variables: |
-            MAIL_PASSWORD
-          SERVER_PORT: ${{ secrets.SERVER_PORT }} 
-          DB_NAME: ${{ secrets.DB_NAME }}
-          USERNAME: ${{ secrets.USERNAME }} 
-          APP_NAME: "development"
-          APP_URL: ${{ vars.URL}}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }} 
-          MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          MAIL_PORT: ${{ secrets.MAIL_PORT }}
-          MIGRATE: "true"
 
       - name: Copy artifacts to server
         uses: appleboy/scp-action@v0.1.7
@@ -54,8 +32,8 @@ jobs:
           username: ${{ env.SSH_USERNAME }}
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
-          source: "app.env,development_app"
-          target: ~/deployments/development
+          source: "development_app"
+          target: ~/golang/backend
 
   restart_app:
     runs-on: ubuntu-latest
@@ -69,15 +47,16 @@ jobs:
 
     steps:
       - name: SSH into server and deploy
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ env.SSH_HOST }}
           username: ${{ env.SSH_USERNAME }}
           password: ${{ env.SSH_PASSWORD }}
           port: ${{ env.SSH_PORT }}
           script: |
-            mkdir -p ~/deployments/development
-            cd ~/deployments/development
+            mkdir -p ~/golang/backend
+            cd ~/golang/backend
             git reset --hard
             git pull origin dev
-            pm2 restart development_app
+            pm2 stop development_app
+            pm2 start development_app
