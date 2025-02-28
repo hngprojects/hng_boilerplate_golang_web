@@ -16,7 +16,7 @@ import (
 
 func Testimonial(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
-	testimonialServiceImp := testimonialService.NewTestimonialService(db.Postgresql)
+	testimonialServiceImp := testimonialService.NewTestimonialService(db.Postgresql.DB())
 	controller := testimonial.Controller{Db: db, Logger: logger, Validator: validator, ExtReq: extReq, TestimonialService: testimonialServiceImp}
 
 	squeezeURL := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.User))

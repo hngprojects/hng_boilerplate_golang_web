@@ -1,9 +1,10 @@
 package service
 
 import (
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+	"gorm.io/gorm"
 )
 
 type TestimonialService interface {
@@ -11,14 +12,14 @@ type TestimonialService interface {
 }
 
 type testimonialService struct {
-	db database.DatabaseManager
+	db *gorm.DB
 }
 
-func NewTestimonialService(db database.DatabaseManager) TestimonialService {
+func NewTestimonialService(db *gorm.DB) TestimonialService {
 	return &testimonialService{db: db}
 }
 
-func (t *testimonialService) CreateTestimonial(req models.TestimonialReq, userId string) (*models.Testimonial, error) {
+func (s *testimonialService) CreateTestimonial(req models.TestimonialReq, userId string) (*models.Testimonial, error) {
 	testimonial := &models.Testimonial{
 		ID:      utility.GenerateUUID(),
 		UserID:  userId,
@@ -26,7 +27,8 @@ func (t *testimonialService) CreateTestimonial(req models.TestimonialReq, userId
 		Content: req.Content,
 	}
 
-	err := testimonial.Create(t.db)
+	pdb := inst.InitDB(s.db)
+	err := testimonial.Create(pdb)
 
 	if err != nil {
 		return nil, err
