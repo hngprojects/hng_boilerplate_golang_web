@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type Profile struct {
@@ -29,9 +29,9 @@ type UpdateProfileRequest struct {
 	Phone          string `json:"phone"`
 }
 
-func (p *Profile) UpdateProfile(db *gorm.DB, req UpdateProfileRequest, profId string) error {
+func (p *Profile) UpdateProfile(db database.DatabaseManager, req UpdateProfileRequest, profId string) error {
 
-	result, err := postgresql.UpdateFields(db, &p, req, profId)
+	result, err := db.UpdateFields(&p, req, profId)
 	if err != nil {
 		return err
 	}

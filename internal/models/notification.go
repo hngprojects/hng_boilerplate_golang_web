@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/go-redis/redis/v8"
-
-	dbRedis "github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/redis"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type NotificationRecord struct {
@@ -51,8 +49,8 @@ type SendContactUsMail struct {
 	Message string `json:"message" validate:"required"`
 }
 
-func (n *NotificationRecord) PushToQueue(rdb *redis.Client) error {
-	err := dbRedis.PushToQueue(rdb, &n)
+func (n *NotificationRecord) PushToQueue(rdb database.CacheManager) error {
+	err := rdb.PushToQueue(&n)
 
 	if err != nil {
 		return err
@@ -61,9 +59,9 @@ func (n *NotificationRecord) PushToQueue(rdb *redis.Client) error {
 	return nil
 }
 
-func (n *NotificationRecord) PopFromQueue(rdb *redis.Client) (NotificationRecord, error) {
+func (n *NotificationRecord) PopFromQueue(rdb database.CacheManager) (NotificationRecord, error) {
 	var rec NotificationRecord
-	res, err := dbRedis.PopFromQueue(rdb)
+	res, err := rdb.PopFromQueue()
 
 	if err != nil {
 		return rec, err

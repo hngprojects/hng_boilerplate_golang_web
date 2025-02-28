@@ -142,7 +142,7 @@ func CreateOrganisation(t *testing.T, r *gin.Engine, db *storage.Database, org o
 		orgPath = "/api/v1/organizations"
 		orgURI  = url.URL{Path: orgPath}
 	)
-	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 	{
 		orgUrl.POST("/organizations", org.CreateOrganisation)
 	}
@@ -170,7 +170,7 @@ func CreateNotification(t *testing.T, r *gin.Engine, db *storage.Database, not n
 		orgPath = "/api/v1/notifications"
 		orgURI  = url.URL{Path: orgPath}
 	)
-	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+	orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 	{
 		orgUrl.POST("/notifications", not.CreateNotification)
 	}

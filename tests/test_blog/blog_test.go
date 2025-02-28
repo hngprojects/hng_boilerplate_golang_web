@@ -82,7 +82,7 @@ func TestBlogCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			blogUrl.POST("/blogs", blog.CreateBlog)
 		}
@@ -189,7 +189,7 @@ func TestBlogDelete(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			blogUrl.DELETE("/blogs/:id", blog.DeleteBlog)
 		}
@@ -475,7 +475,7 @@ func TestEditBlog(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		blogUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			blogUrl.PATCH("/blogs/edit/:id", blog.UpdateBlogById)
 		}

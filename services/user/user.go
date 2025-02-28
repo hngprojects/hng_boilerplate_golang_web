@@ -7,15 +7,18 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 func GetUser(userIDStr string, db *gorm.DB) (models.User, int, error) {
 	var userResp models.User
 
-	userResp, err := userResp.GetUserByID(db, userIDStr)
+	pdb := inst.InitDB(db)
+	userResp, err := userResp.GetUserByID(pdb, userIDStr)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return userResp, http.StatusNotFound, errors.New("user not found")
@@ -28,7 +31,8 @@ func GetUser(userIDStr string, db *gorm.DB) (models.User, int, error) {
 func GetUserByEmail(email string, db *gorm.DB) (models.User, error) {
 	var user models.User
 
-	user, err := user.GetUserByEmail(db, email)
+	pdb := inst.InitDB(db)
+	user, err := user.GetUserByEmail(pdb, email)
 	if err != nil {
 		return user, err
 	}
@@ -37,6 +41,7 @@ func GetUserByEmail(email string, db *gorm.DB) (models.User, error) {
 
 func GetAUser(userIDStr string, db *gorm.DB, c *gin.Context) (*models.User, int, error) {
 	var userResp models.User
+	pdb := inst.InitDB(db)
 
 	userId, err := middleware.GetUserClaims(c, db, "user_id")
 	if err != nil {
@@ -53,9 +58,9 @@ func GetAUser(userIDStr string, db *gorm.DB, c *gin.Context) (*models.User, int,
 		return nil, code, err
 	}
 
-	isSuperAdmin := user.CheckUserIsAdmin(db)
+	isSuperAdmin := user.CheckUserIsAdmin(pdb)
 	if isSuperAdmin {
-		userResp, err = userResp.GetUserByID(db, userIDStr)
+		userResp, err = userResp.GetUserByID(pdb, userIDStr)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return &userResp, http.StatusNotFound, errors.New("user not found")
@@ -63,7 +68,7 @@ func GetAUser(userIDStr string, db *gorm.DB, c *gin.Context) (*models.User, int,
 			return &userResp, http.StatusBadRequest, err
 		}
 	} else {
-		userResp, err = userResp.GetUserByIDsAdmin(db, userIDStr, userID)
+		userResp, err = userResp.GetUserByIDsAdmin(pdb, userIDStr, userID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return &userResp, http.StatusNotFound, errors.New("user not found")
@@ -80,6 +85,7 @@ func GetAUserOrganisation(userIDStr string, db *gorm.DB, c *gin.Context) (*[]mod
 		orgData models.Organisation
 		orgResp []models.Organisation
 	)
+	pdb := inst.InitDB(db)
 
 	userId, err := middleware.GetUserClaims(c, db, "user_id")
 	if err != nil {
@@ -96,7 +102,7 @@ func GetAUserOrganisation(userIDStr string, db *gorm.DB, c *gin.Context) (*[]mod
 		return nil, code, err
 	}
 
-	isSuperAdmin := user.CheckUserIsAdmin(db)
+	isSuperAdmin := user.CheckUserIsAdmin(pdb)
 	if isSuperAdmin {
 		orgResp, err = orgData.GetOrganisationsByUserID(db, userIDStr)
 		if err != nil {
@@ -106,7 +112,7 @@ func GetAUserOrganisation(userIDStr string, db *gorm.DB, c *gin.Context) (*[]mod
 			return &orgResp, http.StatusBadRequest, err
 		}
 	} else {
-		orgResp, err = orgData.GetOrganisationsByUserIDs(db, userIDStr, userID)
+		orgResp, err = orgData.GetOrganisationsByUserIDs(pdb, userIDStr, userID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return &orgResp, http.StatusNotFound, errors.New("user not found")
@@ -143,11 +149,12 @@ func DeleteAUser(userIDStr string, db *gorm.DB, c *gin.Context) (int, error) {
 	if err != nil {
 		return code, err
 	}
+	pdb := inst.InitDB(db)
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if isSuperAdmin || currentUserID == userIDStr {
 
-		if err := targetUser.DeleteAUser(db); err != nil {
+		if err := targetUser.DeleteAUser(pdb); err != nil {
 			return http.StatusInternalServerError, err
 		}
 	} else {
@@ -182,8 +189,9 @@ func UpdateAUser(userData models.UpdateUserRequestModel, userIDStr string, db *g
 	if err != nil {
 		return &targetUser, code, err
 	}
+	pdb := inst.InitDB(db)
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if isSuperAdmin || currentUserID == userIDStr {
 
 		targetUser.Name = userData.UserName
@@ -191,7 +199,7 @@ func UpdateAUser(userData models.UpdateUserRequestModel, userIDStr string, db *g
 		targetUser.Profile.LastName = userData.LastName
 		targetUser.Profile.Phone = userData.PhoneNumber
 
-		err = targetUser.Update(db)
+		err = targetUser.Update(pdb)
 		if err != nil {
 			return &targetUser, http.StatusInternalServerError, err
 		}
@@ -203,12 +211,13 @@ func UpdateAUser(userData models.UpdateUserRequestModel, userIDStr string, db *g
 	return &targetUser, http.StatusOK, nil
 }
 
-func GetAllUsers(c *gin.Context, db *gorm.DB) ([]models.User, *postgresql.PaginationResponse, int, error) {
+func GetAllUsers(c *gin.Context, db *gorm.DB) ([]models.User, *database.PaginationResponse, int, error) {
 
 	var users []models.User
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(db, "created_at", "desc", pagination, &users, "deleted_at IS NULL")
+	pdb := inst.InitDB(db)
+	paginationResponse, err := pdb.SelectAllFromDbOrderByPaginated("created_at", "desc", "", pagination, &users, "deleted_at IS NULL")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return users, nil, http.StatusNoContent, nil

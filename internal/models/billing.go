@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
@@ -37,8 +38,8 @@ type BillingResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (b *Billing) Create(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &b)
+func (b *Billing) Create(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&b)
 
 	if err != nil {
 		return err
@@ -47,8 +48,8 @@ func (b *Billing) Create(db *gorm.DB) error {
 	return nil
 }
 
-func (b *Billing) Delete(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, &b)
+func (b *Billing) Delete(db database.DatabaseManager) error {
+	err := db.DeleteRecordFromDb(&b)
 
 	if err != nil {
 		return err
@@ -57,24 +58,24 @@ func (b *Billing) Delete(db *gorm.DB) error {
 	return nil
 }
 
-func (b *Billing) GetBillingById(db *gorm.DB, BillingId string) (Billing, error) {
+func (b *Billing) GetBillingById(db database.DatabaseManager, BillingId string) (Billing, error) {
 	var Billing Billing
-	err, nerr := postgresql.SelectOneFromDb(db, &Billing, "id = ?", BillingId)
+	err, nerr := db.SelectOneFromDb(&Billing, "id = ?", BillingId)
 	if nerr != nil {
 		return Billing, err
 	}
 	return Billing, nil
 }
 
-func (b *Billing) GetAllBillings(db *gorm.DB, c *gin.Context) ([]Billing, postgresql.PaginationResponse, error) {
+func (b *Billing) GetAllBillings(db database.DatabaseManager, c *gin.Context) ([]Billing, database.PaginationResponse, error) {
 	var Billing []Billing
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&Billing,
 		nil,
@@ -87,8 +88,8 @@ func (b *Billing) GetAllBillings(db *gorm.DB, c *gin.Context) ([]Billing, postgr
 	return Billing, paginationResponse, nil
 }
 
-func (b *Billing) UpdateBillingById(db *gorm.DB, req UpdateBillingRequest, BillingId string) (*Billing, error) {
-	result, err := postgresql.UpdateFields(db, &b, req, BillingId)
+func (b *Billing) UpdateBillingById(db database.DatabaseManager, req UpdateBillingRequest, BillingId string) (*Billing, error) {
+	result, err := db.UpdateFields(&b, req, BillingId)
 
 	if err != nil {
 		return nil, err
@@ -101,7 +102,7 @@ func (b *Billing) UpdateBillingById(db *gorm.DB, req UpdateBillingRequest, Billi
 	return b, nil
 }
 
-func (b *Billing) CheckBillingExists(BillingId string, db *gorm.DB) (Billing, error) {
+func (b *Billing) CheckBillingExists(BillingId string, db database.DatabaseManager) (Billing, error) {
 	Billing, err := b.GetBillingById(db, BillingId)
 	if err != nil {
 		return Billing, err

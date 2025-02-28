@@ -8,12 +8,15 @@ import (
 	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 	// if no role is passed it would assume default user role
+	//
+	d := inst.InitDB(db)
 	return func(c *gin.Context) {
 
 		var (
@@ -60,7 +63,7 @@ func Authorize(db *gorm.DB, inputRole ...models.RoleId) gin.HandlerFunc {
 		// check user session and also if token is valid in stored session
 
 		access_token = models.AccessToken{ID: accessID}
-		if code, err := access_token.GetByID(db); err != nil {
+		if code, err := access_token.GetByID(d); err != nil {
 			c.AbortWithStatusJSON(code, utility.BuildErrorResponse(http.StatusUnauthorized, "error", "Token is invalid!", "Unauthorized", nil))
 			return
 		}

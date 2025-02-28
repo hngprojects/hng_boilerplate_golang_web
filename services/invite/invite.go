@@ -8,16 +8,18 @@ import (
 
 	"strings"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
 func CheckUserIsAdmin(db *gorm.DB, user_id string, org_id string) (bool, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var org models.Organisation
 
-	orgResp, err := org.GetOrgByID(db, org_id)
+	orgResp, err := org.GetOrgByID(pdb, org_id)
 	if err != nil {
 		return false, err
 	}
@@ -53,6 +55,8 @@ func GenerateInvitationLink(baseurl, token string) string {
 }
 
 func SaveInvitation(db *gorm.DB, user_id string, token string, req models.InvitationCreateReq) error {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		email = strings.ToLower(req.Email)
 	)
@@ -66,7 +70,7 @@ func SaveInvitation(db *gorm.DB, user_id string, token string, req models.Invita
 		IsValid:        true,
 	}
 
-	err := invitation.CreateInvitation(db)
+	err := invitation.CreateInvitation(pdb)
 	if err != nil {
 		return err
 	}
@@ -76,8 +80,10 @@ func SaveInvitation(db *gorm.DB, user_id string, token string, req models.Invita
 func GetInvitations(user models.User, db *gorm.DB) ([]models.InvitationResponse, error) {
 	var invitation models.Invitation
 	var invResp []models.InvitationResponse
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 
-	invitations, err := invitation.GetInvitationsByID(db, user.ID)
+	invitations, err := invitation.GetInvitationsByID(pdb, user.ID)
 	if err != nil {
 		return invResp, err
 	}
@@ -109,12 +115,14 @@ func ExtractTokenFromInvitationLink(invitationLink string) string {
 }
 
 func GetInvitationDetails(token string, db *gorm.DB) (models.Invitation, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var invitation models.Invitation
 	// Check if the invitation token exists in the database
-	exists := postgresql.CheckExists(db, &invitation, "token = ?", token)
+	exists := pdb.CheckExists(&invitation, "token = ?", token)
 	// If it does, return the invitation details
 	if exists {
-		postgresql.SelectOneFromDb(db, &invitation, "token = ?", token)
+		pdb.SelectOneFromDb(&invitation, "token = ?", token)
 		return invitation, nil
 	}
 	return invitation, errors.New("Invalid invitation link format")
@@ -122,10 +130,12 @@ func GetInvitationDetails(token string, db *gorm.DB) (models.Invitation, error) 
 
 func AcceptInvitationLink(user_id string, token string, db *gorm.DB) (models.Invitation, string, error) {
 	var invitation models.Invitation
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 
 	invitation, err := GetInvitationDetails(token, db)
 	if err != nil {
-		return invitation,"Error getting invitation details", err
+		return invitation, "Error getting invitation details", err
 	}
 	if invitation.ExpiresAt.Before(time.Now()) {
 		return invitation, "Invitation link expired", errors.New("Invitation link expired")
@@ -139,14 +149,14 @@ func AcceptInvitationLink(user_id string, token string, db *gorm.DB) (models.Inv
 
 	//query the user, get the email and check if the email of the user is the same as the email in the invitation
 	var user models.User
-	postgresql.SelectOneFromDb(db, &user, "id = ?", user_id)
+	pdb.SelectOneFromDb(&user, "id = ?", user_id)
 	if user.Email != invitation.Email {
 		return invitation, "Invalid invitation link", errors.New("Invalid invitation link")
 	}
 
 	// Set the invitation to invalid and save it to the database
 	invitation.IsValid = false
-	_, err = postgresql.SaveAllFields(db, &invitation)
+	_, err = pdb.SaveAllFields(&invitation)
 	if err != nil {
 		return invitation, "Error saving invitation", err
 	}
@@ -154,20 +164,22 @@ func AcceptInvitationLink(user_id string, token string, db *gorm.DB) (models.Inv
 	return invitation, "Invitation link accepted successfully", nil
 }
 
-
 func AddUserToOrganisation(db *gorm.DB, orgID string, userId string) error {
 	var user models.User
 
-	user, err := user.GetUserByID(db, userId)
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
+	user, err := user.GetUserByID(pdb, userId)
 	if err != nil {
 		return err
 	}
 	var org models.Organisation
-	org, err = org.GetOrgByID(db, orgID)
+	org, err = org.GetOrgByID(pdb, orgID)
 	if err != nil {
 		return err
 	}
-	err = user.AddUserToOrganisation(db, &user, []interface{}{&org})
+	err = user.AddUserToOrganisation(pdb, &user, []interface{}{&org})
 	if err != nil {
 		return err
 	}

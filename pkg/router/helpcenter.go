@@ -18,12 +18,12 @@ func HelpCenter(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 	controller := helpcenter.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 	helpCenterUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		helpCenterUrl.POST("/help-center/topics", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.CreateHelpCenterTopic)
+		helpCenterUrl.POST("/help-center/topics", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.CreateHelpCenterTopic)
 		helpCenterUrl.GET("/help-center/topics", controller.FetchAllTopics)
 		helpCenterUrl.GET("/help-center/topics/:id", controller.FetchTopicByID)
 		helpCenterUrl.GET("/help-center/topics/search", controller.SearchHelpCenterTopics)
-		helpCenterUrl.PATCH("/help-center/topics/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.UpdateHelpCenterByID)
-		helpCenterUrl.DELETE("/help-center/topics/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.DeleteTopicByID)
+		helpCenterUrl.PATCH("/help-center/topics/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.UpdateHelpCenterByID)
+		helpCenterUrl.DELETE("/help-center/topics/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.DeleteTopicByID)
 	}
 	return r
 }

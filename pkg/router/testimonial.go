@@ -17,7 +17,7 @@ func Testimonial(r *gin.Engine, ApiVersion string, validator *validator.Validate
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	controller := testimonial.Controller{Db: db, Logger: logger, Validator: validator, ExtReq: extReq}
 
-	squeezeURL := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.User))
+	squeezeURL := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.User))
 	{
 		squeezeURL.POST("/testimonials", controller.Create)
 	}

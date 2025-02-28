@@ -10,17 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (models.CreateUserRequestModel, error) {
-
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	user := models.User{}
 	profile := models.Profile{}
 
@@ -31,7 +32,7 @@ func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (
 			return req, fmt.Errorf("email address is invalid")
 		}
 		req.Email = formattedMail
-		exists := postgresql.CheckExists(db, &user, "email = ?", req.Email)
+		exists := pdb.CheckExists(&user, "email = ?", req.Email)
 		if exists {
 			return req, errors.New("user already exists with the given email")
 		}
@@ -41,7 +42,7 @@ func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (
 		req.PhoneNumber = strings.ToLower(req.PhoneNumber)
 		phone, _ := utility.PhoneValid(req.PhoneNumber)
 		req.PhoneNumber = phone
-		exists := postgresql.CheckExists(db, &profile, "phone = ?", req.PhoneNumber)
+		exists := pdb.CheckExists(&profile, "phone = ?", req.PhoneNumber)
 		if exists {
 			return req, errors.New("user already exists with the given phone")
 		}
@@ -52,9 +53,10 @@ func ValidateCreateUserRequest(req models.CreateUserRequestModel, db *gorm.DB) (
 }
 
 func GetUser(userIDStr string, db *gorm.DB) (models.User, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var userResp models.User
-
-	userResp, err := userResp.GetUserByID(db, userIDStr)
+	userResp, err := userResp.GetUserByID(pdb, userIDStr)
 	if err != nil {
 		return userResp, err
 	}
@@ -64,6 +66,8 @@ func GetUser(userIDStr string, db *gorm.DB) (models.User, error) {
 
 func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		email        = strings.ToLower(req.Email)
 		firstName    = strings.Title(strings.ToLower(req.FirstName))
@@ -93,7 +97,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		},
 	}
 
-	err = user.CreateUser(db)
+	err = user.CreateUser(pdb)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -110,7 +114,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 
 	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
 
-	err = access_token.CreateAccessToken(db, tokens)
+	err = access_token.CreateAccessToken(pdb, tokens)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
@@ -137,7 +141,7 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 		Email: user.Email,
 	}
 
-	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendWelcomeMail, resetReq)
+	err = actions.AddNotificationToQueue(storage.DB.Redis.RedisDb(), names.SendWelcomeMail, resetReq)
 	if err != nil {
 		return responseData, http.StatusInternalServerError, err
 	}
@@ -147,6 +151,8 @@ func CreateUser(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, err
 
 func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		email        = strings.ToLower(req.Email)
 		firstName    = strings.Title(strings.ToLower(req.FirstName))
@@ -176,7 +182,7 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 		},
 	}
 
-	err = user.CreateUser(db)
+	err = user.CreateUser(pdb)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -193,7 +199,7 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 
 	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
 
-	err = access_token.CreateAccessToken(db, tokens)
+	err = access_token.CreateAccessToken(pdb, tokens)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
@@ -221,13 +227,15 @@ func CreateAdmin(req models.CreateUserRequestModel, db *gorm.DB) (gin.H, int, er
 
 func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		user         = models.User{}
 		responseData gin.H
 	)
 
 	// Check if the user email exists
-	exists := postgresql.CheckExists(db, &user, "email = ?", req.Email)
+	exists := pdb.CheckExists(&user, "email = ?", req.Email)
 	if !exists {
 		return responseData, 400, fmt.Errorf("invalid credentials")
 	}
@@ -236,7 +244,7 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 		return responseData, 400, fmt.Errorf("invalid credentials")
 	}
 
-	userData, err := user.GetUserByID(db, user.ID)
+	userData, err := user.GetUserByID(pdb, user.ID)
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("unable to fetch user " + err.Error())
 	}
@@ -253,7 +261,7 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
 
-	err = access_token.CreateAccessToken(db, tokens)
+	err = access_token.CreateAccessToken(pdb, tokens)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error saving token: " + err.Error())
@@ -282,6 +290,8 @@ func LoginUser(req models.LoginRequestModel, db *gorm.DB) (gin.H, int, error) {
 
 func LogoutUser(access_uuid, owner_id string, db *gorm.DB) (gin.H, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		responseData gin.H
 	)
@@ -289,7 +299,7 @@ func LogoutUser(access_uuid, owner_id string, db *gorm.DB) (gin.H, int, error) {
 	access_token := models.AccessToken{ID: access_uuid, OwnerID: owner_id}
 
 	// revoke user access_token to invalidate session
-	err := access_token.RevokeAccessToken(db)
+	err := access_token.RevokeAccessToken(pdb)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, fmt.Errorf("error revoking user session: " + err.Error())

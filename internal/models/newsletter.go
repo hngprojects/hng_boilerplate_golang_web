@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
@@ -29,20 +30,20 @@ func (n *NewsLetter) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (n *NewsLetter) GetNewsLetterById(db *gorm.DB, ID string) (NewsLetter, error) {
+func (n *NewsLetter) GetNewsLetterById(db database.DatabaseManager, ID string) (NewsLetter, error) {
 	var newsletter NewsLetter
 
-	err, nerr := postgresql.SelectOneFromDb(db, &newsletter, "id = ?", ID)
+	err, nerr := db.SelectOneFromDb(&newsletter, "id = ?", ID)
 	if nerr != nil {
 		return newsletter, err
 	}
 	return newsletter, nil
 }
 
-func (n *NewsLetter) GetDeletedNewsLetterById(db *gorm.DB, ID string) (NewsLetter, error) {
+func (n *NewsLetter) GetDeletedNewsLetterById(db database.DatabaseManager, ID string) (NewsLetter, error) {
 	var newsletter NewsLetter
 
-	err := db.Unscoped().Where("id = ?", ID).First(&newsletter).Error
+	err := db.DB().Unscoped().Where("id = ?", ID).First(&newsletter).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return newsletter, fmt.Errorf("newsletter not found: %w", err)
@@ -53,20 +54,8 @@ func (n *NewsLetter) GetDeletedNewsLetterById(db *gorm.DB, ID string) (NewsLette
 	return newsletter, nil
 }
 
-func (n *NewsLetter) CreateNewsLetter(db *gorm.DB) error {
-
-	err := postgresql.CreateOneRecord(db, &n)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (n *NewsLetter) DeleteNewsLetter(db *gorm.DB) error {
-
-	err := postgresql.DeleteRecordFromDb(db, &n)
+func (n *NewsLetter) CreateNewsLetter(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&n)
 
 	if err != nil {
 		return err
@@ -75,20 +64,31 @@ func (n *NewsLetter) DeleteNewsLetter(db *gorm.DB) error {
 	return nil
 }
 
-func (n *NewsLetter) UpdateNewsLetter(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &n)
+func (n *NewsLetter) DeleteNewsLetter(db database.DatabaseManager) error {
+
+	err := db.DeleteRecordFromDb(&n)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *NewsLetter) UpdateNewsLetter(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&n)
 	return err
 }
 
-func (n *NewsLetter) FetchAllNewsLetter(db *gorm.DB, c *gin.Context) ([]NewsLetter, postgresql.PaginationResponse, error) {
+func (n *NewsLetter) FetchAllNewsLetter(db database.DatabaseManager, c *gin.Context) ([]NewsLetter, database.PaginationResponse, error) {
 	var newsLetters []NewsLetter
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&newsLetters,
 		nil,
@@ -101,17 +101,17 @@ func (n *NewsLetter) FetchAllNewsLetter(db *gorm.DB, c *gin.Context) ([]NewsLett
 	return newsLetters, paginationResponse, nil
 }
 
-func (n *NewsLetter) FetchAllDeletedNewsLetter(db *gorm.DB, c *gin.Context) ([]NewsLetter, postgresql.PaginationResponse, error) {
+func (n *NewsLetter) FetchAllDeletedNewsLetter(db database.DatabaseManager, c *gin.Context) ([]NewsLetter, database.PaginationResponse, error) {
 	var newsLetters []NewsLetter
 
 	pagination := postgresql.GetPagination(c)
 
-	query := db.Unscoped().Where("deleted_at IS NOT NULL")
-
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		query,
+	// optionally perform filter query in the SelectAllFromDbOrderByPaginated function
+	filterQuery := "deleted_at IS NOT NULL"
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		filterQuery,
 		pagination,
 		&newsLetters,
 		nil,

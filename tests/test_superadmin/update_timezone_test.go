@@ -17,7 +17,7 @@ import (
 
 func TestUpdateTimezone(t *testing.T) {
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")

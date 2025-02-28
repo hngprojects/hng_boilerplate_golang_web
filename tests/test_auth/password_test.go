@@ -28,7 +28,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Create(&adminData)
+	db.DB().Create(&adminData)
 
 	loginData := models.LoginRequestModel{
 		Email:    adminData.Email,

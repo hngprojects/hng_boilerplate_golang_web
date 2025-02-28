@@ -102,7 +102,7 @@ func TestTemplatePostCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		templateUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		templateUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			templateUrl.POST("/template", templateController.CreateTemplate)
 		}
@@ -277,19 +277,19 @@ func TestFetchTemplateById(t *testing.T) {
 		name         string
 		expectedCode int
 		message      string
-		templateID    string
+		templateID   string
 	}{
 		{
 			name:         "Fetch Template by ID",
 			expectedCode: http.StatusOK,
 			message:      "Template Successfully retrieved",
-			templateID:    templateID,
+			templateID:   templateID,
 		},
 		{
 			name:         "Invalid uuid format",
 			expectedCode: http.StatusBadRequest,
 			message:      "Invalid id",
-			templateID:    "invalidIDFormat",
+			templateID:   "invalidIDFormat",
 		},
 	}
 

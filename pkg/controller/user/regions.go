@@ -30,7 +30,7 @@ func (base *Controller) UpdateUserRegion(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateARegion(req, userID, base.Db.Postgresql, c)
+	respData, code, err := service.UpdateARegion(req, userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -49,7 +49,7 @@ func (base *Controller) GetUserRegion(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	respData, code, err := service.GetUserRegion(userID, base.Db.Postgresql, c)
+	respData, code, err := service.GetUserRegion(userID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

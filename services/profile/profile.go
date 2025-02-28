@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
 
@@ -15,14 +16,15 @@ func UpdateProfile(req models.UpdateProfileRequest, userId string, db *gorm.DB) 
 		user    models.User
 		profile models.Profile
 	)
+	pdb := inst.InitDB(db)
 
-	profileId, err := user.GetProfileID(db, userId)
+	profileId, err := user.GetProfileID(pdb, userId)
 
 	if err != nil {
 		return gin.H{}, http.StatusNotFound, err
 	}
 
-	err = profile.UpdateProfile(db, req, profileId)
+	err = profile.UpdateProfile(pdb, req, profileId)
 
 	if err != nil {
 		return gin.H{}, http.StatusInternalServerError, err

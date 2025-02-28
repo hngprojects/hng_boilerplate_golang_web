@@ -28,7 +28,7 @@ func TestResetPassword(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Postgresql.Create(&adminData)
+	db.Postgresql.DB().Create(&adminData)
 
 	t.Run("Successful reset Password Request Email", func(t *testing.T) {
 		forgotPasswordRequest := models.ForgotPasswordRequestModel{

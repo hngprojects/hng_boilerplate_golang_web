@@ -44,15 +44,15 @@ func TestDeleteFaq(t *testing.T) {
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&regularUser)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&regularUser)
 
 	faq := models.FAQ{
 		ID:       utility.GenerateUUID(),
 		Question: fmt.Sprintf("What is the purpose of this %s FAQ?", utility.RandomString(4)),
 		Answer:   "To provide answers to frequently asked questions.",
 	}
-	db.Create(&faq)
+	db.DB().Create(&faq)
 
 	t.Run("Successful Delete FAQ", func(t *testing.T) {
 		router, authController := setup()

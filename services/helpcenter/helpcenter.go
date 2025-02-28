@@ -1,34 +1,37 @@
 package helpcenter
 
 import (
-
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
 func CreateHelpCenterTopic(req models.CreateHelpCenter, db *gorm.DB) (models.HelpCenter, error) {
+
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	helpCnt := models.HelpCenter{
-		ID:          		utility.GenerateUUID(),
-		Title:       		req.Title,	
-		Content:       		req.Content,	
-		Author:       		req.Author,	
+		ID:      utility.GenerateUUID(),
+		Title:   req.Title,
+		Content: req.Content,
+		Author:  req.Author,
 	}
 
-	if err := helpCnt.CreateHelpCenterTopic(db);
-
-	err != nil {
+	if err := helpCnt.CreateHelpCenterTopic(pdb); err != nil {
 		return models.HelpCenter{}, err
 	}
 
 	return helpCnt, nil
 }
 
-func GetPaginatedTopics(c *gin.Context, db *gorm.DB) ([]models.HelpCntSummary, postgresql.PaginationResponse, error) {
+func GetPaginatedTopics(c *gin.Context, db *gorm.DB) ([]models.HelpCntSummary, database.PaginationResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	helpCnt := models.HelpCenter{}
-	topics, paginationResponse, err := helpCnt.FetchAllTopics(db, c)
+	topics, paginationResponse, err := helpCnt.FetchAllTopics(pdb, c)
 
 	if err != nil {
 		return nil, paginationResponse, err
@@ -37,14 +40,14 @@ func GetPaginatedTopics(c *gin.Context, db *gorm.DB) ([]models.HelpCntSummary, p
 	if len(topics) == 0 {
 		return []models.HelpCntSummary{}, paginationResponse, nil
 	}
-	
+
 	var topicSummaries []models.HelpCntSummary
 	for _, Hlp := range topics {
 		summary := models.HelpCntSummary{
-			ID: 		 Hlp.ID,
-			Title:       Hlp.Title,
-			Content:     Hlp.Content,
-			Author:      Hlp.Author,
+			ID:      Hlp.ID,
+			Title:   Hlp.Title,
+			Content: Hlp.Content,
+			Author:  Hlp.Author,
 		}
 		topicSummaries = append(topicSummaries, summary)
 	}
@@ -53,18 +56,23 @@ func GetPaginatedTopics(c *gin.Context, db *gorm.DB) ([]models.HelpCntSummary, p
 }
 
 func FetchTopicByID(db *gorm.DB, id string) (models.HelpCenter, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	helpCnt := models.HelpCenter{}
 	helpCnt.ID = id
-	err := helpCnt.FetchTopicByID(db)
+	err := helpCnt.FetchTopicByID(pdb)
 	if err != nil {
 		return models.HelpCenter{}, err
 	}
 	return helpCnt, nil
 }
 
-func SearchHelpCenterTopics(c *gin.Context, db *gorm.DB, query string) ([]models.HelpCntSummary, postgresql.PaginationResponse, error) {
+func SearchHelpCenterTopics(c *gin.Context, db *gorm.DB, query string) ([]models.HelpCntSummary, database.PaginationResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var helpCnt models.HelpCenter
-	topics, paginationResponse, err := helpCnt.SearchHelpCenterTopics(db, c, query)
+	topics, paginationResponse, err := helpCnt.SearchHelpCenterTopics(pdb, c, query)
 
 	if err != nil {
 		return nil, paginationResponse, err
@@ -89,7 +97,9 @@ func SearchHelpCenterTopics(c *gin.Context, db *gorm.DB, query string) ([]models
 }
 
 func UpdateTopic(db *gorm.DB, helpCnt models.HelpCenter, ID string) (models.HelpCenter, error) {
-	updatedHelpCnt, err := helpCnt.UpdateTopicByID(db, ID)
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+	updatedHelpCnt, err := helpCnt.UpdateTopicByID(pdb, ID)
 	if err != nil {
 		return models.HelpCenter{}, err
 	}
@@ -97,8 +107,10 @@ func UpdateTopic(db *gorm.DB, helpCnt models.HelpCenter, ID string) (models.Help
 }
 
 func DeleteTopicByID(db *gorm.DB, ID string) error {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	helpCnt := models.HelpCenter{ID: ID}
-	err := helpCnt.DeleteTopicByID(db, ID)
+	err := helpCnt.DeleteTopicByID(pdb, ID)
 	if err != nil {
 		return err
 	}

@@ -64,7 +64,7 @@ func TestPostInvite(t *testing.T) {
 
 	for _, test := range tests {
 		r := gin.Default()
-		r.POST(requestURI.Path, middleware.Authorize(setup.DB.Postgresql), setup.InviteController.PostInvite)
+		r.POST(requestURI.Path, middleware.Authorize(setup.DB.Postgresql.DB()), setup.InviteController.PostInvite)
 
 		t.Run(test.Name, func(t *testing.T) {
 			var b bytes.Buffer

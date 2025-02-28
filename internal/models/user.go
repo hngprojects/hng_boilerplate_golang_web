@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type User struct {
@@ -48,10 +48,10 @@ type LoginRequestModel struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []interface{}) error {
+func (u *User) AddUserToOrganisation(db database.DatabaseManager, user interface{}, orgs []interface{}) error {
 
 	// Add user to organisation
-	err := db.Model(user).Association("Organisations").Append(orgs...)
+	err := db.DB().Model(user).Association("Organisations").Append(orgs...)
 	if err != nil {
 		return err
 	}
@@ -59,11 +59,11 @@ func (u *User) AddUserToOrganisation(db *gorm.DB, user interface{}, orgs []inter
 	return nil
 }
 
-func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
+func (u *User) GetUserByID(db database.DatabaseManager, userID string) (User, error) {
 	var user User
 
-	query := db.Where("id = ?", userID)
-	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+	query := db.DB().Where("id = ?", userID)
+	query = db.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
 		return user, err
@@ -72,11 +72,11 @@ func (u *User) GetUserByID(db *gorm.DB, userID string) (User, error) {
 	return user, nil
 }
 
-func (u *User) GetUserByEmail(db *gorm.DB, userEmail string) (User, error) {
+func (u *User) GetUserByEmail(db database.DatabaseManager, userEmail string) (User, error) {
 	var user User
 
-	query := db.Where("email = ?", userEmail)
-	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+	query := db.DB().Where("email = ?", userEmail)
+	query = db.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
 		return user, err
@@ -85,9 +85,9 @@ func (u *User) GetUserByEmail(db *gorm.DB, userEmail string) (User, error) {
 	return user, nil
 }
 
-func (u *User) CreateUser(db *gorm.DB) error {
+func (u *User) CreateUser(db database.DatabaseManager) error {
 
-	err := postgresql.CreateOneRecord(db, &u)
+	err := db.CreateOneRecord(&u)
 
 	if err != nil {
 		return err
@@ -96,10 +96,10 @@ func (u *User) CreateUser(db *gorm.DB) error {
 	return nil
 }
 
-func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
+func (u *User) GetSeedUsers(db database.DatabaseManager) ([]User, error) {
 	var users []User
 
-	query := postgresql.PreloadEntities(db, &users, "Profile", "Products", "Organisations")
+	query := db.PreloadEntities(nil, &users, "Profile", "Products", "Organisations")
 	query = query.Limit(2)
 
 	if err := query.Find(&users).Error; err != nil {
@@ -109,16 +109,16 @@ func (u *User) GetSeedUsers(db *gorm.DB) ([]User, error) {
 	return users, nil
 }
 
-func (u *User) Update(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &u)
+func (u *User) Update(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&u)
 	return err
 }
 
-func (u *User) CheckUserIsAdmin(db *gorm.DB) bool {
+func (u *User) CheckUserIsAdmin(db database.DatabaseManager) bool {
 	return u.Role == int(RoleIdentity.SuperAdmin)
 }
 
-func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User, error) {
+func (u *User) GetUserByIDsAdmin(db database.DatabaseManager, userID, requesterID string) (User, error) {
 
 	var (
 		ErrNotFound = errors.New("user not found")
@@ -126,7 +126,7 @@ func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User,
 	)
 
 	var isOwner bool
-	err := db.Model(&Organisation{}).
+	err := db.DB().Model(&Organisation{}).
 		Select("count(*) > 0").
 		Where("owner_id = ? AND id IN (SELECT organisation_id FROM user_organisations WHERE user_id = ?)", requesterID, userID).
 		Find(&isOwner).
@@ -136,10 +136,10 @@ func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User,
 	}
 
 	if isOwner {
-		query := db.Model(&User{}).
+		query := db.DB().Model(&User{}).
 			Joins("INNER JOIN user_organisations uo ON users.id = uo.user_id").
 			Where("uo.organisation_id IN (SELECT organisation_id FROM user_organisations WHERE user_id = ?)", userID)
-		query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+		query = db.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 		if err := query.First(&user).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -150,10 +150,10 @@ func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User,
 		return user, nil
 	}
 
-	query := db.Model(&User{}).
+	query := db.DB().Model(&User{}).
 		Joins("INNER JOIN user_organisations uo ON users.id = uo.user_id").
 		Where("users.id = ? AND users.id = ?", userID, requesterID)
-	query = postgresql.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
+	query = db.PreloadEntities(query, &user, "Profile", "Products", "Organisations")
 
 	if err := query.First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -165,9 +165,9 @@ func (u *User) GetUserByIDsAdmin(db *gorm.DB, userID, requesterID string) (User,
 	return user, nil
 }
 
-func (u *User) DeleteAUser(db *gorm.DB) error {
+func (u *User) DeleteAUser(db database.DatabaseManager) error {
 
-	err := postgresql.DeleteRecordFromDb(db, u)
+	err := db.DeleteRecordFromDb(u)
 
 	if err != nil {
 		return err
@@ -176,11 +176,11 @@ func (u *User) DeleteAUser(db *gorm.DB) error {
 	return nil
 }
 
-func (u *User) GetProfileID(db *gorm.DB, userID string) (string, error) {
+func (u *User) GetProfileID(db database.DatabaseManager, userID string) (string, error) {
 	var user User
 
-	query := db.Where("id = ?", userID)
-	query = postgresql.PreloadEntities(query, &user, "Profile")
+	query := db.DB().Where("id = ?", userID)
+	query = db.PreloadEntities(query, &user, "Profile")
 
 	if err := query.First(&user).Error; err != nil {
 		return user.Profile.ID, err
@@ -189,15 +189,14 @@ func (u *User) GetProfileID(db *gorm.DB, userID string) (string, error) {
 	return user.Profile.ID, nil
 }
 
-func (u *User) GetUserWithProfile(db *gorm.DB, userID string) (User, error) {
+func (u *User) GetUserWithProfile(db database.DatabaseManager, userID string) (User, error) {
 	var user User
 
-	query := db.Where("id = ?", userID)
-	query = postgresql.PreloadEntities(query, &user, "Profile")
+	query := db.DB().Where("id = ?", userID)
+	query = db.PreloadEntities(query, &user, "Profile")
 
 	if err := query.First(&user).Error; err != nil {
 		return user, err
 	}
-
 	return user, nil
 }

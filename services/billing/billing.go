@@ -6,12 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func CreateBilling(req models.CreateBillingRequest, db *gorm.DB, userId string) (models.BillingResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		user        models.User
 		billingResp models.BillingResponse
@@ -22,13 +25,13 @@ func CreateBilling(req models.CreateBillingRequest, db *gorm.DB, userId string) 
 		Price: req.Price,
 	}
 
-	err := Billing.Create(db)
+	err := Billing.Create(pdb)
 
 	if err != nil {
 		return billingResp, err
 	}
 
-	user, err = user.GetUserByID(db, userId)
+	user, err = user.GetUserByID(pdb, userId)
 
 	if err != nil {
 		return billingResp, err
@@ -46,9 +49,12 @@ func CreateBilling(req models.CreateBillingRequest, db *gorm.DB, userId string) 
 }
 
 func DeleteBilling(BillingId string, userId string, db *gorm.DB) error {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	var Billing models.Billing
 
-	Billing, err := Billing.CheckBillingExists(BillingId, db)
+	Billing, err := Billing.CheckBillingExists(BillingId, pdb)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,14 +63,17 @@ func DeleteBilling(BillingId string, userId string, db *gorm.DB) error {
 		return err
 	}
 
-	return Billing.Delete(db)
+	return Billing.Delete(pdb)
 }
 
-func GetBillings(db *gorm.DB, c *gin.Context) (int, postgresql.PaginationResponse, error) {
+func GetBillings(db *gorm.DB, c *gin.Context) (int, database.PaginationResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	var (
 		Billing models.Billing
 	)
-	Billings, paginationResponse, err := Billing.GetAllBillings(db, c)
+	Billings, paginationResponse, err := Billing.GetAllBillings(pdb, c)
 
 	if err != nil {
 		return 0, paginationResponse, err
@@ -76,11 +85,14 @@ func GetBillings(db *gorm.DB, c *gin.Context) (int, postgresql.PaginationRespons
 }
 
 func GetBillingById(BillingId string, db *gorm.DB) (models.Billing, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	var (
 		resp models.Billing
 	)
 
-	resp, err := resp.GetBillingById(db, BillingId)
+	resp, err := resp.GetBillingById(pdb, BillingId)
 
 	if err != nil {
 		return resp, err
@@ -90,11 +102,14 @@ func GetBillingById(BillingId string, db *gorm.DB) (models.Billing, error) {
 }
 
 func UpdateBillingById(BillingId string, userId string, req models.UpdateBillingRequest, db *gorm.DB) (models.Billing, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	var (
 		resp models.Billing
 	)
 
-	resp, err := resp.CheckBillingExists(BillingId, db)
+	resp, err := resp.CheckBillingExists(BillingId, pdb)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -103,7 +118,7 @@ func UpdateBillingById(BillingId string, userId string, req models.UpdateBilling
 		return resp, err
 	}
 
-	_, err = resp.UpdateBillingById(db, req, BillingId)
+	_, err = resp.UpdateBillingById(pdb, req, BillingId)
 
 	if err != nil {
 		return resp, err

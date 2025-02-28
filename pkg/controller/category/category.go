@@ -19,7 +19,7 @@ type Controller struct {
 }
 
 func (base *Controller) GetCategoryNames(c *gin.Context) {
-	categories, code, err := category.GetCategoryNames(base.Db.Postgresql, c)
+	categories, code, err := category.GetCategoryNames(base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)

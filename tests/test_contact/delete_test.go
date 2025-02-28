@@ -34,8 +34,8 @@ func TestDeleteContactUs(t *testing.T) {
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&regularUser)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&regularUser)
 
 	contact := models.ContactUs{
 		ID:      utility.GenerateUUID(),
@@ -43,7 +43,7 @@ func TestDeleteContactUs(t *testing.T) {
 		Message: fmt.Sprintf("Test message - %v ", currUUID),
 	}
 
-	db.Create(&contact)
+	db.DB().Create(&contact)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, contactController := SetupContactTestRouter()
@@ -78,7 +78,7 @@ func TestDeleteContactUs(t *testing.T) {
 
 		// Verify deletion
 		var deletedContact models.ContactUs
-		db.First(&deletedContact, "id = ?", contact.ID)
+		db.DB().First(&deletedContact, "id = ?", contact.ID)
 		if deletedContact.ID != "" {
 			t.Errorf("Expected contact to be deleted, but found: %v", deletedContact)
 		}

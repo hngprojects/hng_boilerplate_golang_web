@@ -29,7 +29,7 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		return
 	}
 	invitationToken := invite.ExtractTokenFromInvitationLink(inviteReq.InvitationLink)
-	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
+	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql.DB())
 	if err != nil {
 		base.Logger.Error("Failed to accept invitation link", err)
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", msg, err, nil)
@@ -43,7 +43,7 @@ func (base *Controller) PostAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	err = invite.AddUserToOrganisation(base.Db.Postgresql, invitation.OrganisationID, userId)
+	err = invite.AddUserToOrganisation(base.Db.Postgresql.DB(), invitation.OrganisationID, userId)
 	if err != nil {
 		base.Logger.Error("Failed to add user to organisation", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "A server error occurred", nil, nil)
@@ -60,7 +60,7 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 	claims, exists := c.Get("userClaims")
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
-	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql)
+	invitation, msg, err := invite.AcceptInvitationLink(userId, invitationToken, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(
 			http.StatusBadRequest,
@@ -79,7 +79,7 @@ func (base *Controller) GetAcceptInvite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	err = invite.AddUserToOrganisation(base.Db.Postgresql, invitation.OrganisationID, userId)
+	err = invite.AddUserToOrganisation(base.Db.Postgresql.DB(), invitation.OrganisationID, userId)
 	if err != nil {
 		base.Logger.Error("Failed to add user to organisation", err)
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "A server error occurred", nil, nil)

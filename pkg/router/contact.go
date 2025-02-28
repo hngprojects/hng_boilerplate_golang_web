@@ -20,10 +20,10 @@ func Contact(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	contactUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
 		contactUrl.POST("/contact", contact.AddToContactUs)
-		contactUrl.GET("/contact", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), contact.GetAllContactUs)
-		contactUrl.DELETE("/contact/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), contact.DeleteContactUs)
-		contactUrl.GET("/contact/id/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), contact.GetContactUsById)
-		contactUrl.GET("/contact/email/:email", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), contact.GetContactUsByEmail)
+		contactUrl.GET("/contact", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), contact.GetAllContactUs)
+		contactUrl.DELETE("/contact/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), contact.DeleteContactUs)
+		contactUrl.GET("/contact/id/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), contact.GetContactUsById)
+		contactUrl.GET("/contact/email/:email", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), contact.GetContactUsByEmail)
 
 	}
 	return r

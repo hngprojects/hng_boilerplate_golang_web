@@ -29,11 +29,11 @@ func SetupFAQTestRouter() (*gin.Engine, *faq.Controller) {
 }
 
 func SetupFAQRoutes(r *gin.Engine, faqController *faq.Controller) {
-	r.POST("/api/v1/faq", middleware.Authorize(faqController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.POST("/api/v1/faq", middleware.Authorize(faqController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		faqController.AddToFaq)
 	r.GET("/api/v1/faq", faqController.GetFaq)
-	r.DELETE("/api/v1/faq/:id", middleware.Authorize(faqController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.DELETE("/api/v1/faq/:id", middleware.Authorize(faqController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		faqController.DeleteFaq)
-	r.PUT("/api/v1/faq/:id", middleware.Authorize(faqController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.PUT("/api/v1/faq/:id", middleware.Authorize(faqController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		faqController.UpdateFaq)
 }
