@@ -73,9 +73,9 @@ func (b *Blog) GetAllBlogs(db database.DatabaseManager, c *gin.Context) ([]Blog,
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&blog,
 		nil,

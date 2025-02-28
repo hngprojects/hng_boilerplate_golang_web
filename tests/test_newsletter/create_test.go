@@ -19,7 +19,6 @@ func TestE2ENewsletterSubscription(t *testing.T) {
 	// Test POST /newsletter
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		ID:    utility.GenerateUUID(),
 		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
 	}
 	jsonBody, err := json.Marshal(body)
@@ -47,7 +46,6 @@ func TestPostNewsletter_ValidateEmail(t *testing.T) {
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		ID:    utility.GenerateUUID(),
 		Email: fmt.Sprintf("testuser%v@qa", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
@@ -92,7 +90,6 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		ID:    utility.GenerateUUID(),
 		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)
@@ -119,7 +116,6 @@ func TestPostNewsletter_ResponseAndStatusCode(t *testing.T) {
 
 	currUUID := utility.GenerateUUID()
 	body := models.NewsLetter{
-		ID:    utility.GenerateUUID(),
 		Email: fmt.Sprintf("testuser%v@gmail.com", currUUID),
 	}
 	jsonBody, _ := json.Marshal(body)

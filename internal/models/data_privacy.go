@@ -23,7 +23,7 @@ type DataPrivacySettings struct {
 	DeletedAt             gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func (d *DataPrivacySettings) BeforeCreate(tx database.DatabaseManager) (err error) {
+func (d *DataPrivacySettings) BeforeCreate(tx *gorm.DB) (err error) {
 
 	if d.ID == "" {
 		d.ID = utility.GenerateUUID()

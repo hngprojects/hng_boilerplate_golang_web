@@ -17,10 +17,10 @@ type PaginationResponse struct {
 
 // Reader interface for read operation interface
 type Reader interface {
-	SelectAllFromDb(db *gorm.DB, order string, receiver interface{}, query interface{}, args ...interface{}) error
+	SelectAllFromDb(order string, preload string, receiver interface{}, query interface{}, args ...interface{}) error
 	SelectAllFromDbWithLimit(order string, limit int, receiver interface{}, query interface{}, args ...interface{}) error
 	SelectAllFromDbOrderBy(orderBy, order string, receiver interface{}, query interface{}, args ...interface{}) error
-	SelectAllFromDbOrderByPaginated(db *gorm.DB, orderBy, order string, pagination Pagination, receiver interface{}, query interface{}, args ...interface{}) (PaginationResponse, error)
+	SelectAllFromDbOrderByPaginated(orderBy, order, filter string, pagination Pagination, receiver interface{}, query interface{}, args ...interface{}) (PaginationResponse, error)
 	SelectAllFromByGroup(orderBy, order string, pagination *Pagination, receiver interface{}, query interface{}, groupColumn string, args ...interface{}) (PaginationResponse, error)
 	RawSelectAllFromByGroup(orderBy, order string, pagination *Pagination, model interface{}, receiver interface{}, groupColumn string, selectQuery string, query string, args ...interface{}) (PaginationResponse, error)
 	SelectOneFromDb(receiver interface{}, query interface{}, args ...interface{}) (error, error)

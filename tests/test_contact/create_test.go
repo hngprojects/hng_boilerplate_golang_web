@@ -22,7 +22,6 @@ func TestAddToContactUs(t *testing.T) {
 	password, _ := utility.HashPassword("password")
 
 	regularUser := models.User{
-		ID:       utility.GenerateUUID(),
 		Name:     "Admin User",
 		Email:    fmt.Sprintf("admin%v@qa.team", currUUID),
 		Password: password,

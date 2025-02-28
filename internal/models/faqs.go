@@ -26,7 +26,7 @@ type UpdateFAQ struct {
 	Category string `json:"category" validate:"required"`
 }
 
-func (f *FAQ) BeforeCreate(tx database.DatabaseManager) (err error) {
+func (f *FAQ) BeforeCreate(db *gorm.DB) (err error) {
 
 	if f.ID == "" {
 		f.ID = utility.GenerateUUID()
@@ -77,9 +77,9 @@ func (n *FAQ) FetchAllFaq(db database.DatabaseManager, c *gin.Context) ([]FAQ, d
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&faqs,
 		nil,

@@ -52,7 +52,9 @@ func (i *Invitation) GetInvitationsByID(db database.DatabaseManager, user_id str
 	//get all invitations with the user_id
 	var invitations []Invitation
 
-	err := db.SelectAllFromDb(db.DB().Preload("Organisation"), "", &invitations, "user_id = ?", user_id)
+	// passes Organisation as an optional preload options in the SelectAllFromDb function
+	organisation := "Organisation"
+	err := db.SelectAllFromDb("", organisation, &invitations, "user_id = ?", user_id)
 	if err != nil {
 		return nil, err
 	}

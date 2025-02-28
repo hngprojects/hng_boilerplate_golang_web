@@ -47,9 +47,9 @@ func (j *HelpCenter) FetchAllTopics(db database.DatabaseManager, c *gin.Context)
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&helpCntTopics,
 		nil,
@@ -78,9 +78,9 @@ func (h *HelpCenter) SearchHelpCenterTopics(db database.DatabaseManager, c *gin.
 	searchQuery := "%" + query + "%"
 	whereClause := "title ILIKE ?"
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&helpCntTopics,
 		whereClause,

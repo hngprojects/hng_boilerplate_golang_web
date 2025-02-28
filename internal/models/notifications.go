@@ -68,7 +68,7 @@ func (n *Notification) FetchAllNotifications(db database.DatabaseManager, c *gin
 	var notifications []Notification
 	type additionalData map[string]int64
 
-	err := db.SelectAllFromDb(nil, "", &notifications, "")
+	err := db.SelectAllFromDb("", "", &notifications, "")
 	if err != nil {
 		return nil, additionalData{}, err
 	}
@@ -110,7 +110,7 @@ func (n *Notification) FetchUnReadNotifications(db database.DatabaseManager, c *
 		"unread_count": unreadCount,
 	}
 
-	err = db.SelectAllFromDb(nil, "", &notifications, "is_read = ?", false)
+	err = db.SelectAllFromDb("", "", &notifications, "is_read = ?", false)
 	if err != nil {
 		return nil, additionalData{}, err
 	}
@@ -153,7 +153,7 @@ func (n *Notification) DeleteNotificationByUserID(db database.DatabaseManager, I
 		return gorm.ErrRecordNotFound
 	}
 
-	err := db.SelectAllFromDb(nil, "", &notifications, "user_id = ?", ID)
+	err := db.SelectAllFromDb("", "", &notifications, "user_id = ?", ID)
 	if err != nil {
 		return err
 	}

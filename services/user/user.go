@@ -217,7 +217,7 @@ func GetAllUsers(c *gin.Context, db *gorm.DB) ([]models.User, *database.Paginati
 	pagination := postgresql.GetPagination(c)
 
 	pdb := inst.InitDB(db)
-	paginationResponse, err := pdb.SelectAllFromDbOrderByPaginated(nil, "created_at", "desc", pagination, &users, "deleted_at IS NULL")
+	paginationResponse, err := pdb.SelectAllFromDbOrderByPaginated("created_at", "desc", "", pagination, &users, "deleted_at IS NULL")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return users, nil, http.StatusNoContent, nil

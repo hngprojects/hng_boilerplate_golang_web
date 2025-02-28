@@ -126,7 +126,7 @@ func (r *Region) CreateRegion(db database.DatabaseManager) error {
 
 func (r *Region) GetRegions(db database.DatabaseManager) ([]Region, error) {
 	var regions []Region
-	err := db.SelectAllFromDb(nil, "desc", &regions, nil)
+	err := db.SelectAllFromDb("desc", "", &regions, nil)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return regions, err
@@ -139,7 +139,7 @@ func (r *Region) GetRegions(db database.DatabaseManager) ([]Region, error) {
 
 func (r *Timezone) GetTimeZones(db database.DatabaseManager) ([]Timezone, error) {
 	var timezones []Timezone
-	err := db.SelectAllFromDb(nil, "desc", &timezones, nil)
+	err := db.SelectAllFromDb("desc", "", &timezones, nil)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return timezones, err
@@ -152,7 +152,7 @@ func (r *Timezone) GetTimeZones(db database.DatabaseManager) ([]Timezone, error)
 
 func (r *Language) GetLanguages(db database.DatabaseManager) ([]Language, error) {
 	var languages []Language
-	err := db.SelectAllFromDb(nil, "desc", &languages, nil)
+	err := db.SelectAllFromDb("desc", "", &languages, nil)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return languages, err

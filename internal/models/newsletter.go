@@ -22,7 +22,7 @@ type NewsLetter struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func (n *NewsLetter) BeforeCreate(tx database.DatabaseManager) (err error) {
+func (n *NewsLetter) BeforeCreate(tx *gorm.DB) (err error) {
 
 	if n.ID == "" {
 		n.ID = utility.GenerateUUID()
@@ -55,7 +55,6 @@ func (n *NewsLetter) GetDeletedNewsLetterById(db database.DatabaseManager, ID st
 }
 
 func (n *NewsLetter) CreateNewsLetter(db database.DatabaseManager) error {
-
 	err := db.CreateOneRecord(&n)
 
 	if err != nil {
@@ -87,9 +86,9 @@ func (n *NewsLetter) FetchAllNewsLetter(db database.DatabaseManager, c *gin.Cont
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&newsLetters,
 		nil,
@@ -107,12 +106,12 @@ func (n *NewsLetter) FetchAllDeletedNewsLetter(db database.DatabaseManager, c *g
 
 	pagination := postgresql.GetPagination(c)
 
-	query := db.DB().Unscoped().Where("deleted_at IS NOT NULL")
-
+	// optionally perform filter query in the SelectAllFromDbOrderByPaginated function
+	filterQuery := "deleted_at IS NOT NULL"
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		query,
 		"created_at",
 		"desc",
+		filterQuery,
 		pagination,
 		&newsLetters,
 		nil,

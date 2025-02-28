@@ -20,7 +20,7 @@ type ContactUs struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func (c *ContactUs) BeforeCreate(tx database.DatabaseManager) (err error) {
+func (c *ContactUs) BeforeCreate(tx *gorm.DB) (err error) {
 
 	if c.ID == "" {
 		c.ID = utility.GenerateUUID()
@@ -41,7 +41,7 @@ func (f *ContactUs) GetContactUsById(db database.DatabaseManager, ID string) (Co
 func (f *ContactUs) GetContactUsByEmail(db database.DatabaseManager, email string) ([]ContactUs, error) {
 	var contacts []ContactUs
 
-	err := db.SelectAllFromDb(nil, "", &contacts, "email = ?", email)
+	err := db.SelectAllFromDb("", "", &contacts, "email = ?", email)
 	if err != nil {
 		return contacts, err
 	}
@@ -76,9 +76,9 @@ func (cu *ContactUs) FetchAllContactUs(db database.DatabaseManager, c *gin.Conte
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&contacts,
 		nil,

@@ -68,9 +68,9 @@ func (n *WaitlistUser) FetchAllWaitList(db database.DatabaseManager, c *gin.Cont
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&waitLists,
 		nil,

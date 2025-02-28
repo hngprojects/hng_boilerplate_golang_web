@@ -33,7 +33,7 @@ func (t *EmailTemplate) Create(db database.DatabaseManager) error {
 func (t *EmailTemplate) GetAllTemplates(db database.DatabaseManager) ([]EmailTemplate, error) {
 	var templates []EmailTemplate
 
-	err := db.SelectAllFromDb(nil, "", &templates, "")
+	err := db.SelectAllFromDb("", "", &templates, "")
 	if err != nil {
 		return nil, err
 	}

@@ -21,9 +21,6 @@ vendor/
 go.work
 go.work.sum
 
-*.env
-app.env
-app-sample.env
 logs/
 cronlogs/
 config.yaml

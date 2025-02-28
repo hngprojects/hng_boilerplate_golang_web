@@ -73,9 +73,9 @@ func (b *Billing) GetAllBillings(db database.DatabaseManager, c *gin.Context) ([
 	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
-		nil,
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&Billing,
 		nil,

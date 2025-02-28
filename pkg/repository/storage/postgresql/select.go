@@ -45,17 +45,16 @@ func GetPagination(c *gin.Context) database.Pagination {
 	}
 }
 
-func (p *Postgresql) SelectAllFromDb(d *gorm.DB, order string, receiver interface{}, query interface{}, args ...interface{}) error {
-	var db *gorm.DB
-	if d != nil {
-		db = d
-	} else {
-		db = p.Db
-	}
+func (p *Postgresql) SelectAllFromDb(order string, preload string, receiver interface{}, query interface{}, args ...interface{}) error {
 	if order == "" {
 		order = "desc"
 	}
-	tx := db.Order("id "+order).Where(query, args...).Find(receiver)
+	tx := p.DB()
+	// apply preloads if needed
+	if preload != "" {
+		tx = tx.Preload(preload)
+	}
+	tx = tx.Order("id "+order).Where(query, args...).Find(receiver)
 	return tx.Error
 }
 
@@ -146,15 +145,7 @@ func (p *Postgresql) RawSelectAllFromByGroup(orderBy, order string, pagination *
 	}, tx.Error
 }
 
-func (p *Postgresql) SelectAllFromDbOrderByPaginated(d *gorm.DB, orderBy, order string, pagination database.Pagination, receiver interface{}, query interface{}, args ...interface{}) (database.PaginationResponse, error) {
-
-	var db *gorm.DB
-
-	if d != nil {
-		db = d
-	} else {
-		db = p.Db
-	}
+func (p *Postgresql) SelectAllFromDbOrderByPaginated(orderBy, order, filter string, pagination database.Pagination, receiver interface{}, query interface{}, args ...interface{}) (database.PaginationResponse, error) {
 	if order == "" {
 		order = "desc"
 	}
@@ -169,6 +160,13 @@ func (p *Postgresql) SelectAllFromDbOrderByPaginated(d *gorm.DB, orderBy, order 
 	}
 
 	var count int64
+
+	// optionally apply filter if provided
+	db := p.DB()
+	if filter != "" {
+		db = db.Unscoped().Where(filter)
+	}
+
 	err := db.Model(receiver).Where(query, args...).Count(&count).Error
 	if err != nil {
 		return database.PaginationResponse{
