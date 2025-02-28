@@ -12,14 +12,15 @@ var (
 	RDB *red.Redis
 )
 
+// initialize Postgresql instance
 func InitDB(db *gorm.DB) *postgresql.Postgresql {
 	if DB == nil {
 		DB = postgresql.NewPostgresqlConnection(db)
 	}
-
 	return DB
 }
 
+// initialize Redis instance
 func InitRed(rdb *redis.Client) *red.Redis {
 	if RDB == nil {
 		RDB = red.NewRedisConnection(rdb)
