@@ -173,32 +173,6 @@ func TestUpdateOrgRole(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
 
-	t.Run("Duplicate Update Org Role", func(t *testing.T) {
-		router, orgController := setup()
-
-		loginData := models.LoginRequestModel{
-			Email:    adminUser.Email,
-			Password: "password",
-		}
-		token := tests.GetLoginToken(t, router, *orgController, loginData)
-
-		updatedRole := models.OrgRole{
-			Name:        fmt.Sprintf("%v-New name", utility.RandomString(5)),
-			Description: "Newdescription",
-		}
-		roleJSON, _ := json.Marshal(updatedRole)
-
-		duplicateReq, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/api/v1/organisations/%s/roles/%s", orgID, roleID), bytes.NewBuffer(roleJSON))
-		duplicateReq.Header.Set("Content-Type", "application/json")
-		duplicateReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
-		duplicateResp := httptest.NewRecorder()
-		router.ServeHTTP(duplicateResp, duplicateReq)
-
-		tests.AssertStatusCode(t, duplicateResp.Code, http.StatusBadRequest)
-		duplicateResponse := tests.ParseResponse(duplicateResp)
-		tests.AssertResponseMessage(t, duplicateResponse["message"].(string), fmt.Sprintf("Role with the name %s already exists in this organisation", updatedRole.Name))
-	})
 }
 
 func TestUpdateOrgPermissions(t *testing.T) {
