@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"io"
 	"net/http"
 	"strconv"
@@ -91,7 +92,6 @@ func (r *SendRequestObject) SendRequest() (any, error) {
 		return nil, ErrFailedToReadReqBody
 	}
 	var response any
-	fmt.Println(body)
 	if r.DecodeMethod != PhpSerializerMethod {
 
 		err = json.Unmarshal(body, &response)
