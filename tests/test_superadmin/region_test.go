@@ -212,7 +212,7 @@ func TestGetRegions(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Regions retrieved successfully")
 	})
 
-	t.Run("Successful Get Regions for user", func(t *testing.T) {
+	t.Run("Duplicate Get Regions for user", func(t *testing.T) {
 		router, authController := setup()
 		loginData := models.LoginRequestModel{
 			Email:    regularUser.Email,

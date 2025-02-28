@@ -105,11 +105,8 @@ func (l *Language) CreateLanguage(db *gorm.DB) error {
 	if errCode != nil {
 		return errCode
 	}
-	if !isUniqueName {
-		return fmt.Errorf("the name %s already exists", l.Name)
-	}
-	if !isUniqueCode {
-		return fmt.Errorf("the code %s already exists", l.Code)
+	if !isUniqueName || !isUniqueCode{
+		return fmt.Errorf("name already exists")
 	}
 
 	err := postgresql.CreateOneRecord(db, &l)
@@ -131,11 +128,8 @@ func (t *Timezone) CreateTimeZone(db *gorm.DB) error {
 	if uniqueErrGmt != nil {
 		return uniqueErrGmt
 	}
-	if !uniqueTime {
-		return fmt.Errorf("the timezone %s already exists", t.Timezone)
-	}
-	if !uniqueGmt {
-		return fmt.Errorf("the timezone %s already exists", t.GmtOffset)
+	if !uniqueTime || !uniqueGmt {
+		return fmt.Errorf("timezone already exists")
 	}
 
 	err := postgresql.CreateOneRecord(db, &t)
@@ -157,11 +151,8 @@ func (r *Region) CreateRegion(db *gorm.DB) error {
 	if errCode != nil {
 		return errCode
 	}
-	if !isUniqueName {
-		return fmt.Errorf("the name %s already exists", r.Name)
-	}
-	if !isUniqueCode {
-		return fmt.Errorf("the code %s already exists", r.Code)
+	if !isUniqueName || !isUniqueCode {
+		return fmt.Errorf("name already exists")
 	}
 
 	err := postgresql.CreateOneRecord(db, &r)
@@ -234,11 +225,8 @@ func (t *Timezone) UpdateTimeZone(db *gorm.DB) error {
 	if uniqueErrGmt != nil {
 		return uniqueErrGmt
 	}
-	if !uniqueTime {
-		return fmt.Errorf("the timezone %s already exists", t.Timezone)
-	}
-	if !uniqueGmt {
-		return fmt.Errorf("the timezone %s already exists", t.GmtOffset)
+	if !uniqueTime || !uniqueGmt {
+		return fmt.Errorf("timezone already exists")
 	}
 
 	_, err := postgresql.SaveAllFields(db, &t)

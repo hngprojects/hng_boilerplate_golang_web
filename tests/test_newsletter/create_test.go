@@ -82,7 +82,7 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 
 	response := tst.ParseResponse(resp)
 	tst.AssertStatusCode(t, resp.Code, http.StatusConflict)
-	tst.AssertResponseMessage(t, response["message"].(string), "Email already subscribed")
+	tst.AssertResponseMessage(t, response["message"].(string), "email already subscribed")
 }
 
 func TestPostNewsletter_SaveData(t *testing.T) {

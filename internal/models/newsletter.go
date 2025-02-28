@@ -60,7 +60,7 @@ func (n *NewsLetter) CreateNewsLetter(db *gorm.DB) error {
 		return uniqueErr
 	}
 	if !unique {
-		return fmt.Errorf("the email %s already exists", n.Email)
+		return fmt.Errorf("email already subscribed")
 	}
 
 	err := postgresql.CreateOneRecord(db, &n)
@@ -90,7 +90,7 @@ func (n *NewsLetter) UpdateNewsLetter(db *gorm.DB) error {
 		return uniqueErr
 	}
 	if !unique {
-		return fmt.Errorf("the email %s already exists", n.Email)
+		return fmt.Errorf("email already subscribed")
 	}
 
 	_, err := postgresql.SaveAllFields(db, &n)
