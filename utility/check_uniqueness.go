@@ -4,7 +4,18 @@ import (
 	"fmt"
 	"strings"
 	"gorm.io/gorm"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
+
+func IsUniqueSingleFieldRefactored[T any](dbManager database.DatabaseManager, model T, field string, value interface{}) (bool, error) {
+	var count int64
+
+	err := dbManager.DB().Model(model).Where(fmt.Sprintf("%s = ?", field), value).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count == 0, nil
+}
 
 func IsUniqueSingleField[T any](db *gorm.DB, model T, field string, value interface{}) (bool, error) {
 	var count int64

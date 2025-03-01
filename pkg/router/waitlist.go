@@ -19,7 +19,7 @@ func Waitlist(r *gin.Engine, ApiVersion string, validator *validator.Validate, d
 	{
 		waitlistURL.POST("/waitlist", controller.Create)
 		waitlistURL.GET("/waitlist",
-			middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), controller.GetWaitLists)
+			middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), controller.GetWaitLists)
 	}
 	return r
 }

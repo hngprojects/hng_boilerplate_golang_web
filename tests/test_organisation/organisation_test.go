@@ -148,7 +148,7 @@ func TestOrganizationCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 		{
 			orgUrl.POST("/organisations", org.CreateOrganisation)
 
@@ -244,7 +244,7 @@ func TestGetOrganisation(t *testing.T) {
 		},
 	}
 
-	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		orgUrl.GET("/organisations/:org_id", org.GetOrganisation)
 	}
@@ -384,7 +384,7 @@ func TestOrganisationUpdate(t *testing.T) {
 		},
 	}
 
-	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		orgUrl.PATCH("/organisations/:org_id", org.UpdateOrganisation)
 	}
@@ -496,7 +496,7 @@ func TestOrganisationDelete(t *testing.T) {
 		},
 	}
 
-	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	orgUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		orgUrl.DELETE("/organisations/:org_id", org.DeleteOrganisation)
 	}
@@ -614,7 +614,7 @@ func TestGetUsersInOrg(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		orgUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 		{
 			orgUrl.GET("/organisations/:org_id/users", org.GetUsersInOrganisation)
 		}

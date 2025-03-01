@@ -30,7 +30,7 @@ tmp/
 .idea/
 
 dump.rdb
-app.env 
+app.env
 
 development_app
 staging_app

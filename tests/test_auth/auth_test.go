@@ -407,7 +407,7 @@ func TestLogout(t *testing.T) {
 	for _, test := range tests {
 		r = gin.Default()
 
-		authUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		authUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			authUrl.POST("/auth/logout", authRoute.LogoutUser)
 

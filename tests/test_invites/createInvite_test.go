@@ -94,7 +94,7 @@ func TestCreateInvite(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(setup.DB.Postgresql))
+		inviteURL := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(setup.DB.Postgresql.DB()))
 		{
 			inviteURL.POST("/invite/create", setup.InviteController.CreateInvite)
 

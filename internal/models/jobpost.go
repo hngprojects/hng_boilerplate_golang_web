@@ -7,16 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type JobPostSummary struct {
-	ID				 string `json:"id"`
-	Title       	 string `json:"title"`
-	Location    	 string `json:"location"`
-	Description 	 string `json:"description"`
-	SalaryRange      string `json:"salary_range"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+	SalaryRange string `json:"salary_range"`
 }
 
 type JobPost struct {
@@ -65,8 +66,8 @@ func (m *CreateJobPostModel) Sanitize() {
 	}
 }
 
-func (j *JobPost) CreateJobPost(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &j)
+func (j *JobPost) CreateJobPost(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&j)
 
 	if err != nil {
 		return err
@@ -75,15 +76,15 @@ func (j *JobPost) CreateJobPost(db *gorm.DB) error {
 	return nil
 }
 
-func (j *JobPost) FetchAllJobPost(db *gorm.DB, c *gin.Context) ([]JobPost, postgresql.PaginationResponse, error) {
+func (j *JobPost) FetchAllJobPost(db database.DatabaseManager, c *gin.Context) ([]JobPost, database.PaginationResponse, error) {
 	var jobPosts []JobPost
 
 	pagination := postgresql.GetPagination(c)
 
-	paginationResponse, err := postgresql.SelectAllFromDbOrderByPaginated(
-		db,
+	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
 		"desc",
+		"",
 		pagination,
 		&jobPosts,
 		nil,
@@ -96,8 +97,8 @@ func (j *JobPost) FetchAllJobPost(db *gorm.DB, c *gin.Context) ([]JobPost, postg
 	return jobPosts, paginationResponse, nil
 }
 
-func (j *JobPost) FetchJobPostByID(db *gorm.DB) error {
-	err := postgresql.SelectFirstFromDb(db, &j)
+func (j *JobPost) FetchJobPostByID(db database.DatabaseManager) error {
+	err := db.SelectFirstFromDb(&j)
 
 	if err != nil {
 		return err
@@ -106,35 +107,35 @@ func (j *JobPost) FetchJobPostByID(db *gorm.DB) error {
 	return nil
 }
 
-func (j *JobPost) UpdateJobPostByID(db *gorm.DB, ID string) (JobPost, error) {
+func (j *JobPost) UpdateJobPostByID(db database.DatabaseManager, ID string) (JobPost, error) {
 	j.ID = ID
 
-	exists := postgresql.CheckExists(db, &JobPost{}, "id = ?", ID)
+	exists := db.CheckExists(&JobPost{}, "id = ?", ID)
 	if !exists {
 		return JobPost{}, gorm.ErrRecordNotFound
 	}
 
-	_, err := postgresql.SaveAllFields(db, j)
+	_, err := db.SaveAllFields(j)
 	if err != nil {
 		return JobPost{}, err
 	}
 
 	updatedJobPost := JobPost{}
-	err = db.First(&updatedJobPost, "id = ?", ID).Error
+	err = db.DB().First(&updatedJobPost, "id = ?", ID).Error
 	if err != nil {
 		return JobPost{}, err
 	}
 	return updatedJobPost, nil
 }
 
-func (j *JobPost) DeleteJobPostByID(db *gorm.DB, ID string) error {
+func (j *JobPost) DeleteJobPostByID(db database.DatabaseManager, ID string) error {
 
-	exists := postgresql.CheckExists(db, &JobPost{}, "id = ?", ID)
+	exists := db.CheckExists(&JobPost{}, "id = ?", ID)
 	if !exists {
 		return gorm.ErrRecordNotFound
 	}
 
-	err := postgresql.DeleteRecordFromDb(db, &j)
+	err := db.DeleteRecordFromDb(&j)
 
 	if err != nil {
 		return err

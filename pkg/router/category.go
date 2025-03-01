@@ -16,7 +16,7 @@ func Category(r *gin.Engine, ApiVersion string, validator *validator.Validate, d
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	category := category.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	categoryUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
+	categoryUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		categoryUrl.GET("/categories", category.GetCategoryNames)
 	}

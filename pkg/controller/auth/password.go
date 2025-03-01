@@ -30,7 +30,7 @@ func (base *Controller) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateUserPassword(c, req, base.Db.Postgresql)
+	respData, code, err := service.UpdateUserPassword(c, req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -64,7 +64,7 @@ func (base *Controller) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.PasswordReset(req.Email, base.Db.Postgresql, base.ExtReq)
+	respData, code, err := service.PasswordReset(req.Email, base.Db.Postgresql.DB(), base.ExtReq)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -98,7 +98,7 @@ func (base *Controller) VerifyResetToken(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.VerifyPasswordResetToken(req, base.Db.Postgresql)
+	respData, code, err := service.VerifyPasswordResetToken(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

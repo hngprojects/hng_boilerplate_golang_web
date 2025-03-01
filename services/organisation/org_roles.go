@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
@@ -15,6 +16,8 @@ import (
 
 func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Context) (gin.H, int, error) {
 	var org models.Organisation
+	// an instance of postgresql
+	pdb := inst.InitDB(db)
 
 	userId, err := middleware.GetUserClaims(c, db, "user_id")
 	if err != nil {
@@ -31,7 +34,7 @@ func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Contex
 		return nil, code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return gin.H{}, http.StatusNotFound, errors.New("organisation not found")
@@ -39,7 +42,7 @@ func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Contex
 		return gin.H{}, http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -51,7 +54,7 @@ func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Contex
 	req.ID = utility.GenerateUUID()
 	req.OrganisationID = orgData.ID
 
-	if err := req.CreateOrgRole(db); err != nil {
+	if err := req.CreateOrgRole(pdb); err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
 			return gin.H{}, http.StatusConflict, errors.New("role name already exists")
 		}
@@ -69,6 +72,8 @@ func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Contex
 }
 
 func GetOrgRoles(db *gorm.DB, orgID string, c *gin.Context) ([]models.OrgRole, int, error) {
+	// an instance of postgresql
+	pdb := inst.InitDB(db)
 	var (
 		org       models.Organisation
 		role      models.OrgRole
@@ -90,7 +95,7 @@ func GetOrgRoles(db *gorm.DB, orgID string, c *gin.Context) ([]models.OrgRole, i
 		return nil, code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, http.StatusNotFound, errors.New("organisation not found")
@@ -98,7 +103,7 @@ func GetOrgRoles(db *gorm.DB, orgID string, c *gin.Context) ([]models.OrgRole, i
 		return nil, http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -107,7 +112,7 @@ func GetOrgRoles(db *gorm.DB, orgID string, c *gin.Context) ([]models.OrgRole, i
 		return nil, http.StatusForbidden, errors.New("not organization owner")
 	}
 
-	rolesData, err = role.GetOrgRoles(db, orgID)
+	rolesData, err = role.GetOrgRoles(pdb, orgID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -121,6 +126,8 @@ func GetAOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (*models.Org
 		role      models.OrgRole
 		rolesData models.OrgRole
 	)
+	// an instance of postgresql
+	pdb := inst.InitDB(db)
 
 	userId, err := middleware.GetUserClaims(c, db, "user_id")
 	if err != nil {
@@ -137,7 +144,7 @@ func GetAOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (*models.Org
 		return nil, code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, http.StatusNotFound, errors.New("organisation not found")
@@ -145,7 +152,7 @@ func GetAOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (*models.Org
 		return nil, http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -154,7 +161,7 @@ func GetAOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (*models.Org
 		return nil, http.StatusForbidden, errors.New("not organization owner")
 	}
 
-	rolesData, err = role.GetAOrgRole(db, orgID, roleID)
+	rolesData, err = role.GetAOrgRole(pdb, orgID, roleID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -184,7 +191,9 @@ func DeleteOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (int, erro
 		return code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	// an instance of postgresql
+	pdb := inst.InitDB(db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return http.StatusNotFound, errors.New("organisation not found")
@@ -192,7 +201,7 @@ func DeleteOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (int, erro
 		return http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -200,12 +209,13 @@ func DeleteOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (int, erro
 	if !isOwner {
 		return http.StatusForbidden, errors.New("not organization owner")
 	}
+	// an instance of postgresql
 
-	roleData, err = role.GetAOrgRole(db, orgID, roleID)
+	roleData, err = role.GetAOrgRole(pdb, orgID, roleID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	err = roleData.DeleteOrgRole(db)
+	err = roleData.DeleteOrgRole(pdb)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}

@@ -39,7 +39,7 @@ func (base *Controller) RequestMagicLink(c *gin.Context) {
 
 	url := scheme + "://" + host
 
-	respData, code, err := service.MagicLinkRequest(req.Email, url, base.Db.Postgresql)
+	respData, code, err := service.MagicLinkRequest(req.Email, url, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -73,7 +73,7 @@ func (base *Controller) VerifyMagicLink(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.VerifyMagicLinkToken(req, base.Db.Postgresql)
+	respData, code, err := service.VerifyMagicLinkToken(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

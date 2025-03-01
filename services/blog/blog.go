@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
@@ -24,6 +25,9 @@ type BlogResponse struct {
 }
 
 func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+
 	var user models.User
 	blog := models.Blog{
 		ID:       utility.GenerateUUID(),
@@ -34,13 +38,13 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 		Image:    req.Image,
 	}
 
-	err := blog.Create(db)
+	err := blog.Create(pdb)
 
 	if err != nil {
 		return BlogResponse{}, err
 	}
 
-	user, err = user.GetUserByID(db, userId)
+	user, err = user.GetUserByID(pdb, userId)
 
 	if err != nil {
 		return BlogResponse{}, err
@@ -61,8 +65,10 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 }
 
 func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var blog models.Blog
-	blog, err := blog.CheckBlogExists(blogId, db)
+	blog, err := blog.CheckBlogExists(blogId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("blog not found")
@@ -74,15 +80,17 @@ func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
 		return errors.New("user not authorised to delete blog")
 	}
 
-	return blog.Delete(db)
+	return blog.Delete(pdb)
 }
 
-func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.PaginationResponse, error) {
+func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, database.PaginationResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		blog models.Blog
 		user models.User
 	)
-	blogs, paginationResponse, err := blog.GetAllBlogs(db, c)
+	blogs, paginationResponse, err := blog.GetAllBlogs(pdb, c)
 
 	if err != nil {
 		return nil, paginationResponse, err
@@ -92,7 +100,7 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 
 	for _, blog := range blogs {
 		userId := blog.AuthorID
-		user, _ = user.GetUserByID(db, userId)
+		user, _ = user.GetUserByID(pdb, userId)
 		response := BlogResponse{
 			BlogID:    blog.ID,
 			Title:     blog.Title,
@@ -111,11 +119,13 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, postgresql.Paginatio
 }
 
 func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		user models.User
 		blog models.Blog
 	)
-	blog, err := blog.CheckBlogExists(blogId, db)
+	blog, err := blog.CheckBlogExists(blogId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return BlogResponse{}, errors.New("blog not found")
@@ -124,7 +134,7 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 	}
 
 	userId := blog.AuthorID
-	user, _ = user.GetUserByID(db, userId)
+	user, _ = user.GetUserByID(pdb, userId)
 
 	response := BlogResponse{
 		BlogID:    blog.ID,
@@ -141,11 +151,13 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 }
 
 func UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest, db *gorm.DB) (BlogResponse, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		user models.User
 		blog models.Blog
 	)
-	blog, err := blog.CheckBlogExists(blogId, db)
+	blog, err := blog.CheckBlogExists(blogId, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return BlogResponse{}, errors.New("blog not found")
@@ -157,9 +169,9 @@ func UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest, 
 		return BlogResponse{}, errors.New("user not authorised to update blog")
 	}
 
-	user, _ = user.GetUserByID(db, userId)
+	user, _ = user.GetUserByID(pdb, userId)
 
-	updatedBlog, err := blog.UpdateBlogById(db, req, blogId)
+	updatedBlog, err := blog.UpdateBlogById(pdb, req, blogId)
 
 	if err != nil {
 		return BlogResponse{}, err

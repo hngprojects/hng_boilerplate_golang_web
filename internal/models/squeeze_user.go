@@ -3,9 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/lib/pq"
-	"gorm.io/gorm"
 )
 
 type SqueezeUser struct {
@@ -35,8 +34,8 @@ type SqueezeUserReq struct {
 	ReferralSource string   `json:"referral_source" validate:"required"`
 }
 
-func (s *SqueezeUser) Create(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &s)
+func (s *SqueezeUser) Create(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&s)
 
 	if err != nil {
 		return err

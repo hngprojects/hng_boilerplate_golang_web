@@ -20,7 +20,7 @@ type Controller struct {
 }
 
 func (base *Controller) GetNewsLetters(c *gin.Context) {
-	newslettersData, paginationResponse, code, err := service.GetNewsletters(c, base.Db.Postgresql)
+	newslettersData, paginationResponse, code, err := service.GetNewsletters(c, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -31,7 +31,7 @@ func (base *Controller) GetNewsLetters(c *gin.Context) {
 }
 
 func (base *Controller) GetDeletedNewsLetters(c *gin.Context) {
-	newslettersData, paginationResponse, code, err := service.GetDeletedNewsletters(c, base.Db.Postgresql)
+	newslettersData, paginationResponse, code, err := service.GetDeletedNewsletters(c, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -45,7 +45,7 @@ func (base *Controller) DeleteNewsLetter(c *gin.Context) {
 	var (
 		reqID = c.Param("id")
 	)
-	code, err := service.DeleteNewsLetter(reqID, base.Db.Postgresql, c)
+	code, err := service.DeleteNewsLetter(reqID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -72,10 +72,10 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
-	err = service.NewsLetterSubscribe(&req, base.Db.Postgresql)
+	err = service.NewsLetterSubscribe(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		if err == models.ErrEmailAlreadySubscribed {
-			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "Email already subscribed", nil, nil)
+			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "email already subscribed", nil, nil)
 			c.JSON(http.StatusConflict, rd)
 		} else {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to subscribe", err, nil)
@@ -92,7 +92,7 @@ func (base *Controller) RestoreDeletedNewsLetter(c *gin.Context) {
 	var (
 		reqID = c.Param("id")
 	)
-	code, err := service.RestoreDeletedNewsLetter(reqID, base.Db.Postgresql, c)
+	code, err := service.RestoreDeletedNewsLetter(reqID, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)

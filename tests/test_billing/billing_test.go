@@ -82,7 +82,7 @@ func TestBillingCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			billingUrl.POST("/billing-plans", billing.CreateBilling)
 		}
@@ -186,11 +186,10 @@ func TestBillingDelete(t *testing.T) {
 		},
 	}
 
-	
 	for _, test := range tests {
 		r := gin.Default()
 
-		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			billingUrl.DELETE("/billing-plans/:id", billing.DeleteBilling)
 		}
@@ -476,7 +475,7 @@ func TestEditbilling(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+		billingUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 		{
 			billingUrl.PATCH("/billing-plans/:id", billing.UpdateBillingById)
 		}

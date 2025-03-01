@@ -19,10 +19,10 @@ func FAQ(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *st
 
 	faqUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
-		faqUrl.POST("/faq", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), faq.AddToFaq)
+		faqUrl.POST("/faq", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), faq.AddToFaq)
 		faqUrl.GET("/faq", faq.GetFaq)
-		faqUrl.DELETE("/faq/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), faq.DeleteFaq)
-		faqUrl.PUT("/faq/:id", middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin), faq.UpdateFaq)
+		faqUrl.DELETE("/faq/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), faq.DeleteFaq)
+		faqUrl.PUT("/faq/:id", middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin), faq.UpdateFaq)
 	}
 	return r
 }

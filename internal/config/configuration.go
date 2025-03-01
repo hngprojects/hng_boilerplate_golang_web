@@ -3,12 +3,10 @@ package config
 import (
 	"log"
 
-
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/spf13/viper"
-
-	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 // Setup initialize configuration
@@ -33,7 +31,7 @@ func Setup(logger *utility.Logger, name string) *Configuration {
 		viper.AutomaticEnv()
 
 		var config BaseConfig
-		
+
 		// bind config keys to viper
 		err := BindKeys(viper.GetViper(), config)
 		if err != nil {

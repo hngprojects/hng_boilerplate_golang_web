@@ -50,7 +50,7 @@ func (base *Controller) CreateBilling(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := billing.CreateBilling(billingReq, base.Db.Postgresql, userId)
+	respData, err := billing.CreateBilling(billingReq, base.Db.Postgresql.DB(), userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -84,7 +84,7 @@ func (base *Controller) DeleteBilling(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	if err := billing.DeleteBilling(billingID, userId, base.Db.Postgresql); err != nil {
+	if err := billing.DeleteBilling(billingID, userId, base.Db.Postgresql.DB()); err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)
 		c.JSON(http.StatusNotFound, rd)
 		return
@@ -97,7 +97,7 @@ func (base *Controller) DeleteBilling(c *gin.Context) {
 }
 
 func (base *Controller) GetBillings(c *gin.Context) {
-	billings_len, paginationResponse, err := billing.GetBillings(base.Db.Postgresql, c)
+	billings_len, paginationResponse, err := billing.GetBillings(base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch billings", err, nil)
 		c.JSON(http.StatusNotFound, rd)
@@ -125,7 +125,7 @@ func (base *Controller) GetBillingById(c *gin.Context) {
 		return
 	}
 
-	billing, err := billing.GetBillingById(billingID, base.Db.Postgresql)
+	billing, err := billing.GetBillingById(billingID, base.Db.Postgresql.DB())
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)
@@ -154,7 +154,7 @@ func (base *Controller) UpdateBillingById(c *gin.Context) {
 		return
 	}
 
-	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql, "user_id")
+	userID, err := middleware.GetUserClaims(c, base.Db.Postgresql.DB(), "user_id")
 	if err != nil {
 		if err.Error() == "user claims not found" {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to update billing", nil)
@@ -167,7 +167,7 @@ func (base *Controller) UpdateBillingById(c *gin.Context) {
 	}
 	userId := userID.(string)
 
-	billing, err := billing.UpdateBillingById(billingID, userId, req, base.Db.Postgresql)
+	billing, err := billing.UpdateBillingById(billingID, userId, req, base.Db.Postgresql.DB())
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "billing not found", err.Error(), nil)

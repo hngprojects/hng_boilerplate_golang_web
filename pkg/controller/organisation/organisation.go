@@ -42,7 +42,7 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 		return
 	}
 
-	reqData, code, err := service.ValidateCreateOrgRequest(req, base.Db.Postgresql)
+	reqData, code, err := service.ValidateCreateOrgRequest(req, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -60,7 +60,7 @@ func (base *Controller) CreateOrganisation(c *gin.Context) {
 
 	userId := userClaims["user_id"].(string)
 
-	respData, err := service.CreateOrganisation(reqData, base.Db.Postgresql, userId)
+	respData, err := service.CreateOrganisation(reqData, base.Db.Postgresql.DB(), userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -93,7 +93,7 @@ func (base *Controller) GetOrganisation(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	orgData, err := service.GetOrganisation(orgId, userId, base.Db.Postgresql)
+	orgData, err := service.GetOrganisation(orgId, userId, base.Db.Postgresql.DB())
 
 	if err != nil {
 		switch err.Error() {
@@ -143,7 +143,7 @@ func (base *Controller) UpdateOrganisation(c *gin.Context) {
 		return
 	}
 
-	updatedOrg, err := service.UpdateOrganisation(orgId, userId, updateReq, base.Db.Postgresql)
+	updatedOrg, err := service.UpdateOrganisation(orgId, userId, updateReq, base.Db.Postgresql.DB())
 
 	if err != nil {
 		switch err.Error() {
@@ -187,7 +187,7 @@ func (base *Controller) DeleteOrganisation(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	if err := service.DeleteOrganisation(orgId, userId, base.Db.Postgresql); err != nil {
+	if err := service.DeleteOrganisation(orgId, userId, base.Db.Postgresql.DB()); err != nil {
 		switch err.Error() {
 		case "organisation not found":
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete organisation", nil)
@@ -230,7 +230,7 @@ func (base *Controller) AddUserToOrganisation(c *gin.Context) {
 		return
 	}
 
-	err = service.AddUserToOrganisation(orgId, req, base.Db.Postgresql)
+	err = service.AddUserToOrganisation(orgId, req, base.Db.Postgresql.DB())
 
 	if err != nil {
 		switch err.Error() {
@@ -275,7 +275,7 @@ func (base *Controller) GetUsersInOrganisation(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	users, paginationResponse, err := service.GetUsersInOrganisation(orgId, userId, base.Db.Postgresql, c)
+	users, paginationResponse, err := service.GetUsersInOrganisation(orgId, userId, base.Db.Postgresql.DB(), c)
 
 	if err != nil {
 		switch err.Error() {

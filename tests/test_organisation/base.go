@@ -70,7 +70,7 @@ func SetupOrgTestRouter() (*gin.Engine, *organisation.Controller) {
 
 func SetupOrgRoutes(r *gin.Engine, orgController *organisation.Controller) {
 	orgUrl := r.Group("/api/v1",
-		middleware.Authorize(orgController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		middleware.Authorize(orgController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 
 	orgUrl.POST("/organisations/:org_id/roles", orgController.CreateOrgRole)
 	orgUrl.GET("/organisations/:org_id/roles", orgController.GetOrgRoles)

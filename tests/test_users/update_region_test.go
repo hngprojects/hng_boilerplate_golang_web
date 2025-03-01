@@ -28,7 +28,7 @@ func TestUpdateUserRegion(t *testing.T) {
 	}
 
 	_, saController := SetupUsersTestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

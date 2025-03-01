@@ -66,8 +66,8 @@ func TestPostNewsletter_CheckDuplicateEmail(t *testing.T) {
 
 	currUUID := utility.GenerateUUID()
 
-	db := newsController.Db.Postgresql
-	db.Create(&models.NewsLetter{Email: fmt.Sprintf("testuser%v@qa.team", currUUID)})
+	db := newsController.Db.Postgresql.DB()
+	db.Create(&models.NewsLetter{ID: utility.GenerateUUID(), Email: fmt.Sprintf("testuser%v@qa.team", currUUID)})
 
 	body := models.NewsLetter{
 		Email: fmt.Sprintf("testuser%v@qa.team", currUUID),
@@ -105,7 +105,7 @@ func TestPostNewsletter_SaveData(t *testing.T) {
 	tst.AssertResponseMessage(t, response["message"].(string), "subscribed successfully")
 
 	var newsletter models.NewsLetter
-	newsController.Db.Postgresql.First(&newsletter, "email = ?", fmt.Sprintf("testuser%v@qa.team", currUUID))
+	newsController.Db.Postgresql.DB().First(&newsletter, "email = ?", fmt.Sprintf("testuser%v@qa.team", currUUID))
 	if newsletter.Email != fmt.Sprintf("testuser%v@qa.team", currUUID) {
 		t.Errorf("data not saved correctly to the database: expected email %s, got %s", fmt.Sprintf("testuser%v@qa.team", currUUID), newsletter.Email)
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"gorm.io/gorm"
@@ -37,23 +38,24 @@ func GetUserDataPrivacySettings(userIDStr string,
 	if err != nil {
 		return &theData, code, err
 	}
+	pdb := inst.InitDB(db)
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if !isSuperAdmin && currentUserID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to view this user's privacy settings")
 	}
 
-	if theData, err = privacyData.GetUserDataPrivacySettingsByID(db, userIDStr); err != nil {
+	if theData, err = privacyData.GetUserDataPrivacySettingsByID(pdb, userIDStr); err != nil {
 		if err.Error() == "record not found" {
 			theModel := models.DataPrivacySettings{
 				UserID: userIDStr,
 			}
-			err := theModel.CreateDataPrivacySettings(db)
+			err := theModel.CreateDataPrivacySettings(pdb)
 			if err != nil {
 				return nil, http.StatusBadRequest, err
 			}
 
-			if theData, err = privacyData.GetUserDataPrivacySettingsByID(db, userIDStr); err != nil {
+			if theData, err = privacyData.GetUserDataPrivacySettingsByID(pdb, userIDStr); err != nil {
 				return nil, http.StatusBadRequest, err
 			}
 			return &theData, http.StatusCreated, nil
@@ -91,13 +93,14 @@ func UpdateUserDataPrivacySettings(userData models.DataPrivacySettings, userIDSt
 	if err != nil {
 		return &theData, code, err
 	}
+	pdb := inst.InitDB(db)
 
-	isSuperAdmin := currentUser.CheckUserIsAdmin(db)
+	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
 	if !isSuperAdmin && currentUserID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
 	}
 
-	if theData, err = privacyData.GetUserDataPrivacySettingsByID(db, userIDStr); err != nil {
+	if theData, err = privacyData.GetUserDataPrivacySettingsByID(pdb, userIDStr); err != nil {
 		return &theData, http.StatusBadRequest, err
 	} else {
 
@@ -109,7 +112,7 @@ func UpdateUserDataPrivacySettings(userData models.DataPrivacySettings, userIDSt
 		theData.ShareDataWithPartners = userData.ShareDataWithPartners
 		theData.ReceiveEmailUpdates = userData.ReceiveEmailUpdates
 
-		if err := theData.UpdateDataPrivacySettings(db); err != nil {
+		if err := theData.UpdateDataPrivacySettings(pdb); err != nil {
 			return &theData, http.StatusBadRequest, err
 		}
 		return &theData, http.StatusOK, nil

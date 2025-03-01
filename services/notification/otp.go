@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/send"
 )
@@ -20,9 +21,10 @@ func SendDirectOTP(extReq request.ExternalRequest, req models.SendOTP, db *gorm.
 		user                 models.User
 	)
 
+	pdb := inst.InitDB(db)
 	subject := fmt.Sprintf("Subject: Secure Login: Your OTP Code Is: %v", req.OtpToken)
 
-	user, err := user.GetUserByEmail(db, req.Email)
+	user, err := user.GetUserByEmail(pdb, req.Email)
 	if err != nil {
 		return fmt.Errorf("error getting user with account id %v, %v", req.Email, err)
 	}

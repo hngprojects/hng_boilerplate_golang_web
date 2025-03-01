@@ -49,8 +49,8 @@ func TestUpdateFaq(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	db.Create(&adminUser)
-	db.Create(&faq)
+	db.DB().Create(&adminUser)
+	db.DB().Create(&faq)
 
 	t.Run("Successful Update FAQ", func(t *testing.T) {
 		router, authController := setup()

@@ -17,7 +17,7 @@ import (
 
 func TestUpdateOrgRole(t *testing.T) {
 	_, orgController := SetupOrgTestRouter()
-	db := orgController.Db.Postgresql
+	db := orgController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 
@@ -177,7 +177,7 @@ func TestUpdateOrgRole(t *testing.T) {
 
 func TestUpdateOrgPermissions(t *testing.T) {
 	_, orgController := SetupOrgTestRouter()
-	db := orgController.Db.Postgresql
+	db := orgController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

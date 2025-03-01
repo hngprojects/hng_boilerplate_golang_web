@@ -33,7 +33,7 @@ func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	}
 
 	authUrlSec := r.Group(fmt.Sprintf("%v/auth", ApiVersion),
-		middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+		middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		authUrlSec.POST("/logout", auth.LogoutUser)
 		authUrlSec.PUT("/change-password", auth.ChangePassword)

@@ -34,7 +34,7 @@ func TestGetFaq(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.Create(&faq)
+	db.DB().Create(&faq)
 
 	t.Run("Successful Get FAQ", func(t *testing.T) {
 		router, _ := setup()

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/user"
@@ -35,7 +36,8 @@ func UpdateOrgRoles(req models.OrgRole, orgID, roleID string, db *gorm.DB, c *gi
 		return nil, code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	pdb := inst.InitDB(db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return gin.H{}, http.StatusNotFound, errors.New("organisation not found")
@@ -43,7 +45,7 @@ func UpdateOrgRoles(req models.OrgRole, orgID, roleID string, db *gorm.DB, c *gi
 		return gin.H{}, http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -52,7 +54,7 @@ func UpdateOrgRoles(req models.OrgRole, orgID, roleID string, db *gorm.DB, c *gi
 		return nil, http.StatusForbidden, errors.New("not organization owner")
 	}
 
-	roleData, err = role.GetAOrgRole(db, orgID, roleID)
+	roleData, err = role.GetAOrgRole(pdb, orgID, roleID)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -60,7 +62,7 @@ func UpdateOrgRoles(req models.OrgRole, orgID, roleID string, db *gorm.DB, c *gi
 	roleData.Name = req.Name
 	roleData.Description = req.Description
 
-	if err := roleData.UpdateOrgRole(db); err != nil {
+	if err := roleData.UpdateOrgRole(pdb); err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
 			return gin.H{}, http.StatusConflict, errors.New("role name already exists")
 		}
@@ -98,7 +100,8 @@ func UpdateOrgPermissions(req models.Permission, orgID, roleID string, db *gorm.
 		return code, err
 	}
 
-	orgData, err := org.CheckOrgExists(orgID, db)
+	pdb := inst.InitDB(db)
+	orgData, err := org.CheckOrgExists(orgID, pdb)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return http.StatusNotFound, errors.New("organisation not found")
@@ -106,7 +109,7 @@ func UpdateOrgPermissions(req models.Permission, orgID, roleID string, db *gorm.
 		return http.StatusBadRequest, err
 	}
 
-	isOwner, err := org.IsOwnerOfOrganisation(db, currentUser.ID, orgData.ID)
+	isOwner, err := org.IsOwnerOfOrganisation(pdb, currentUser.ID, orgData.ID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -115,7 +118,7 @@ func UpdateOrgPermissions(req models.Permission, orgID, roleID string, db *gorm.
 		return http.StatusForbidden, errors.New("not organization owner")
 	}
 
-	roleData, err = role.GetAOrgRole(db, orgID, roleID)
+	roleData, err = role.GetAOrgRole(pdb, orgID, roleID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -123,7 +126,7 @@ func UpdateOrgPermissions(req models.Permission, orgID, roleID string, db *gorm.
 	req.ID = utility.GenerateUUID()
 	req.RoleID = roleData.ID
 
-	if err := req.UpdateOrgPermissions(db); err != nil {
+	if err := req.UpdateOrgPermissions(pdb); err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
 			return http.StatusConflict, errors.New("permission already exists")
 		}

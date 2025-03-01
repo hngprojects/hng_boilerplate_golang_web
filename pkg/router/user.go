@@ -18,8 +18,8 @@ func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *s
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	user := user.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
-	adminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	adminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 	{
 		userUrl.GET("/users/:user_id", user.GetAUser)
 		userUrl.DELETE("/users/:user_id", user.DeleteAUser)

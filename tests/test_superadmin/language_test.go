@@ -17,7 +17,7 @@ import (
 
 func TestAddToLanguage(t *testing.T) {
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
@@ -111,7 +111,7 @@ func TestAddToLanguage(t *testing.T) {
 			Name: fmt.Sprintf("English-%s", theRandom),
 			Code: fmt.Sprintf("NA-%s", utility.RandomString(5)),
 		}
-		authController.Db.Postgresql.Create(&language)
+		authController.Db.Postgresql.DB().Create(&language)
 
 		duplicateLanguage := models.Language{
 			Name: fmt.Sprintf("English-%s", theRandom),
@@ -166,7 +166,7 @@ func TestGetLanguages(t *testing.T) {
 	}
 
 	_, saController := SetupSATestRouter()
-	db := saController.Db.Postgresql
+	db := saController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

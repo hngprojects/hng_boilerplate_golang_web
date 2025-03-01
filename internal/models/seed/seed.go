@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func SeedDatabase(db *gorm.DB) {
+func SeedDatabase(db database.DatabaseManager) {
 
 	SeedTestDatabase(db)
 
@@ -86,21 +86,21 @@ func SeedDatabase(db *gorm.DB) {
 
 	var existingUser models.User
 
-	query := postgresql.PreloadEntities(db, &existingUser, "Profile", "Products")
+	query := db.PreloadEntities(nil, &existingUser, "Profile", "Products")
 	if err := query.Where("email = ?", user1.Email).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed users
-			postgresql.CreateOneRecord(db, &user1)
-			postgresql.CreateOneRecord(db, &user2)
+			db.CreateOneRecord(&user1)
+			db.CreateOneRecord(&user2)
 
 			// Seed organisations
 			for _, org := range organisations {
-				postgresql.CreateOneRecord(db, &org)
+				db.CreateOneRecord(&org)
 			}
 
 			// Seed categories
 			for _, category := range categories {
-				postgresql.CreateOneRecord(db, &category)
+				db.CreateOneRecord(&category)
 			}
 
 			fmt.Println("Users, organisations and categories seeded.")
@@ -135,11 +135,11 @@ func SeedDatabase(db *gorm.DB) {
 		{ID: utility.GenerateUUID(), Question: "How do I choose the right appliance?", Answer: "To choose the right appliance, you should...", Category: "Policies"},
 	}
 
-	if err := db.Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
+	if err := db.DB().Where("question = ?", faqs[0].Question).First(&models.FAQ{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed faq
 			for _, faq := range faqs {
-				postgresql.CreateOneRecord(db, &faq)
+				db.CreateOneRecord(&faq)
 			}
 		} else {
 			fmt.Println("An error occurred: ", err)
@@ -150,11 +150,11 @@ func SeedDatabase(db *gorm.DB) {
 
 	//seeding templates
 	templates := SeedTemplates()
-	if err := db.Where("name = ?", templates[0].Name).First(&models.EmailTemplate{}).Error; err != nil {
+	if err := db.DB().Where("name = ?", templates[0].Name).First(&models.EmailTemplate{}).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Seed templates
 			for _, template := range templates {
-				postgresql.CreateOneRecord(db, &template)
+				db.CreateOneRecord(&template)
 			}
 		} else {
 			fmt.Println("An error occurred: ", err)
@@ -165,31 +165,27 @@ func SeedDatabase(db *gorm.DB) {
 
 }
 
-func SeedTestDatabase(db *gorm.DB) {
-
+func SeedTestDatabase(db database.DatabaseManager) {
 	roles := []models.Role{
 		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
 		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
 	}
 
 	var existingRole models.Role
-	if err := db.Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
+	if err := db.DB().Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			postgresql.CreateMultipleRecords(db, &roles, len(roles))
+			db.CreateMultipleRecords(&roles, len(roles))
 		} else {
 			fmt.Println("An error occurred: ", err)
 		}
-
 	} else {
 		fmt.Println("Roles already exist, skipping seeding.")
 	}
-
 }
 
-func SeedOrgRolesAndPermissions(db *gorm.DB) {
-
+func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 	var organizations []models.Organisation
-	if err := db.Find(&organizations).Error; err != nil {
+	if err := db.DB().Find(&organizations).Error; err != nil {
 		fmt.Printf("Error fetching organizations: %v\n", err)
 		return
 	}
@@ -201,8 +197,8 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 		}
 
 		for _, role := range roles {
-			isUniqueName, errName := utility.IsUniqueSingleField(db, &models.OrgRole{}, "name", role.Name)
-			isUniqueId, errId := utility.IsUniqueSingleField(db, &models.OrgRole{}, "organisation_id", role.OrganisationID)
+			isUniqueName, errName := utility.IsUniqueSingleFieldRefactored(db, &models.OrgRole{}, "name", role.Name)
+			isUniqueId, errId := utility.IsUniqueSingleFieldRefactored(db, &models.OrgRole{}, "organisation_id", role.OrganisationID)
 
 			if errName != nil {
 				fmt.Printf("Error checking role name uniqueness: %v", errName)
@@ -212,23 +208,21 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 				fmt.Printf("Error checking role id uniqueness: %v", errId)
 				continue
 			}
-
 			if isUniqueName && isUniqueId {
-				if err := postgresql.CreateOneRecord(db, &role); err != nil {
+				if err := db.CreateOneRecord(&role); err != nil {
 					fmt.Printf("Error creating role: %v\n", err)
 					continue
 				}
 			} else {
 				fmt.Printf("Role %s already exists in organisation %s\n", role.Name, org.Name)
 				var existingRole models.OrgRole
-				result := db.Where("name = ? AND organisation_id = ?", role.Name, role.OrganisationID).First(&existingRole)
+				result := db.DB().Where("name = ? AND organisation_id = ?", role.Name, role.OrganisationID).First(&existingRole)
 				if result.Error != nil {
 					fmt.Printf("Error fetching existing role: %v\n", result.Error)
 					continue
 				}
 				role.ID = existingRole.ID
 				fmt.Printf("Using existing role: ID %s", role.ID)
-
 			}
 
 			permissions := []models.Permission{
@@ -237,8 +231,8 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 			}
 
 			for _, permission := range permissions {
-				isUniqueId, errId := utility.IsUniqueSingleField(db, &models.Permission{}, "role_id", permission.RoleID)
-				isUniqueCategory, errCategory := utility.IsUniqueSingleField(db, &models.Permission{}, "category", permission.Category)
+				isUniqueId, errId := utility.IsUniqueSingleFieldRefactored(db, &models.Permission{}, "role_id", permission.RoleID)
+				isUniqueCategory, errCategory := utility.IsUniqueSingleFieldRefactored(db, &models.Permission{}, "category", permission.Category)
 				if errId != nil {
 					fmt.Printf("Error checking permissions id uniqueness: %v", errId)
 					continue
@@ -247,15 +241,14 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 					fmt.Printf("Error checking permissions category uniqueness: %v", errCategory)
 					continue
 				}
-
 				if isUniqueId && isUniqueCategory {
-					if err := postgresql.CreateOneRecord(db, &permission); err != nil {
+					if err := db.CreateOneRecord(&permission); err != nil {
 						fmt.Printf("Error creating permission: %v\n", err)
 					}
 				} else {
 					fmt.Printf("Category %s already exists for role ID %s in permissions\n", permission.Category, permission.RoleID)
 					var existingPermission models.Permission
-					result := db.Where("role_id = ? AND category = ?", permission.RoleID, permission.Category).First(&existingPermission)
+					result := db.DB().Where("role_id = ? AND category = ?", permission.RoleID, permission.Category).First(&existingPermission)
 					if result.Error != nil {
 						fmt.Printf("Error fetching existing permission: %v\n", result.Error)
 						continue
@@ -263,7 +256,6 @@ func SeedOrgRolesAndPermissions(db *gorm.DB) {
 					permission.ID = existingPermission.ID
 					fmt.Printf("Using existing permission: ID %s", permission.ID)
 				}
-
 			}
 		}
 	}

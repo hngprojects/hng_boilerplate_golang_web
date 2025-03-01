@@ -16,7 +16,7 @@ import (
 
 func TestDeleteAUser(t *testing.T) {
 	_, userController := SetupUsersTestRouter()
-	db := userController.Db.Postgresql
+	db := userController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 

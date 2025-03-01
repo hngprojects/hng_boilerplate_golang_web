@@ -79,7 +79,7 @@ func TestProfileUpdate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		profileUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		profileUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			profileUrl.PATCH("/profile", profile.UpdateProfile)
 

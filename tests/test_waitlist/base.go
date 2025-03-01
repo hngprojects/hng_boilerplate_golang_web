@@ -29,5 +29,5 @@ func SetupWLTestRouter() (*gin.Engine, *waitlist.Controller) {
 }
 
 func SetupWLRoutes(r *gin.Engine, wlController *waitlist.Controller) {
-	r.GET("/api/v1/waitlist", middleware.Authorize(wlController.DB.Postgresql, models.RoleIdentity.SuperAdmin), wlController.GetWaitLists)
+	r.GET("/api/v1/waitlist", middleware.Authorize(wlController.DB.Postgresql.DB(), models.RoleIdentity.SuperAdmin), wlController.GetWaitLists)
 }
