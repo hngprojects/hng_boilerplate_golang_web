@@ -18,6 +18,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 
+	productService "github.com/hngprojects/hng_boilerplate_golang_web/services/product"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -84,7 +85,8 @@ func TestProductCreate(t *testing.T) {
 		},
 	}
 
-	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	productService := productService.NewProductService(db.Postgresql.DB())
+	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger, ProductService: productService}
 
 	for _, test := range tests {
 		r := gin.Default()
