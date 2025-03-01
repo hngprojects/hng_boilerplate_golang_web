@@ -7,6 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
+type TestimonialService interface {
+	GetUserTestimonials(userID string) ([]models.Testimonial, error)
+}
+
+type TestimonialServiceImpl struct {
+	db *gorm.DB
+}
+
+func NewTestimonialService(db *gorm.DB) TestimonialService {
+	return &TestimonialServiceImpl{db: db}
+}
+
 func CreateTestimonial(db *gorm.DB, req models.TestimonialReq, userId string) (*models.Testimonial, error) {
 	testimonial := &models.Testimonial{
 		ID:      utility.GenerateUUID(),
@@ -25,3 +37,14 @@ func CreateTestimonial(db *gorm.DB, req models.TestimonialReq, userId string) (*
 	return testimonial, nil
 
 }
+
+func (s *TestimonialServiceImpl) GetUserTestimonials(userID string) ([]models.Testimonial, error) {
+	var testimonials []models.Testimonial
+
+	if err := s.db.Where("user_id = ?", userID).Find(&testimonials).Error; err != nil {
+		return nil, err
+	}
+
+	return testimonials, nil
+}
+
