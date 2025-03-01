@@ -7,26 +7,30 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/testimonial"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/testimonial"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
 func SetupTestimonialTestRouter() (*gin.Engine, *testimonial.Controller) {
-	gin.SetMode(gin.TestMode)
+    gin.SetMode(gin.TestMode)
 
-	logger := tst.Setup()
-	db := storage.Connection()
-	validator := validator.New()
+    logger := tst.Setup()
+    db := storage.Connection()
+    validator := validator.New()
+    testimonialService := service.NewTestimonialService(db.Postgresql.DB())
 
-	testimonialController := &testimonial.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
-	}
+    testimonialController := &testimonial.Controller{
+        Db:        db,
+        Validator: validator,
+        Logger:    logger,
+        TestimonialSvc:   testimonialService,  
+    }
 
-	r := gin.Default()
-	SetupTestimonialRoutes(r, testimonialController)
-	return r, testimonialController
+    r := gin.Default()
+    SetupTestimonialRoutes(r, testimonialController)
+    return r, testimonialController
 }
+
 
 func SetupTestimonialRoutes(r *gin.Engine, testimonialController *testimonial.Controller) {
 	r.POST(
@@ -34,4 +38,5 @@ func SetupTestimonialRoutes(r *gin.Engine, testimonialController *testimonial.Co
 		middleware.Authorize(testimonialController.Db.Postgresql.DB(), models.RoleIdentity.User),
 		testimonialController.Create,
 	)
+	r.GET("/api/v1/testimonials/user/:user_id", testimonialController.GetUserTestimonials)
 }
