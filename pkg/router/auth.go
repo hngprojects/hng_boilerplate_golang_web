@@ -12,13 +12,15 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/key"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	keyService "github.com/hngprojects/hng_boilerplate_golang_web/services/key"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func Auth(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	auth := auth.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
-	key := key.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+	newKey := keyService.NewKeyService(db.Postgresql.DB())
+	key := key.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq, Key: newKey}
 
 	authUrl := r.Group(fmt.Sprintf("%v/auth", ApiVersion))
 	{
