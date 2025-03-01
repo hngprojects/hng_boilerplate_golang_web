@@ -54,7 +54,9 @@ func CreateGoogleUser(req models.GoogleRequestModel, db *gorm.DB) (gin.H, int, e
 	reqUser = models.CreateUserRequestModel{
 		Email: email,
 	}
-	_, err = ValidateCreateUserRequest(reqUser, db)
+
+	newAuthService := authService{}
+	_, err = newAuthService.ValidateCreateUserRequest(reqUser)
 	if err != nil {
 		exists := pdb.CheckExists(&user, "email = ?", email)
 		if !exists {
@@ -161,7 +163,8 @@ func CreateFacebookUser(req models.FacebookRequestModel, db *gorm.DB) (gin.H, in
 	}
 
 	// check if user already exists
-	_, err = ValidateCreateUserRequest(reqUser, db)
+	newAuthService := authService{}
+	_, err = newAuthService.ValidateCreateUserRequest(reqUser)
 	if err != nil {
 		exists := pdb.CheckExists(db, &user, "email = ?", email)
 		if !exists {
