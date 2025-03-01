@@ -9,6 +9,7 @@ import (
 
 type TestimonialService interface {
 	CreateTestimonial(req models.TestimonialReq, userId string) (*models.Testimonial, error)
+	GetUserTestimonials(userID string) ([]models.Testimonial, error)
 }
 
 type testimonialService struct {
@@ -37,3 +38,17 @@ func (s *testimonialService) CreateTestimonial(req models.TestimonialReq, userId
 	return testimonial, nil
 
 }
+
+func (s *testimonialService) GetUserTestimonials(userID string) ([]models.Testimonial, error) {
+	var testimonials []models.Testimonial
+
+	pdb := s.db 
+
+	if err := pdb.Where("user_id = ?", userID).Find(&testimonials).Error; err != nil {
+		return nil, err
+	}
+
+	return testimonials, nil
+}
+
+

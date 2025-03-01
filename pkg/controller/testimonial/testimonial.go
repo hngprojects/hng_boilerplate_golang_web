@@ -62,3 +62,29 @@ func (base *Controller) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, rd)
 
 }
+
+
+func (base *Controller) GetUserTestimonials(c *gin.Context) {
+	userId := c.Param("user_id")
+	if userId == "" {
+		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "user_id parameter is required", "failed to fetch testimonials", nil)
+		c.JSON(http.StatusBadRequest, rd)
+		return
+	}
+
+	if base.TestimonialService == nil {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Testimonial service is not initialized", "failed to fetch testimonials", nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	testimonials, err := base.TestimonialService.GetUserTestimonials(userId)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "failed to fetch testimonials", nil)
+		c.JSON(http.StatusInternalServerError, rd)
+		return
+	}
+
+	rd := utility.BuildSuccessResponse(http.StatusOK, "User testimonials retrieved successfully", testimonials)
+	c.JSON(http.StatusOK, rd)
+}

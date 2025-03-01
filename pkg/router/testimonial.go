@@ -23,5 +23,11 @@ func Testimonial(r *gin.Engine, ApiVersion string, validator *validator.Validate
 	{
 		squeezeURL.POST("/testimonials", controller.Create)
 	}
+
+	publicGroup := r.Group(fmt.Sprintf("%v", ApiVersion))
+	{
+		publicGroup.GET("/testimonials/user/:user_id", controller.GetUserTestimonials)
+	}
+
 	return r
 }
