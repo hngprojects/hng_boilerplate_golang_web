@@ -7,19 +7,31 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func GetWaitLists(c *gin.Context, db *gorm.DB) ([]models.WaitlistUser, *database.PaginationResponse, int, error) {
+type WaitlistService interface {
+	GetWaitLists(pagination database.Pagination) ([]models.WaitlistUser, *database.PaginationResponse, int, error)
+	SignupWaitlistUserService(req models.CreateWaitlistUserRequest) (*models.WaitlistUser, int, error)
+}
+
+type waitlistServiceImpl struct {
+	db *gorm.DB
+}
+
+func NewWaitlistService(db *gorm.DB) WaitlistService {
+	return &waitlistServiceImpl{db: db}
+}
+
+func (w *waitlistServiceImpl) GetWaitLists(pagination database.Pagination) ([]models.WaitlistUser, *database.PaginationResponse, int, error) {
 
 	var waitList models.WaitlistUser
 
-	pdb := inst.InitDB(db)
-	waitLists, paginationResponse, err := waitList.FetchAllWaitList(pdb, c)
+	pdb := inst.InitDB(w.db)
+	waitLists, paginationResponse, err := waitList.FetchAllWaitList(pdb, pagination)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -33,14 +45,14 @@ func GetWaitLists(c *gin.Context, db *gorm.DB) ([]models.WaitlistUser, *database
 
 }
 
-func SignupWaitlistUserService(db *gorm.DB, req models.CreateWaitlistUserRequest) (*models.WaitlistUser, int, error) {
+func (w *waitlistServiceImpl) SignupWaitlistUserService(req models.CreateWaitlistUserRequest) (*models.WaitlistUser, int, error) {
 	user := &models.WaitlistUser{
 		ID:    utility.GenerateUUID(),
 		Name:  req.Name,
 		Email: req.Email,
 	}
 
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(w.db)
 	if req.Email != "" {
 		req.Email = strings.ToLower(req.Email)
 

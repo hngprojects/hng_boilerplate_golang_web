@@ -3,16 +3,16 @@ package ipstack_mocks
 import (
 	"fmt"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/external/external_models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/external/ipstack"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func IpstackResolveIp(logger *utility.Logger, idata interface{}) (external_models.IPStackResolveIPResponse, error) {
+func IpstackResolveIp(logger *utility.Logger, idata interface{}) (ipstack.IPStackResolveIPResponse, error) {
 
 	var (
 		key              = config.GetConfig().IPStack.Key
-		outBoundResponse external_models.IPStackResolveIPResponse
+		outBoundResponse ipstack.IPStackResolveIPResponse
 	)
 
 	ip, ok := idata.(string)
