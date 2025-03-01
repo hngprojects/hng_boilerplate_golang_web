@@ -17,10 +17,22 @@ import (
 	"gorm.io/gorm"
 )
 
-func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.SqueezeUserReq, int, error) {
+type SqueezeUserService interface {
+	ValidateSqueezeUserRequest(req models.SqueezeUserReq) (models.SqueezeUserReq, int, error)
+	CreateSqueeze(extReq request.ExternalRequest, req models.SqueezeUserReq) (*models.SqueezeUser, error)
+}
+type squeezeUserService struct {
+	db *gorm.DB
+}
+
+func NewSqueezeUserService(db *gorm.DB) SqueezeUserService {
+	return &squeezeUserService{db: db}
+}
+
+func (s *squeezeUserService) ValidateSqueezeUserRequest(req models.SqueezeUserReq) (models.SqueezeUserReq, int, error) {
 
 	squeezeUser := models.SqueezeUser{}
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	if req.Email != "" {
 		req.Email = strings.ToLower(req.Email)
@@ -49,7 +61,7 @@ func ValidateSqueezeUserRequest(req models.SqueezeUserReq, db *gorm.DB) (models.
 	return req, 0, nil
 }
 
-func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.SqueezeUserReq) (*models.SqueezeUser, error) {
+func (s *squeezeUserService) CreateSqueeze(extReq request.ExternalRequest, req models.SqueezeUserReq) (*models.SqueezeUser, error) {
 	squeezeUser := &models.SqueezeUser{
 		ID:             utility.GenerateUUID(),
 		Email:          req.Email,
@@ -62,7 +74,7 @@ func CreateSqueeze(db *gorm.DB, extReq request.ExternalRequest, req models.Squee
 		Interests:      pq.StringArray(req.Interests),
 		ReferralSource: strings.ToLower(req.ReferralSource),
 	}
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	err := squeezeUser.Create(pdb)
 

@@ -27,7 +27,8 @@ func main() {
 
 	db := storage.Connection()
 
-	cronjobs.StartCronJob(request.ExternalRequest{Logger: logger}, *storage.DB, "send-notifications")
+	extRequest := request.NewExternalRequest(logger)
+	cronjobs.StartCronJob(*extRequest, *storage.DB, "send-notifications")
 
 	if configuration.Database.Migrate {
 		migrations.RunAllMigrations(db)

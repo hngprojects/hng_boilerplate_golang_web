@@ -17,6 +17,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/profile"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	profileService "github.com/hngprojects/hng_boilerplate_golang_web/services/profile"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -74,7 +75,8 @@ func TestProfileUpdate(t *testing.T) {
 		},
 	}
 
-	profile := profile.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	profileService := profileService.NewProfileService(db.Postgresql.DB())
+	profile := profile.Controller{Db: db, Validator: validatorRef, Logger: logger, ProfileService: profileService}
 
 	for _, test := range tests {
 		r := gin.Default()

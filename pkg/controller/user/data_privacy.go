@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -14,7 +13,14 @@ func (base *Controller) GetUserDataPrivacySettings(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	respData, code, err := service.GetUserDataPrivacySettings(userID, base.Db.Postgresql.DB(), c)
+	requesterID, err := authHelper(c, *base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
+		return
+	}
+
+	respData, code, err := base.UserService.GetUserDataPrivacySettings(userID, requesterID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
@@ -32,7 +38,14 @@ func (base *Controller) UpdateUserDataPrivacySettings(c *gin.Context) {
 		req    = models.DataPrivacySettings{}
 	)
 
-	err := c.ShouldBind(&req)
+	requesterID, err := authHelper(c, *base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
+		return
+	}
+
+	err = c.ShouldBind(&req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -47,7 +60,7 @@ func (base *Controller) UpdateUserDataPrivacySettings(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateUserDataPrivacySettings(req, userID, base.Db.Postgresql.DB(), c)
+	respData, code, err := base.UserService.UpdateUserDataPrivacySettings(req, userID, requesterID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

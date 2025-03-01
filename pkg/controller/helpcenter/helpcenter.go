@@ -45,7 +45,8 @@ func (base *Controller) CreateHelpCenterTopic(c *gin.Context) {
 
 	userId := userClaims["user_id"].(string)
 
-	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
+	UserService := user.NewUserService(base.Db.Postgresql.DB())
+	user, code, err := UserService.GetUser(userId)
 	if err != nil {
 		c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
 		return
@@ -176,7 +177,8 @@ func (base *Controller) UpdateHelpCenterByID(c *gin.Context) {
 
 	userId := userClaims["user_id"].(string)
 
-	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
+	UserService := user.NewUserService(base.Db.Postgresql.DB())
+	user, code, err := UserService.GetUser(userId)
 	if err != nil {
 		c.JSON(code, utility.BuildErrorResponse(code, "error", err.Error(), "Bad Request", nil))
 		return

@@ -18,6 +18,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 
+	productService "github.com/hngprojects/hng_boilerplate_golang_web/services/product"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -84,7 +85,8 @@ func TestProductCreate(t *testing.T) {
 		},
 	}
 
-	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	productService := productService.NewProductService(db.Postgresql.DB())
+	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger, ProductService: productService}
 
 	for _, test := range tests {
 		r := gin.Default()
@@ -174,7 +176,8 @@ func TestProductGet(t *testing.T) {
 		Category:    "Fashion",
 	}
 
-	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	productService := productService.NewProductService(db.Postgresql.DB())
+	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger, ProductService: productService}
 
 	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 	{
@@ -292,7 +295,9 @@ func TestProductUpdate(t *testing.T) {
 		Price:       190.33,
 		Category:    "Fashion",
 	}
-	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
+
+	productService := productService.NewProductService(db.Postgresql.DB())
+	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger, ProductService: productService}
 	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 	{
 		productUrl.POST("/products", product.CreateProduct)
