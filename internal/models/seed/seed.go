@@ -79,9 +79,9 @@ func SeedDatabase(db database.DatabaseManager) {
 
 	// Create organisations and categories
 	organisations := []models.Organisation{
-		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
-		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintf(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
+		{ID: utility.GenerateUUID(), Name: "Org1", Email: fmt.Sprintln(utility.RandomString(4) + "@email.com"), Description: "Description1", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org2", Email: fmt.Sprintln(utility.RandomString(4) + "@email.com"), Description: "Description2", OwnerID: Userid1},
+		{ID: utility.GenerateUUID(), Name: "Org3", Email: fmt.Sprintln(utility.RandomString(4) + "@email.com"), Description: "Description3", OwnerID: Userid2},
 	}
 
 	var existingUser models.User
@@ -166,7 +166,6 @@ func SeedDatabase(db database.DatabaseManager) {
 }
 
 func SeedTestDatabase(db database.DatabaseManager) {
-
 	roles := []models.Role{
 		{ID: int(models.RoleIdentity.User), Name: "user", Description: "user related functions"},
 		{ID: int(models.RoleIdentity.SuperAdmin), Name: "super admin", Description: "super admin related functions"},
@@ -175,20 +174,16 @@ func SeedTestDatabase(db database.DatabaseManager) {
 	var existingRole models.Role
 	if err := db.DB().Where("id = ?", roles[0].ID).First(&existingRole).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-
 			db.CreateMultipleRecords(&roles, len(roles))
 		} else {
 			fmt.Println("An error occurred: ", err)
 		}
-
 	} else {
 		fmt.Println("Roles already exist, skipping seeding.")
 	}
-
 }
 
 func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
-
 	var organizations []models.Organisation
 	if err := db.DB().Find(&organizations).Error; err != nil {
 		fmt.Printf("Error fetching organizations: %v\n", err)
@@ -202,9 +197,32 @@ func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 		}
 
 		for _, role := range roles {
-			if err := db.CreateOneRecord(&role); err != nil {
-				fmt.Printf("Error creating role: %v\n", err)
+			isUniqueName, errName := utility.CheckForUniqueness(db, &models.OrgRole{}, "name", role.Name)
+			isUniqueId, errId := utility.CheckForUniqueness(db, &models.OrgRole{}, "organisation_id", role.OrganisationID)
+
+			if errName != nil {
+				fmt.Printf("Error checking role name uniqueness: %v", errName)
 				continue
+			}
+			if errId != nil {
+				fmt.Printf("Error checking role id uniqueness: %v", errId)
+				continue
+			}
+			if isUniqueName && isUniqueId {
+				if err := db.CreateOneRecord(&role); err != nil {
+					fmt.Printf("Error creating role: %v\n", err)
+					continue
+				}
+			} else {
+				fmt.Printf("Role %s already exists in organisation %s\n", role.Name, org.Name)
+				var existingRole models.OrgRole
+				result := db.DB().Where("name = ? AND organisation_id = ?", role.Name, role.OrganisationID).First(&existingRole)
+				if result.Error != nil {
+					fmt.Printf("Error fetching existing role: %v\n", result.Error)
+					continue
+				}
+				role.ID = existingRole.ID
+				fmt.Printf("Using existing role: ID %s", role.ID)
 			}
 
 			permissions := []models.Permission{
@@ -213,8 +231,30 @@ func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 			}
 
 			for _, permission := range permissions {
-				if err := db.CreateOneRecord(&permission); err != nil {
-					fmt.Printf("Error creating permission: %v\n", err)
+				isUniqueId, errId := utility.CheckForUniqueness(db, &models.Permission{}, "role_id", permission.RoleID)
+				isUniqueCategory, errCategory := utility.CheckForUniqueness(db, &models.Permission{}, "category", permission.Category)
+				if errId != nil {
+					fmt.Printf("Error checking permissions id uniqueness: %v", errId)
+					continue
+				}
+				if errCategory != nil {
+					fmt.Printf("Error checking permissions category uniqueness: %v", errCategory)
+					continue
+				}
+				if isUniqueId && isUniqueCategory {
+					if err := db.CreateOneRecord(&permission); err != nil {
+						fmt.Printf("Error creating permission: %v\n", err)
+					}
+				} else {
+					fmt.Printf("Category %s already exists for role ID %s in permissions\n", permission.Category, permission.RoleID)
+					var existingPermission models.Permission
+					result := db.DB().Where("role_id = ? AND category = ?", permission.RoleID, permission.Category).First(&existingPermission)
+					if result.Error != nil {
+						fmt.Printf("Error fetching existing permission: %v\n", result.Error)
+						continue
+					}
+					permission.ID = existingPermission.ID
+					fmt.Printf("Using existing permission: ID %s", permission.ID)
 				}
 			}
 		}

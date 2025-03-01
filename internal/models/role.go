@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type RoleName string
@@ -74,13 +75,21 @@ func (p PermissionList) Value() (driver.Value, error) {
 }
 
 func (r *OrgRole) CreateOrgRole(db database.DatabaseManager) error {
-	err := db.CreateOneRecord(&r)
+	isUniqueName, errName := utility.CheckForUniqueness(db, &OrgRole{}, "name", r.Name)
+	isUniqueId, errId := utility.CheckForUniqueness(db, &OrgRole{}, "organisation_id", r.OrganisationID)
 
-	if err != nil {
-		return err
+	if errName != nil {
+		return errName
+	}
+	if errId != nil {
+		return errId
+	}
+	if !isUniqueName || !isUniqueId {
+		return fmt.Errorf("Role with the name %s already exists in this organisation", r.Name)
 	}
 
-	return nil
+	createError := db.CreateOneRecord(&r)
+	return createError
 }
 
 func (r *OrgRole) DeleteOrgRole(db database.DatabaseManager) error {

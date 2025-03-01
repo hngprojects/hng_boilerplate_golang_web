@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
@@ -95,6 +96,18 @@ func (u *UserRegionTimezoneLanguage) CreateUserRegion(db database.DatabaseManage
 }
 
 func (l *Language) CreateLanguage(db database.DatabaseManager) error {
+	isUniqueName, errName := utility.CheckForUniqueness(db, &Language{}, "name", l.Name)
+	isUniqueCode, errCode := utility.CheckForUniqueness(db, &Language{}, "code", l.Code)
+
+	if errName != nil {
+		return errName
+	}
+	if errCode != nil {
+		return errCode
+	}
+	if !isUniqueName || !isUniqueCode {
+		return fmt.Errorf("name already exists")
+	}
 	err := db.CreateOneRecord(&l)
 
 	if err != nil {
@@ -105,8 +118,20 @@ func (l *Language) CreateLanguage(db database.DatabaseManager) error {
 }
 
 func (t *Timezone) CreateTimeZone(db database.DatabaseManager) error {
-	err := db.CreateOneRecord(&t)
+	uniqueTime, uniqueErrTime := utility.CheckForUniqueness(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.CheckForUniqueness(db, &Timezone{}, "gmt_offset", t.GmtOffset)
 
+	if uniqueErrTime != nil {
+		return uniqueErrTime
+	}
+	if uniqueErrGmt != nil {
+		return uniqueErrGmt
+	}
+	if !uniqueTime || !uniqueGmt {
+		return fmt.Errorf("timezone already exists")
+	}
+
+	err := db.CreateOneRecord(&t)
 	if err != nil {
 		return err
 	}
@@ -115,8 +140,20 @@ func (t *Timezone) CreateTimeZone(db database.DatabaseManager) error {
 }
 
 func (r *Region) CreateRegion(db database.DatabaseManager) error {
-	err := db.CreateOneRecord(&r)
+	isUniqueName, errName := utility.CheckForUniqueness(db, &Region{}, "name", r.Name)
+	isUniqueCode, errCode := utility.CheckForUniqueness(db, &Region{}, "code", r.Code)
 
+	if errName != nil {
+		return errName
+	}
+	if errCode != nil {
+		return errCode
+	}
+	if !isUniqueName || !isUniqueCode {
+		return fmt.Errorf("name already exists")
+	}
+
+	err := db.CreateOneRecord(&r)
 	if err != nil {
 		return err
 	}
@@ -181,6 +218,18 @@ func (t *Timezone) GetTimezoneByID(db database.DatabaseManager, ID string) (Time
 }
 
 func (t *Timezone) UpdateTimeZone(db database.DatabaseManager) error {
+	uniqueTime, uniqueErrTime := utility.CheckForUniqueness(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.CheckForUniqueness(db, &Timezone{}, "gmt_offset", t.GmtOffset)
+
+	if uniqueErrTime != nil {
+		return uniqueErrTime
+	}
+	if uniqueErrGmt != nil {
+		return uniqueErrGmt
+	}
+	if !uniqueTime || !uniqueGmt {
+		return fmt.Errorf("timezone already exists")
+	}
 	_, err := db.SaveAllFields(&t)
 	return err
 }

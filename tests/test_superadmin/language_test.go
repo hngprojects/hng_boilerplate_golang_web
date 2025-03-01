@@ -127,6 +127,8 @@ func TestAddToLanguage(t *testing.T) {
 		router.ServeHTTP(resp, req)
 
 		tests.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "name already exists")
 	})
 
 	t.Run("Unauthorized Access", func(t *testing.T) {

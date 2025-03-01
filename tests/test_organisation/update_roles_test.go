@@ -172,6 +172,7 @@ func TestUpdateOrgRole(t *testing.T) {
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
+
 }
 
 func TestUpdateOrgPermissions(t *testing.T) {

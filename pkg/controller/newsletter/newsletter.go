@@ -75,7 +75,7 @@ func (base *Controller) SubscribeNewsLetter(c *gin.Context) {
 	err = service.NewsLetterSubscribe(&req, base.Db.Postgresql.DB())
 	if err != nil {
 		if err == models.ErrEmailAlreadySubscribed {
-			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "Email already subscribed", nil, nil)
+			rd := utility.BuildErrorResponse(http.StatusConflict, "error", "email already subscribed", nil, nil)
 			c.JSON(http.StatusConflict, rd)
 		} else {
 			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to subscribe", err, nil)

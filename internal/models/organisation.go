@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Organisation struct {
@@ -64,6 +66,15 @@ type AddUserToOrgRequestModel struct {
 }
 
 func (c *Organisation) CreateOrganisation(db database.DatabaseManager) error {
+	unique, uniqueErr := utility.CheckForUniqueness(db, &Organisation{}, "email", c.Email)
+
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("the email %s already exists in this organisation", c.Email)
+	}
+
 	err := db.CreateOneRecord(&c)
 	if err != nil {
 		return err

@@ -55,12 +55,19 @@ func (n *NewsLetter) GetDeletedNewsLetterById(db database.DatabaseManager, ID st
 }
 
 func (n *NewsLetter) CreateNewsLetter(db database.DatabaseManager) error {
-	err := db.CreateOneRecord(&n)
+	unique, uniqueErr := utility.CheckForUniqueness(db, &NewsLetter{}, "email", n.Email)
 
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("email already subscribed")
+	}
+
+	err := db.CreateOneRecord(&n)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -76,6 +83,15 @@ func (n *NewsLetter) DeleteNewsLetter(db database.DatabaseManager) error {
 }
 
 func (n *NewsLetter) UpdateNewsLetter(db database.DatabaseManager) error {
+	unique, uniqueErr := utility.CheckForUniqueness(db, &NewsLetter{}, "email", n.Email)
+
+	if uniqueErr != nil {
+		return uniqueErr
+	}
+	if !unique {
+		return fmt.Errorf("email already subscribed")
+	}
+
 	_, err := db.SaveAllFields(&n)
 	return err
 }

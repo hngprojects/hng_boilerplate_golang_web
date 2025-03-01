@@ -101,7 +101,7 @@ func TestAddToTimezone(t *testing.T) {
 		response := tests.ParseResponse(resp)
 		tests.AssertResponseMessage(t, response["message"].(string), "Validation failed")
 	})
-
+	
 	t.Run("Duplicate Timezone", func(t *testing.T) {
 		router, authController := setup()
 
@@ -129,11 +129,13 @@ func TestAddToTimezone(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodPost, "/api/v1/timezones", bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
+		
 		resp := httptest.NewRecorder()
 		router.ServeHTTP(resp, req)
-
+		
 		tests.AssertStatusCode(t, resp.Code, http.StatusBadRequest)
+		response := tests.ParseResponse(resp)
+		tests.AssertResponseMessage(t, response["message"].(string), "timezone already exists")
 	})
 
 	t.Run("Unauthorized Access", func(t *testing.T) {
