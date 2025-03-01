@@ -176,7 +176,8 @@ func TestProductGet(t *testing.T) {
 		Category:    "Fashion",
 	}
 
-	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	productService := productService.NewProductService(db.Postgresql.DB())
+	product := product.Controller{Db: db, Validator: validatorRef, Logger: logger, ProductService: productService}
 
 	productUrl := r.Group("/api/v1", middleware.Authorize(db.Postgresql.DB()))
 	{
