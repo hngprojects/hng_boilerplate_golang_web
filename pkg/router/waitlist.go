@@ -15,8 +15,8 @@ import (
 
 func Waitlist(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 
-	waitlistService := waitlistService.NewWaitlistService(db.Postgresql.DB())
-	controller := waitlist.Controller{DB: db, Validator: validator, Logger: logger, WaitlistService: waitlistService}
+	waitlistServices := waitlistService.NewWaitlistService(db.Postgresql.DB())
+	controller := waitlist.Controller{DB: db, Validator: validator, Logger: logger, WaitlistService: waitlistServices}
 
 	waitlistURL := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{
