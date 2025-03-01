@@ -28,7 +28,7 @@ func TestBlogCreate(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger, BlogService: nil}
 	r := gin.Default()
 
 	_, token := initialise(currUUID, t, r, db, user, blog, true)
@@ -133,7 +133,7 @@ func TestBlogDelete(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger, BlogService: nil}
 	r := gin.Default()
 
 	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
@@ -242,7 +242,7 @@ func TestGetBlogById(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger, BlogService: nil}
 	r := gin.Default()
 
 	blogId, _ := initialise(currUUID, t, r, db, user, blog, true)
@@ -333,7 +333,7 @@ func TestGetBlogs(t *testing.T) {
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger, BlogService: nil}
 
 	tests := []struct {
 		Name         string
@@ -403,7 +403,7 @@ func TestEditBlog(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	blog := blog.Controller{Db: db, Validator: validatorRef, Logger: logger, BlogService: nil}
 	r := gin.Default()
 	blogId, token := initialise(currUUID, t, r, db, user, blog, true)
 
