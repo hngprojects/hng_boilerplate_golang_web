@@ -19,6 +19,7 @@ type Controller struct {
 	Validator *validator.Validate
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
+	JobPostService service.JobPostService
 }
 
 func (base *Controller) CreateJobPost(c *gin.Context) {
@@ -36,7 +37,9 @@ func (base *Controller) CreateJobPost(c *gin.Context) {
 		return
 	}
 
-	respData, err := service.CreateJobPost(req, base.Db.Postgresql.DB())
+	jobPostService := service.NewJobPostService(base.Db.Postgresql.DB())
+
+	respData, err := jobPostService.CreateJobPost(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", "Failed to create job post", err, nil)
 		c.JSON(http.StatusInternalServerError, rd)
@@ -50,7 +53,9 @@ func (base *Controller) CreateJobPost(c *gin.Context) {
 }
 
 func (base *Controller) FetchAllJobPost(c *gin.Context) {
-	jobPosts, paginationResponse, err := service.GetPaginatedJobPosts(c, base.Db.Postgresql.DB())
+	
+	jobPostService := service.NewJobPostService(base.Db.Postgresql.DB())
+	jobPosts, paginationResponse, err := jobPostService.GetPaginatedJobPosts(c)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Jobs not found", err, nil)
@@ -79,7 +84,8 @@ func (base *Controller) FetchJobPostByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
-	respData, err := service.FetchJobPostByID(base.Db.Postgresql.DB(), id)
+	jobPostService := service.NewJobPostService(base.Db.Postgresql.DB())
+	respData, err := jobPostService.FetchJobPostByID(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Job post not found", err, nil)
@@ -118,7 +124,8 @@ func (base *Controller) UpdateJobPostByID(c *gin.Context) {
 		return
 	}
 
-	result, err := service.UpdateJobPost(base.Db.Postgresql.DB(), req, id)
+	jobPostService := service.NewJobPostService(base.Db.Postgresql.DB())
+	result, err := jobPostService.UpdateJobPost(req, id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Job post not found", err, nil)
@@ -144,7 +151,8 @@ func (base *Controller) DeleteJobPostByID(c *gin.Context) {
 		return
 	}
 
-	err := service.DeleteJobPostByID(base.Db.Postgresql.DB(), id)
+	jobPostService := service.NewJobPostService(base.Db.Postgresql.DB())
+	err := jobPostService.DeleteJobPostByID(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "Job post not found", err, nil)

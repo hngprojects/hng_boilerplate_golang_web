@@ -9,9 +9,26 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+// JobPostService defines the interface for job post operations
+type JobPostService interface {
+	CreateJobPost(req models.CreateJobPostModel) (models.JobPost, error)
+	GetPaginatedJobPosts(c *gin.Context) ([]models.JobPostSummary, database.PaginationResponse, error)
+	FetchJobPostByID(id string) (models.JobPost, error)
+	UpdateJobPost(jobPost models.JobPost, ID string) (models.JobPost, error)
+	DeleteJobPostByID(ID string) error
+}
+
+// jobPostService is the concrete implementation of JobPostService
+type jobPostService struct {
+	db *gorm.DB
+}
+
+// NewJobPostService creates a new instance of jobPostService
+func NewJobPostService(db *gorm.DB) JobPostService {
+	return &jobPostService{db: db}
+}
+
+func (s *jobPostService) CreateJobPost(req models.CreateJobPostModel) (models.JobPost, error) {
 	jobpost := models.JobPost{
 		ID:                  utility.GenerateUUID(),
 		Title:               req.Title,
@@ -28,6 +45,7 @@ func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, 
 		Qualifications:      req.Qualifications,
 	}
 
+	pdb := inst.InitDB(s.db)
 	if err := jobpost.CreateJobPost(pdb); err != nil {
 		return models.JobPost{}, err
 	}
@@ -35,12 +53,10 @@ func CreateJobPost(req models.CreateJobPostModel, db *gorm.DB) (models.JobPost, 
 	return jobpost, nil
 }
 
-func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]models.JobPostSummary, database.PaginationResponse, error) {
+func (s *jobPostService) GetPaginatedJobPosts(c *gin.Context) ([]models.JobPostSummary, database.PaginationResponse, error) {
 	jobpost := models.JobPost{}
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 	jobPosts, paginationResponse, err := jobpost.FetchAllJobPost(pdb, c)
-
 	if err != nil {
 		return nil, paginationResponse, err
 	}
@@ -64,21 +80,17 @@ func GetPaginatedJobPosts(c *gin.Context, db *gorm.DB) ([]models.JobPostSummary,
 	return jobPostSummaries, paginationResponse, nil
 }
 
-func FetchJobPostByID(db *gorm.DB, id string) (models.JobPost, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
-	jobpost := models.JobPost{}
-	jobpost.ID = id
-	err := jobpost.FetchJobPostByID(pdb)
-	if err != nil {
+func (s *jobPostService) FetchJobPostByID(id string) (models.JobPost, error) {
+	jobpost := models.JobPost{ID: id}
+	pdb := inst.InitDB(s.db)
+	if err := jobpost.FetchJobPostByID(pdb); err != nil {
 		return models.JobPost{}, err
 	}
 	return jobpost, nil
 }
 
-func UpdateJobPost(db *gorm.DB, jobPost models.JobPost, ID string) (models.JobPost, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+func (s *jobPostService) UpdateJobPost(jobPost models.JobPost, ID string) (models.JobPost, error) {
+	pdb := inst.InitDB(s.db)
 	updatedJobPost, err := jobPost.UpdateJobPostByID(pdb, ID)
 	if err != nil {
 		return models.JobPost{}, err
@@ -86,13 +98,8 @@ func UpdateJobPost(db *gorm.DB, jobPost models.JobPost, ID string) (models.JobPo
 	return updatedJobPost, nil
 }
 
-func DeleteJobPostByID(db *gorm.DB, ID string) error {
+func (s *jobPostService) DeleteJobPostByID(ID string) error {
 	jobPost := models.JobPost{ID: ID}
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
-	err := jobPost.DeleteJobPostByID(pdb, ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	pdb := inst.InitDB(s.db)
+	return jobPost.DeleteJobPostByID(pdb, ID)
 }
