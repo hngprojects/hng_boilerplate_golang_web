@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/squeeze"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	SqueezeService "github.com/hngprojects/hng_boilerplate_golang_web/services/squeeze"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -15,10 +16,12 @@ func SetupSqueezeTestRouter() (*gin.Engine, *squeeze.Controller) {
 	db := storage.Connection()
 	validator := validator.New()
 
+	squeezeService := SqueezeService.NewSqueezeUserService(db.Postgresql.DB())
 	squeezeController := &squeeze.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
+		Db:             db,
+		Validator:      validator,
+		Logger:         logger,
+		SqueezeService: squeezeService,
 	}
 
 	r := gin.Default()
