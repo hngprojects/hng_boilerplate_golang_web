@@ -21,7 +21,8 @@ func (base *Controller) GetInvites(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	user, code, err := user.GetUser(userId, base.Db.Postgresql.DB())
+	UserService := user.NewUserService(base.Db.Postgresql.DB())
+	user, code, err := UserService.GetUser(userId)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

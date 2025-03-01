@@ -14,6 +14,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -52,7 +53,8 @@ func TestWailistSignup(t *testing.T) {
 		},
 	}
 
-	wc := waitlist.Controller{DB: db, Logger: logger, Validator: validate}
+	waitlistService := service.NewWaitlistService(db.Postgresql.DB())
+	wc := waitlist.Controller{DB: db, Logger: logger, Validator: validate, WaitlistService: waitlistService}
 
 	for _, tt := range ttests {
 		r := gin.Default()

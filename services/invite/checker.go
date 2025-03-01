@@ -114,7 +114,8 @@ func IteratorPostInvite(c *gin.Context, inviteReq models.InvitationRequest, base
 			continue
 		}
 
-		user, err := user.GetUserByEmail(email, base.Postgresql.DB())
+		userService := user.NewUserService(base.Postgresql.DB())
+		user, err := userService.GetUserByEmail(email)
 		if err != nil {
 			inviteErrors = append(
 				inviteErrors,

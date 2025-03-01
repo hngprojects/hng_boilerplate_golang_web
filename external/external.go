@@ -3,13 +3,33 @@ package external
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/elliotchance/phpserialize"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
+)
+
+var (
+	ResponseCode int
+	ResponseBody string
+
+	// serializers
+	JsonDecodeMethod    = "json"
+	PhpSerializerMethod = "phpserializer"
+
+	// requests
+	IpstackResolveIp                = "ipstack_resolve_ip"
+	ErrNoSuchHost                   = errors.New("no such host")
+	ErrFailedToReadReqBody          = errors.New("failed to read request body")
+	ErrFaildToUnmarshalJsonResponse = errors.New("failed to unmarshal json")
+	ErrFailedToCreateHttpRequest    = errors.New("failed to create http request")
+	ErrFailedToEncodeData           = errors.New("faild to encode request data")
+	ErrFailedToUnmarshalPhpResponse = errors.New("failed to unmarshal php response")
 )
 
 type SendRequestObject struct {
@@ -24,31 +44,9 @@ type SendRequestObject struct {
 	UrlPrefix    string
 }
 
-func GetNewSendRequestObject(logger *utility.Logger, name, path, method, urlPrefix, decodeMethod string, headers map[string]string, successCode int, data interface{}) *SendRequestObject {
-	return &SendRequestObject{
-		Logger:       logger,
-		Name:         name,
-		Path:         path,
-		Method:       method,
-		UrlPrefix:    urlPrefix,
-		DecodeMethod: decodeMethod,
-		Headers:      headers,
-		SuccessCode:  successCode,
-		Data:         data,
-	}
-}
-
-var (
-	ResponseCode int
-	ResponseBody string
-)
-
-var (
-	JsonDecodeMethod    string = "json"
-	PhpSerializerMethod string = "phpserializer"
-)
-
-func (r *SendRequestObject) SendRequest(response interface{}) error {
+// SendRequest is a general external function for sending requests to
+// external services needed by hng_boilerplate
+func (r *SendRequestObject) SendRequest() (any, error) {
 	var (
 		data   = r.Data
 		logger = r.Logger
@@ -60,6 +58,7 @@ func (r *SendRequestObject) SendRequest(response interface{}) error {
 	err = json.NewEncoder(buf).Encode(data)
 	if err != nil {
 		logger.Error("encoding error", name, err.Error())
+		return nil, ErrFailedToEncodeData
 	}
 
 	logger.Info("before prefix", name, r.Path, data, buf)
@@ -72,7 +71,7 @@ func (r *SendRequestObject) SendRequest(response interface{}) error {
 	req, err := http.NewRequest(r.Method, r.Path, buf)
 	if err != nil {
 		logger.Error("request creation error", name, err.Error())
-		return err
+		return nil, ErrFailedToCreateHttpRequest
 	}
 
 	for key, value := range r.Headers {
@@ -84,30 +83,31 @@ func (r *SendRequestObject) SendRequest(response interface{}) error {
 	res, err := client.Do(req)
 	if err != nil {
 		logger.Error("client do", name, err.Error())
-		return err
+		return nil, ErrNoSuchHost
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		logger.Error("readin body error", name, err.Error())
-		return err
+		logger.Error("reading body error", name, err.Error())
+		return nil, ErrFailedToReadReqBody
 	}
-
+	var response any
 	if r.DecodeMethod != PhpSerializerMethod {
-		err = json.Unmarshal(body, response)
+
+		err = json.Unmarshal(body, &response)
 		if err != nil {
 			logger.Error("json decoding error", name, err.Error())
-			return err
+			return nil, ErrFaildToUnmarshalJsonResponse
 		}
 	}
 
 	logger.Info("response body", name, r.Path, string(body))
 
 	if r.DecodeMethod == PhpSerializerMethod {
-		err := phpserialize.Unmarshal(body, response)
+		err := phpserialize.Unmarshal(body, &response)
 		if err != nil {
 			logger.Error("php serializer decoding error", name, err.Error())
-			return err
+			return nil, ErrFailedToUnmarshalPhpResponse
 		}
 	}
 
@@ -115,12 +115,12 @@ func (r *SendRequestObject) SendRequest(response interface{}) error {
 	ResponseCode = res.StatusCode
 
 	if res.StatusCode == r.SuccessCode {
-		return nil
+		return response, nil
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("external requests error for request %v, code %v", name, strconv.Itoa(res.StatusCode))
+		return nil, fmt.Errorf("external requests error for request %v, code %v", name, strconv.Itoa(res.StatusCode))
 	}
 
-	return nil
+	return response, nil
 }
