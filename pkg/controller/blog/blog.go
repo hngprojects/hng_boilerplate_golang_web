@@ -21,6 +21,7 @@ type Controller struct {
 	Validator *validator.Validate
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
+	Service   service.BlogService
 }
 
 func (base *Controller) CreateBlog(c *gin.Context) {
@@ -50,7 +51,7 @@ func (base *Controller) CreateBlog(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	respData, err := service.CreateBlog(blogReq, base.Db.Postgresql.DB(), userId)
+	respData, err := base.Service.CreateBlog(blogReq, userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
@@ -84,7 +85,7 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 	userClaims := claims.(jwt.MapClaims)
 	userId := userClaims["user_id"].(string)
 
-	if err := service.DeleteBlog(blogID, userId, base.Db.Postgresql.DB()); err != nil {
+	if err := base.Service.DeleteBlog(blogID, userId); err != nil {
 		if err.Error() == "blog not found" {
 			rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), "failed to delete blog", nil)
 			c.JSON(http.StatusNotFound, rd)
@@ -107,7 +108,7 @@ func (base *Controller) DeleteBlog(c *gin.Context) {
 }
 
 func (base *Controller) GetBlogs(c *gin.Context) {
-	blogs, paginationResponse, err := service.GetBlogs(base.Db.Postgresql.DB(), c)
+	blogs, paginationResponse, err := base.Service.GetBlogs(c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "failed to fetch blogs", err, nil)
 		c.JSON(http.StatusNotFound, rd)
@@ -135,7 +136,7 @@ func (base *Controller) GetBlogById(c *gin.Context) {
 		return
 	}
 
-	blog, err := service.GetBlogById(blogID, base.Db.Postgresql.DB())
+	blog, err := base.Service.GetBlogById(blogID)
 
 	if err != nil {
 		if err.Error() == "blog not found" {
@@ -182,7 +183,7 @@ func (base *Controller) UpdateBlogById(c *gin.Context) {
 	}
 	userId := userID.(string)
 
-	blog, err := service.UpdateBlogById(blogID, userId, req, base.Db.Postgresql.DB())
+	blog, err := base.Service.UpdateBlogById(blogID, userId, req)
 
 	if err != nil {
 		if err.Error() == "blog not found" {
