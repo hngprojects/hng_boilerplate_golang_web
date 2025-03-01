@@ -75,8 +75,8 @@ func (p PermissionList) Value() (driver.Value, error) {
 }
 
 func (r *OrgRole) CreateOrgRole(db database.DatabaseManager) error {
-	isUniqueName, errName := utility.IsUniqueSingleFieldRefactored(db, &OrgRole{}, "name", r.Name)
-	isUniqueId, errId := utility.IsUniqueSingleFieldRefactored(db, &OrgRole{}, "organisation_id", r.OrganisationID)
+	isUniqueName, errName := utility.CheckForUniqueness(db, &OrgRole{}, "name", r.Name)
+	isUniqueId, errId := utility.CheckForUniqueness(db, &OrgRole{}, "organisation_id", r.OrganisationID)
 
 	if errName != nil {
 		return errName
@@ -87,7 +87,7 @@ func (r *OrgRole) CreateOrgRole(db database.DatabaseManager) error {
 	if !isUniqueName || !isUniqueId {
 		return fmt.Errorf("Role with the name %s already exists in this organisation", r.Name)
 	}
-	
+
 	createError := db.CreateOneRecord(&r)
 	return createError
 }

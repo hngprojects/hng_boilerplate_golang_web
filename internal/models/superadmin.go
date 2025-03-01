@@ -96,8 +96,8 @@ func (u *UserRegionTimezoneLanguage) CreateUserRegion(db database.DatabaseManage
 }
 
 func (l *Language) CreateLanguage(db database.DatabaseManager) error {
-	isUniqueName, errName := utility.IsUniqueSingleFieldRefactored(db, &Language{}, "name", l.Name)
-	isUniqueCode, errCode := utility.IsUniqueSingleFieldRefactored(db, &Language{}, "code", l.Code)
+	isUniqueName, errName := utility.CheckForUniqueness(db, &Language{}, "name", l.Name)
+	isUniqueCode, errCode := utility.CheckForUniqueness(db, &Language{}, "code", l.Code)
 
 	if errName != nil {
 		return errName
@@ -105,7 +105,7 @@ func (l *Language) CreateLanguage(db database.DatabaseManager) error {
 	if errCode != nil {
 		return errCode
 	}
-	if !isUniqueName || !isUniqueCode{
+	if !isUniqueName || !isUniqueCode {
 		return fmt.Errorf("name already exists")
 	}
 	err := db.CreateOneRecord(&l)
@@ -118,8 +118,8 @@ func (l *Language) CreateLanguage(db database.DatabaseManager) error {
 }
 
 func (t *Timezone) CreateTimeZone(db database.DatabaseManager) error {
-	uniqueTime, uniqueErrTime := utility.IsUniqueSingleFieldRefactored(db, &Timezone{}, "timezone", t.Timezone)
-	uniqueGmt, uniqueErrGmt := utility.IsUniqueSingleFieldRefactored(db, &Timezone{}, "gmt_offset", t.GmtOffset)
+	uniqueTime, uniqueErrTime := utility.CheckForUniqueness(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.CheckForUniqueness(db, &Timezone{}, "gmt_offset", t.GmtOffset)
 
 	if uniqueErrTime != nil {
 		return uniqueErrTime
@@ -140,8 +140,8 @@ func (t *Timezone) CreateTimeZone(db database.DatabaseManager) error {
 }
 
 func (r *Region) CreateRegion(db database.DatabaseManager) error {
-	isUniqueName, errName := utility.IsUniqueSingleFieldRefactored(db, &Region{}, "name", r.Name)
-	isUniqueCode, errCode := utility.IsUniqueSingleFieldRefactored(db, &Region{}, "code", r.Code)
+	isUniqueName, errName := utility.CheckForUniqueness(db, &Region{}, "name", r.Name)
+	isUniqueCode, errCode := utility.CheckForUniqueness(db, &Region{}, "code", r.Code)
 
 	if errName != nil {
 		return errName
@@ -218,8 +218,8 @@ func (t *Timezone) GetTimezoneByID(db database.DatabaseManager, ID string) (Time
 }
 
 func (t *Timezone) UpdateTimeZone(db database.DatabaseManager) error {
-	uniqueTime, uniqueErrTime := utility.IsUniqueSingleFieldRefactored(db, &Timezone{}, "timezone", t.Timezone)
-	uniqueGmt, uniqueErrGmt := utility.IsUniqueSingleFieldRefactored(db, &Timezone{}, "gmt_offset", t.GmtOffset)
+	uniqueTime, uniqueErrTime := utility.CheckForUniqueness(db, &Timezone{}, "timezone", t.Timezone)
+	uniqueGmt, uniqueErrGmt := utility.CheckForUniqueness(db, &Timezone{}, "gmt_offset", t.GmtOffset)
 
 	if uniqueErrTime != nil {
 		return uniqueErrTime

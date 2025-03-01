@@ -55,7 +55,7 @@ func (n *NewsLetter) GetDeletedNewsLetterById(db database.DatabaseManager, ID st
 }
 
 func (n *NewsLetter) CreateNewsLetter(db database.DatabaseManager) error {
-	unique, uniqueErr := utility.IsUniqueSingleFieldRefactored(db, &NewsLetter{}, "email", n.Email)
+	unique, uniqueErr := utility.CheckForUniqueness(db, &NewsLetter{}, "email", n.Email)
 
 	if uniqueErr != nil {
 		return uniqueErr
@@ -83,7 +83,7 @@ func (n *NewsLetter) DeleteNewsLetter(db database.DatabaseManager) error {
 }
 
 func (n *NewsLetter) UpdateNewsLetter(db database.DatabaseManager) error {
-	unique, uniqueErr := utility.IsUniqueSingleFieldRefactored(db, &NewsLetter{}, "email", n.Email)
+	unique, uniqueErr := utility.CheckForUniqueness(db, &NewsLetter{}, "email", n.Email)
 
 	if uniqueErr != nil {
 		return uniqueErr
@@ -91,7 +91,7 @@ func (n *NewsLetter) UpdateNewsLetter(db database.DatabaseManager) error {
 	if !unique {
 		return fmt.Errorf("email already subscribed")
 	}
-	
+
 	_, err := db.SaveAllFields(&n)
 	return err
 }

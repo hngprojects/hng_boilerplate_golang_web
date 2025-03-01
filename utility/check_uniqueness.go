@@ -3,11 +3,12 @@ package utility
 import (
 	"fmt"
 	"strings"
-	"gorm.io/gorm"
+
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
+	"gorm.io/gorm"
 )
 
-func IsUniqueSingleFieldRefactored[T any](dbManager database.DatabaseManager, model T, field string, value interface{}) (bool, error) {
+func CheckForUniqueness[T any](dbManager database.DatabaseManager, model T, field string, value interface{}) (bool, error) {
 	var count int64
 
 	err := dbManager.DB().Model(model).Where(fmt.Sprintf("%s = ?", field), value).Count(&count).Error

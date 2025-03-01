@@ -2,9 +2,9 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"time"
-	"fmt"
 
 	"gorm.io/gorm"
 
@@ -66,7 +66,7 @@ type AddUserToOrgRequestModel struct {
 }
 
 func (c *Organisation) CreateOrganisation(db database.DatabaseManager) error {
-	unique, uniqueErr := utility.IsUniqueSingleFieldRefactored(db, &Organisation{}, "email", c.Email)
+	unique, uniqueErr := utility.CheckForUniqueness(db, &Organisation{}, "email", c.Email)
 
 	if uniqueErr != nil {
 		return uniqueErr

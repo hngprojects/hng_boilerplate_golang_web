@@ -197,8 +197,8 @@ func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 		}
 
 		for _, role := range roles {
-			isUniqueName, errName := utility.IsUniqueSingleFieldRefactored(db, &models.OrgRole{}, "name", role.Name)
-			isUniqueId, errId := utility.IsUniqueSingleFieldRefactored(db, &models.OrgRole{}, "organisation_id", role.OrganisationID)
+			isUniqueName, errName := utility.CheckForUniqueness(db, &models.OrgRole{}, "name", role.Name)
+			isUniqueId, errId := utility.CheckForUniqueness(db, &models.OrgRole{}, "organisation_id", role.OrganisationID)
 
 			if errName != nil {
 				fmt.Printf("Error checking role name uniqueness: %v", errName)
@@ -231,8 +231,8 @@ func SeedOrgRolesAndPermissions(db database.DatabaseManager) {
 			}
 
 			for _, permission := range permissions {
-				isUniqueId, errId := utility.IsUniqueSingleFieldRefactored(db, &models.Permission{}, "role_id", permission.RoleID)
-				isUniqueCategory, errCategory := utility.IsUniqueSingleFieldRefactored(db, &models.Permission{}, "category", permission.Category)
+				isUniqueId, errId := utility.CheckForUniqueness(db, &models.Permission{}, "role_id", permission.RoleID)
+				isUniqueCategory, errCategory := utility.CheckForUniqueness(db, &models.Permission{}, "category", permission.Category)
 				if errId != nil {
 					fmt.Printf("Error checking permissions id uniqueness: %v", errId)
 					continue
