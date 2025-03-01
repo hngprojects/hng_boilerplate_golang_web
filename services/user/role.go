@@ -7,17 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"gorm.io/gorm"
 )
 
-func ReplaceUserRole(userID string, roleID int, db *gorm.DB) (gin.H, error) {
+func (s *userService) ReplaceUserRole(userID string, roleID int) (gin.H, error) {
 
 	var (
 		user     = models.User{}
 		role     = models.Role{}
 		respData = gin.H{}
 	)
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	userExists := pdb.CheckExists(&user, "id = ?", userID)
 	if !userExists {

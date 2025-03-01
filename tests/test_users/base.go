@@ -7,6 +7,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	userService "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -22,10 +23,12 @@ func SetupUsersTestRouter() (*gin.Engine, *user.Controller) {
 	db := storage.Connection()
 	validator := validator.New()
 
+	userService := userService.NewUserService(db.Postgresql.DB())
 	userController := &user.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
+		Db:          db,
+		Validator:   validator,
+		Logger:      logger,
+		UserService: userService,
 	}
 
 	r := gin.Default()

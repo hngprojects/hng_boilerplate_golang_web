@@ -4,45 +4,32 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
 
-func UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string,
-	db *gorm.DB, c *gin.Context) (*models.UserRegionTimezoneLanguage, int, error) {
+func (s *userService) UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string, requesterID string) (*models.UserRegionTimezoneLanguage, int, error) {
 	var (
 		currentUser models.User
 		regionData  models.UserRegionTimezoneLanguage
 		theData     models.UserRegionTimezoneLanguage
 	)
 
-	userId, err := middleware.GetUserClaims(c, db, "user_id")
-	if err != nil {
-		return &theData, http.StatusNotFound, err
-	}
-
-	currentUserID, ok := userId.(string)
-	if !ok {
-		return &theData, http.StatusBadRequest, errors.New("user_id is not of type string")
-	}
-
-	currentUser, code, err := GetUser(currentUserID, db)
+	currentUser, code, err := s.GetUser(requesterID)
 	if err != nil {
 		return &theData, code, err
 	}
 
-	_, code, err = GetUser(userIDStr, db)
+	_, code, err = s.GetUser(userIDStr)
 	if err != nil {
 		return &theData, code, err
 	}
 
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
-	if !isSuperAdmin && currentUserID != userIDStr {
+	if !isSuperAdmin && requesterID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
 	}
 
@@ -76,37 +63,26 @@ func UpdateARegion(userData models.UserRegionTimezoneLanguage, userIDStr string,
 
 }
 
-func GetUserRegion(userIDStr string,
-	db *gorm.DB, c *gin.Context) (*models.UserRegionTimezoneLanguage, int, error) {
+func (s *userService) GetUserRegion(userIDStr string, requesterID string) (*models.UserRegionTimezoneLanguage, int, error) {
 	var (
 		currentUser models.User
 		regionData  models.UserRegionTimezoneLanguage
 		theData     models.UserRegionTimezoneLanguage
 	)
 
-	userId, err := middleware.GetUserClaims(c, db, "user_id")
-	if err != nil {
-		return &theData, http.StatusNotFound, err
-	}
-
-	currentUserID, ok := userId.(string)
-	if !ok {
-		return &theData, http.StatusBadRequest, errors.New("user_id is not of type string")
-	}
-
-	currentUser, code, err := GetUser(currentUserID, db)
+	currentUser, code, err := s.GetUser(requesterID)
 	if err != nil {
 		return &theData, code, err
 	}
 
-	_, code, err = GetUser(userIDStr, db)
+	_, code, err = s.GetUser(userIDStr)
 	if err != nil {
 		return &theData, code, err
 	}
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	isSuperAdmin := currentUser.CheckUserIsAdmin(pdb)
-	if !isSuperAdmin && currentUserID != userIDStr {
+	if !isSuperAdmin && requesterID != userIDStr {
 		return &theData, http.StatusForbidden, errors.New("user does not have permission to update this user")
 	}
 
