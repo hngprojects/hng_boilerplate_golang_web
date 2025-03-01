@@ -37,4 +37,5 @@ func SetupTestimonialRoutes(r *gin.Engine, testimonialController *testimonial.Co
 		middleware.Authorize(testimonialController.Db.Postgresql.DB(), models.RoleIdentity.User),
 		testimonialController.Create,
 	)
+	r.GET("/api/v1/testimonials/user/:user_id", testimonialController.GetUserTestimonials)
 }
