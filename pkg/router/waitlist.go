@@ -9,11 +9,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	waitlistService "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func Waitlist(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
-	controller := waitlist.Controller{DB: db, Validator: validator}
+
+	waitlistServices := waitlistService.NewWaitlistService(db.Postgresql.DB())
+	controller := waitlist.Controller{DB: db, Validator: validator, Logger: logger, WaitlistService: waitlistServices}
 
 	waitlistURL := r.Group(fmt.Sprintf("%v", ApiVersion))
 	{

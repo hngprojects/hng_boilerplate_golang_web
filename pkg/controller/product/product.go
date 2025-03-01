@@ -11,16 +11,18 @@ import (
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/product"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Validator *validator.Validate
-	Logger    *utility.Logger
-	ExtReq    request.ExternalRequest
+	Db             *storage.Database
+	Validator      *validator.Validate
+	Logger         *utility.Logger
+	ExtReq         request.ExternalRequest
+	ProductService product.ProductService
 }
 
 func (base *Controller) CreateProduct(c *gin.Context) {
@@ -43,7 +45,8 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.CreateProduct(req, base.Db.Postgresql.DB(), c)
+	owner_id, _ := middleware.GetIdFromToken(c)
+	respData, code, err := base.ProductService.CreateProduct(req, owner_id)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -74,8 +77,8 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, rd)
 		return
 	}
-
-	respData, code, err := product.DeleteProduct(req, base.Db.Postgresql.DB(), ctx)
+	ownerID, _ := middleware.GetIdFromToken(ctx)
+	respData, code, err := base.ProductService.DeleteProduct(req, ownerID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		ctx.JSON(http.StatusBadRequest, rd)
@@ -104,7 +107,7 @@ func (base *Controller) GetProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.GetProduct(productId, base.Db.Postgresql.DB())
+	respData, code, err := base.ProductService.GetProduct(productId)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Product not found", nil)
 		c.JSON(code, rd)
@@ -136,7 +139,8 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.UpdateProduct(req, base.Db.Postgresql.DB(), c)
+	ownerID, _ := middleware.GetIdFromToken(c)
+	respData, code, err := base.ProductService.UpdateProduct(req, ownerID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -158,7 +162,9 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.GetProductsInCategory(category, base.Db.Postgresql.DB(), ctx)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+	respData, code, err := base.ProductService.GetProductsInCategory(category, page, pageSize)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -172,7 +178,10 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 }
 
 func (base *Controller) GetAllProducts(ctx *gin.Context) {
-	respData, code, err := product.GetAllProducts(base.Db.Postgresql.DB(), ctx)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+
+	respData, code, err := base.ProductService.GetAllProducts(page, pageSize)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -203,7 +212,9 @@ func (base *Controller) FilterProducts(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.FilterProducts(price, category, base.Db.Postgresql.DB(), ctx)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
+	respData, code, err := base.ProductService.FilterProducts(price, category, page, pageSize)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -226,7 +237,7 @@ func (base *Controller) UploadImage(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.UploadImage(productId, image, base.Db.Postgresql.DB())
+	respData, code, err := base.ProductService.UploadImage(productId, image)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		ctx.JSON(http.StatusBadRequest, rd)

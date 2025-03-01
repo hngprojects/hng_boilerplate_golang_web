@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 )
 
 var ErrWaitlistUserExist = errors.New("waitlist user exists")
@@ -62,10 +60,8 @@ func (w *WaitlistUser) CheckExistsByEmail(db database.DatabaseManager) (int, err
 	return http.StatusOK, nil
 }
 
-func (n *WaitlistUser) FetchAllWaitList(db database.DatabaseManager, c *gin.Context) ([]WaitlistUser, database.PaginationResponse, error) {
+func (n *WaitlistUser) FetchAllWaitList(db database.DatabaseManager, pagination database.Pagination) ([]WaitlistUser, database.PaginationResponse, error) {
 	var waitLists []WaitlistUser
-
-	pagination := postgresql.GetPagination(c)
 
 	paginationResponse, err := db.SelectAllFromDbOrderByPaginated(
 		"created_at",
