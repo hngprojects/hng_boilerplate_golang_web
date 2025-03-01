@@ -11,11 +11,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/testimonial"
+	testimonialService "github.com/hngprojects/hng_boilerplate_golang_web/services/testimonial"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func Testimonial(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
+	testimonialServiceImp := testimonialService.NewTestimonialService(db.Postgresql.DB())
+	controller := testimonial.Controller{Db: db, Logger: logger, Validator: validator, ExtReq: extReq, TestimonialService: testimonialServiceImp}
 
 	testimonialService := service.NewTestimonialService(db.Postgresql.DB())
 

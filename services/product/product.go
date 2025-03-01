@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -18,12 +17,30 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+type ProductService interface {
+	CreateProduct(req models.CreateProductRequestModel, ownerID string) (gin.H, int, error)
+	DeleteProduct(req models.DeleteProductRequestModel, ownerID string) (gin.H, int, error)
+	GetProduct(productId string) (gin.H, int, error)
+	UpdateProduct(req models.UpdateProductRequestModel, ownerID string) (gin.H, int, error)
+	GetProductsInCategory(categoryName string, page, pageSize int) (gin.H, int, error)
+	GetAllProducts(page, pageSize int) (gin.H, int, error)
+	FilterProducts(price float64, category string, page, pageSize int) (gin.H, int, error)
+	UploadImage(productID string, image *multipart.FileHeader) (gin.H, int, error)
+}
+
+type productService struct {
+	db *gorm.DB
+}
+
+func NewProductService(db *gorm.DB) ProductService {
+	return &productService{db: db}
+}
+
+func (s *productService) CreateProduct(req models.CreateProductRequestModel, ownerID string) (gin.H, int, error) {
 	var (
 		name         = strings.Title(strings.ToLower(req.Name))
 		description  = req.Description
@@ -31,9 +48,8 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		responseData gin.H
 		categoryName = strings.Title(strings.ToLower(req.Category))
 	)
-	owner_id, _ := middleware.GetIdFromToken(c)
 
-	tx := db.Begin()
+	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -63,7 +79,7 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 		Name:        name,
 		Description: description,
 		Price:       price,
-		OwnerID:     owner_id,
+		OwnerID:     ownerID,
 	}
 
 	if err := tx.Create(&product).Error; err != nil {
@@ -91,8 +107,8 @@ func CreateProduct(req models.CreateProductRequestModel, db *gorm.DB, c *gin.Con
 	return responseData, http.StatusCreated, nil
 }
 
-func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
-	tx := db.Begin()
+func (s *productService) DeleteProduct(req models.DeleteProductRequestModel, ownerID string) (gin.H, int, error) {
+	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -108,7 +124,6 @@ func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.C
 		return nil, http.StatusInternalServerError, err
 	}
 
-	ownerID, _ := middleware.GetIdFromToken(ctx)
 	if ownerID == "" {
 		tx.Rollback()
 		return nil, http.StatusUnauthorized, errors.New("failed to get owner ID from token")
@@ -139,9 +154,9 @@ func DeleteProduct(req models.DeleteProductRequestModel, db *gorm.DB, ctx *gin.C
 	return responseData, http.StatusOK, nil
 }
 
-func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
+func (s *productService) GetProduct(productId string) (gin.H, int, error) {
 	product := models.Product{}
-	product, err := product.GetProduct(db, productId)
+	product, err := product.GetProduct(s.db, productId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, http.StatusNotFound, err
@@ -161,17 +176,15 @@ func GetProduct(productId string, db *gorm.DB) (gin.H, int, error) {
 	return responseData, http.StatusOK, nil
 }
 
-func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+func (s *productService) UpdateProduct(req models.UpdateProductRequestModel, ownerID string) (gin.H, int, error) {
 	log.Printf("Received update request: %+v", req)
 	var product models.Product
-	if err := db.First(&product, "id = ?", req.ProductID).Error; err != nil {
+	if err := s.db.First(&product, "id = ?", req.ProductID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("product not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
-
-	ownerID, _ := middleware.GetIdFromToken(ctx)
 
 	if product.OwnerID != ownerID {
 		return nil, http.StatusForbidden, errors.New("you are not authorized to update this product")
@@ -181,7 +194,7 @@ func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.C
 	product.Description = req.Description
 	product.Price = req.Price
 
-	if err := db.Save(&product).Error; err != nil {
+	if err := s.db.Save(&product).Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -191,23 +204,20 @@ func UpdateProduct(req models.UpdateProductRequestModel, db *gorm.DB, ctx *gin.C
 	return responseData, http.StatusOK, nil
 }
 
-func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+func (s *productService) GetProductsInCategory(categoryName string, page, pageSize int) (gin.H, int, error) {
 	var category models.Category
 	var products []models.Product
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-
 	offset := (page - 1) * pageSize
 
-	if err := db.Where("name = ?", categoryName).First(&category).Error; err != nil {
+	if err := s.db.Where("name = ?", categoryName).First(&category).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, http.StatusNotFound, errors.New("category not found")
 		}
 		return nil, http.StatusInternalServerError, err
 	}
 
-	if err := db.Model(&category).Offset(offset).Limit(pageSize).Association("Products").Find(&products); err != nil {
+	if err := s.db.Model(&category).Offset(offset).Limit(pageSize).Association("Products").Find(&products); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -225,14 +235,12 @@ func GetProductsInCategory(categoryName string, db *gorm.DB, c *gin.Context) (gi
 	return responseData, http.StatusOK, nil
 }
 
-func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
+func (s *productService) GetAllProducts(page, pageSize int) (gin.H, int, error) {
 	var products []models.Product
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 
 	offset := (page - 1) * pageSize
 
-	if err := db.Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
+	if err := s.db.Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
@@ -246,11 +254,11 @@ func GetAllProducts(db *gorm.DB, c *gin.Context) (gin.H, int, error) {
 	return responseData, http.StatusOK, nil
 }
 
-func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Context) (gin.H, int, error) {
+func (s *productService) FilterProducts(price float64, category string, page, pageSize int) (gin.H, int, error) {
 	var products []models.Product
 	var totalCount int64
 
-	query := db
+	query := s.db
 
 	if price > 0 {
 		query = query.Where("price <= ?", price)
@@ -266,8 +274,6 @@ func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Contex
 		return nil, http.StatusInternalServerError, err
 	}
 
-	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	offset := (page - 1) * pageSize
 
 	if err := query.Order("price DESC").Offset(offset).Limit(pageSize).Find(&products).Error; err != nil {
@@ -284,9 +290,9 @@ func FilterProducts(price float64, category string, db *gorm.DB, ctx *gin.Contex
 	return responseData, http.StatusOK, nil
 }
 
-func UploadImage(productID string, image *multipart.FileHeader, db *gorm.DB) (gin.H, int, error) {
+func (s *productService) UploadImage(productID string, image *multipart.FileHeader) (gin.H, int, error) {
 	product := models.Product{}
-	if err := db.First(&product, "id = ?", productID).Error; err != nil {
+	if err := s.db.First(&product, "id = ?", productID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return gin.H{"error": "Product not found"}, http.StatusNotFound, err
 		}
@@ -306,7 +312,7 @@ func UploadImage(productID string, image *multipart.FileHeader, db *gorm.DB) (gi
 
 	// Update product with new image filename
 	product.Image = newFilename
-	if err := db.Save(&product).Error; err != nil {
+	if err := s.db.Save(&product).Error; err != nil {
 		return gin.H{"error": "Failed to update product"}, http.StatusInternalServerError, err
 	}
 

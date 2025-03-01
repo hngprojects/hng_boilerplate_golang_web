@@ -8,15 +8,16 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	service "github.com/hngprojects/hng_boilerplate_golang_web/services/squeeze"
+	SqueezeService "github.com/hngprojects/hng_boilerplate_golang_web/services/squeeze"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Logger    *utility.Logger
-	Validator *validator.Validate
-	ExtReq    request.ExternalRequest
+	Db             *storage.Database
+	Logger         *utility.Logger
+	Validator      *validator.Validate
+	ExtReq         request.ExternalRequest
+	SqueezeService SqueezeService.SqueezeUserService
 }
 
 func (base *Controller) Create(c *gin.Context) {
@@ -34,14 +35,14 @@ func (base *Controller) Create(c *gin.Context) {
 		return
 	}
 
-	reqData, code, err := service.ValidateSqueezeUserRequest(req, base.Db.Postgresql.DB())
+	reqData, code, err := base.SqueezeService.ValidateSqueezeUserRequest(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)
 		return
 	}
 
-	squeezeUser, err := service.CreateSqueeze(base.Db.Postgresql.DB(), base.ExtReq, reqData)
+	squeezeUser, err := base.SqueezeService.CreateSqueeze(base.ExtReq, reqData)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to submit your request", nil)

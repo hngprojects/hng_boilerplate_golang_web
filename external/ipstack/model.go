@@ -1,4 +1,4 @@
-package external_models
+package ipstack
 
 type IPStackResolveIPResponse struct {
 	Ip            string  `json:"ip"`

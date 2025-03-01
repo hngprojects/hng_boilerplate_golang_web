@@ -14,11 +14,11 @@ import (
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Logger    *utility.Logger
-	Validator *validator.Validate
-	ExtReq    request.ExternalRequest
-	TestimonialSvc  service.TestimonialService
+	Db                 *storage.Database
+	Logger             *utility.Logger
+	Validator          *validator.Validate
+	ExtReq             request.ExternalRequest
+	TestimonialService service.TestimonialService
 }
 
 func (base *Controller) Create(c *gin.Context) {
@@ -49,7 +49,7 @@ func (base *Controller) Create(c *gin.Context) {
 	}
 	userId := userID.(string)
 
-	testimonial, err := service.CreateTestimonial(base.Db.Postgresql.DB(), req, userId)
+	testimonial, err := base.TestimonialService.CreateTestimonial(req, userId)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to create testimonial", nil)

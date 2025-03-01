@@ -29,7 +29,8 @@ func CreateOrgRoles(req models.OrgRole, orgID string, db *gorm.DB, c *gin.Contex
 		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
 
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return nil, code, err
 	}
@@ -89,8 +90,8 @@ func GetOrgRoles(db *gorm.DB, orgID string, c *gin.Context) ([]models.OrgRole, i
 	if !ok {
 		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
-
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return nil, code, err
 	}
@@ -139,7 +140,8 @@ func GetAOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (*models.Org
 		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
 
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return nil, code, err
 	}
@@ -186,7 +188,8 @@ func DeleteOrgRole(db *gorm.DB, orgID, roleID string, c *gin.Context) (int, erro
 		return http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
 
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return code, err
 	}
