@@ -11,7 +11,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
+	authService "github.com/hngprojects/hng_boilerplate_golang_web/services/auth"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -40,7 +40,8 @@ func (base *Controller) CreateUser(c *gin.Context) {
 		return
 	}
 
-	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql.DB())
+	newAuthService := authService.NewAuthService(base.Db.Postgresql.DB())
+	reqData, err := newAuthService.ValidateCreateUserRequest(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -48,7 +49,7 @@ func (base *Controller) CreateUser(c *gin.Context) {
 	}
 
 	fmt.Println("=========> auth create =======>")
-	respData, code, err := auth.CreateUser(reqData, base.Db.Postgresql.DB())
+	respData, code, err := newAuthService.CreateUser(reqData)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -77,14 +78,15 @@ func (base *Controller) CreateAdmin(c *gin.Context) {
 		return
 	}
 
-	reqData, err := auth.ValidateCreateUserRequest(req, base.Db.Postgresql.DB())
+	newAuthService := authService.NewAuthService(base.Db.Postgresql.DB())
+	reqData, err := newAuthService.ValidateCreateUserRequest(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
 		return
 	}
 
-	respData, code, err := auth.CreateAdmin(reqData, base.Db.Postgresql.DB())
+	respData, code, err := newAuthService.CreateAdmin(reqData)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -113,7 +115,8 @@ func (base *Controller) LoginUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.LoginUser(req, base.Db.Postgresql.DB())
+	newAuthService := authService.NewAuthService(base.Db.Postgresql.DB())
+	respData, code, err := newAuthService.LoginUser(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -144,7 +147,8 @@ func (base *Controller) LogoutUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := auth.LogoutUser(access_uuid, owner_id, base.Db.Postgresql.DB())
+	newAuthService := authService.NewAuthService(base.Db.Postgresql.DB())
+	respData, code, err := newAuthService.LogoutUser(access_uuid, owner_id)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
