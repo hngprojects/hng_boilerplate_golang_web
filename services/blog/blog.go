@@ -5,12 +5,31 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
+
+// BlogService defines the interface for blog-related operations
+
+type BlogService interface {
+	CreateBlog(req models.CreateBlogRequest, userId string) (BlogResponse, error)
+	DeleteBlog(blogId string, userId string) error
+	GetBlogs(c *gin.Context) ([]BlogResponse, database.PaginationResponse, error)
+	GetBlogById(blogId string) (BlogResponse, error)
+	UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest) (BlogResponse, error)
+}
+
+// BlogServiceImpl is the concrete implementation of BlogService
+type BlogServiceImpl struct {
+	db database.DatabaseManager
+}
+
+// NewBlogService creates a new BlogService instance
+func NewBlogService(db database.DatabaseManager) BlogService {
+	return &BlogServiceImpl{db: db}
+}
 
 type BlogResponse struct {
 	BlogID    string    `json:"id"`
@@ -24,9 +43,9 @@ type BlogResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogResponse, error) {
+func (s *BlogServiceImpl) CreateBlog(req models.CreateBlogRequest, userId string) (BlogResponse, error) {
 	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := s.db // No need for `inst.InitDB(db)` anymore
 
 	var user models.User
 	blog := models.Blog{
@@ -64,9 +83,9 @@ func CreateBlog(req models.CreateBlogRequest, db *gorm.DB, userId string) (BlogR
 	return response, nil
 }
 
-func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
+func (s *BlogServiceImpl) DeleteBlog(blogId string, userId string) error {
 	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := s.db
 	var blog models.Blog
 	blog, err := blog.CheckBlogExists(blogId, pdb)
 	if err != nil {
@@ -83,9 +102,9 @@ func DeleteBlog(blogId string, userId string, db *gorm.DB) error {
 	return blog.Delete(pdb)
 }
 
-func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, database.PaginationResponse, error) {
+func (s *BlogServiceImpl) GetBlogs(c *gin.Context) ([]BlogResponse, database.PaginationResponse, error) {
 	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := s.db
 	var (
 		blog models.Blog
 		user models.User
@@ -118,9 +137,9 @@ func GetBlogs(db *gorm.DB, c *gin.Context) ([]BlogResponse, database.PaginationR
 	return responses, paginationResponse, nil
 }
 
-func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
+func (s *BlogServiceImpl) GetBlogById(blogId string) (BlogResponse, error) {
 	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := s.db
 	var (
 		user models.User
 		blog models.Blog
@@ -150,9 +169,9 @@ func GetBlogById(blogId string, db *gorm.DB) (BlogResponse, error) {
 	return response, nil
 }
 
-func UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest, db *gorm.DB) (BlogResponse, error) {
+func (s *BlogServiceImpl) UpdateBlogById(blogId string, userId string, req models.UpdateBlogRequest) (BlogResponse, error) {
 	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+	pdb := s.db
 	var (
 		user models.User
 		blog models.Blog
