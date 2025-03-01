@@ -35,9 +35,13 @@ app.env
 development_app
 staging_app
 production_app
+<<<<<<< HEAD
 .DS_Store
 <<<<<<< HEAD
 
 .idx/
 =======
 >>>>>>> a24ffcf1331fd53db4a75aed1711ebb53b5b5129
+=======
+.DS_Store
+>>>>>>> 5bcfc9d75d7fbb9fba0d1b69f5bbc600f25e3985

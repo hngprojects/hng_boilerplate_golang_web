@@ -10,13 +10,25 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
 
-func UpdateProfile(req models.UpdateProfileRequest, userId string, db *gorm.DB) (gin.H, int, error) {
+type ProfileService interface {
+	UpdateProfile(req models.UpdateProfileRequest, userId string) (gin.H, int, error)
+}
+
+type profileService struct {
+	db *gorm.DB
+}
+
+func NewProfileService(db *gorm.DB) ProfileService {
+	return &profileService{db: db}
+}
+
+func (s *profileService) UpdateProfile(req models.UpdateProfileRequest, userId string) (gin.H, int, error) {
 
 	var (
 		user    models.User
 		profile models.Profile
 	)
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	profileId, err := user.GetProfileID(pdb, userId)
 

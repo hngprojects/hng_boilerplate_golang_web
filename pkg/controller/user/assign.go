@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
@@ -18,7 +17,7 @@ func (base *Controller) AssignRoleToUser(c *gin.Context) {
 		return
 	}
 
-	userData, err := service.ReplaceUserRole(userID, roleID, base.Db.Postgresql.DB())
+	userData, err := base.UserService.ReplaceUserRole(userID, roleID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), nil, nil)
 		c.JSON(http.StatusNotFound, rd)
