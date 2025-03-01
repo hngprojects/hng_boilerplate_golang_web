@@ -7,18 +7,21 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Controller struct {
-	DB        *storage.Database
-	Logger    *utility.Logger
-	Validator *validator.Validate
+	DB              *storage.Database
+	Logger          *utility.Logger
+	Validator       *validator.Validate
+	WaitlistService service.WaitlistService
 }
 
 func (base *Controller) GetWaitLists(c *gin.Context) {
-	waitlistData, paginationResponse, code, err := service.GetWaitLists(c, base.DB.Postgresql.DB())
+	pagination := postgresql.GetPagination(c)
+	waitlistData, paginationResponse, code, err := base.WaitlistService.GetWaitLists(pagination)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -44,7 +47,7 @@ func (base *Controller) Create(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, v)
 		return
 	}
-	data, code, err := service.SignupWaitlistUserService(base.DB.Postgresql.DB(), req)
+	data, code, err := base.WaitlistService.SignupWaitlistUserService(req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
