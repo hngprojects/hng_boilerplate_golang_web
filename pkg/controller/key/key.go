@@ -17,11 +17,12 @@ type Controller struct {
 	Validator *validator.Validate
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
+	Key key.KeyService
 }
 
 func (base *Controller) CreateKey(c *gin.Context) {
 
-	respData, code, err := key.CreateKey(base.Db.Postgresql.DB(), c)
+	respData, code, err := base.Key.CreateKey(c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -37,7 +38,7 @@ func (base *Controller) CreateKey(c *gin.Context) {
 func (base *Controller) VerifyKey(c *gin.Context) {
 	req := models.VerifyKeyRequestModel{}
 
-	respData, code, err := key.VerifyKey(req, base.Db.Postgresql.DB(), c)
+	respData, code, err := base.Key.VerifyKey(req, c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
