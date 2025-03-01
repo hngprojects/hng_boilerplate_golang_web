@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
@@ -14,7 +15,8 @@ func CreateTestimonial(db *gorm.DB, req models.TestimonialReq, userId string) (*
 		Content: req.Content,
 	}
 
-	err := testimonial.Create(db)
+	pdb := inst.InitDB(db)
+	err := testimonial.Create(pdb)
 
 	if err != nil {
 		return nil, err

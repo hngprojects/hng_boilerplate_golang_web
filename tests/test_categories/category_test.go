@@ -49,7 +49,7 @@ func TestGetCategoryNames(t *testing.T) {
 
 	r = gin.Default()
 
-	categoryUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+	categoryUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 	{
 		categoryUrl.GET("/categories", category.GetCategoryNames)
 	}

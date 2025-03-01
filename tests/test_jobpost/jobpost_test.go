@@ -112,7 +112,7 @@ func TestJobPostCreate(t *testing.T) {
 				JobType:             "internship",
 				Location:            "San Francisco, CA",
 				Deadline:            time.Now().AddDate(0, 1, 0),
-				JobMode:            "remote",
+				JobMode:             "remote",
 				ExperienceLevel:     "2 years",
 				Benefits:            "Flexible hours, Remote work, Health insurance",
 				CompanyName:         "Tech Innovators",
@@ -130,7 +130,7 @@ func TestJobPostCreate(t *testing.T) {
 	for _, test := range tests {
 		r := gin.Default()
 
-		jobUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql))
+		jobUrl := r.Group(fmt.Sprintf("%v", "/api/v1"), middleware.Authorize(db.Postgresql.DB()))
 		{
 			jobUrl.POST("/jobs", jobPostController.CreateJobPost)
 		}

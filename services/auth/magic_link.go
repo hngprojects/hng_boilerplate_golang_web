@@ -11,17 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/config"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions"
 	"github.com/hngprojects/hng_boilerplate_golang_web/services/actions/names"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 
 	var (
 		user      = models.User{}
@@ -35,12 +37,12 @@ func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
 	}
 
 	if magicExist != nil {
-		if err := magicExist.DeleteMagicLink(db); err != nil {
+		if err := magicExist.DeleteMagicLink(pdb); err != nil {
 			return "error", http.StatusInternalServerError, err
 		}
 	}
 
-	exists := postgresql.CheckExists(db, &user, "email = ?", userEmail)
+	exists := pdb.CheckExists(&user, "email = ?", userEmail)
 	if !exists {
 		return "error", http.StatusNotFound, fmt.Errorf("user not found")
 	}
@@ -58,7 +60,7 @@ func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
 		ExpiresAt: time.Now().Add(time.Duration(config.App.MagicLinkDuration) * time.Minute),
 	}
 
-	err = magic.CreateMagicLink(db)
+	err = magic.CreateMagicLink(pdb)
 	if err != nil {
 		return "error", http.StatusInternalServerError, err
 	}
@@ -70,7 +72,7 @@ func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
 		MagicLink: magic_link,
 	}
 
-	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendMagicLink, resetReq)
+	err = actions.AddNotificationToQueue(storage.DB.Redis.RedisDb(), names.SendMagicLink, resetReq)
 	if err != nil {
 		return "error", http.StatusInternalServerError, err
 	}
@@ -80,23 +82,25 @@ func MagicLinkRequest(userEmail, url string, db *gorm.DB) (string, int, error) {
 
 func VerifyMagicLinkToken(req models.VerifyMagicLinkRequest, db *gorm.DB) (gin.H, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		user         = models.User{}
 		responseData gin.H
 		magicLink    = models.MagicLink{}
 	)
 
-	magicExist, err := magicLink.GetMagicLinkByToken(db, req.Token)
+	magicExist, err := magicLink.GetMagicLinkByToken(pdb, req.Token)
 	if err != nil {
 		return responseData, http.StatusUnauthorized, errors.New("invalid or expired token")
 	}
 
-	exists := postgresql.CheckExists(db, &user, "email = ?", magicExist.Email)
+	exists := pdb.CheckExists(&user, "email = ?", magicExist.Email)
 	if !exists {
 		return responseData, http.StatusBadRequest, errors.New("invalid credentials")
 	}
 
-	userData, err := user.GetUserByEmail(db, magicExist.Email)
+	userData, err := user.GetUserByEmail(pdb, magicExist.Email)
 	if err != nil {
 		return responseData, http.StatusInternalServerError, errors.New("unable to fetch user")
 	}
@@ -113,13 +117,13 @@ func VerifyMagicLinkToken(req models.VerifyMagicLinkRequest, db *gorm.DB) (gin.H
 
 	access_token := models.AccessToken{ID: tokenData.AccessUuid, OwnerID: user.ID}
 
-	err = access_token.CreateAccessToken(db, tokens)
+	err = access_token.CreateAccessToken(pdb, tokens)
 
 	if err != nil {
 		return responseData, http.StatusInternalServerError, errors.New("error saving token")
 	}
 
-	if err := magicExist.DeleteMagicLink(db); err != nil {
+	if err := magicExist.DeleteMagicLink(pdb); err != nil {
 		return responseData, http.StatusInternalServerError, err
 	}
 

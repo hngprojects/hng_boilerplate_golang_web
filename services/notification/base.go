@@ -1,22 +1,22 @@
 package notifications
 
 import (
-	"github.com/go-redis/redis/v8"
-	"gorm.io/gorm"
-
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/redis"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type NotificationObject struct {
 	Notification *models.NotificationRecord
 	ExtReq       request.ExternalRequest
-	rdb          *redis.Client
-	Db           *gorm.DB
+	// rdb          *redis.Client
+	rdb *redis.Redis
+	Db  *postgresql.Postgresql
 }
 
-func NewNotificationObject(extReq request.ExternalRequest, rdb *redis.Client, db *gorm.DB, notification *models.NotificationRecord) *NotificationObject {
+func NewNotificationObject(extReq request.ExternalRequest, rdb *redis.Redis, db *postgresql.Postgresql, notification *models.NotificationRecord) *NotificationObject {
 	return &NotificationObject{
 		ExtReq:       extReq,
 		rdb:          rdb,

@@ -22,14 +22,13 @@ func TestAddToContactUs(t *testing.T) {
 	password, _ := utility.HashPassword("password")
 
 	regularUser := models.User{
-		ID:       utility.GenerateUUID(),
 		Name:     "Admin User",
 		Email:    fmt.Sprintf("admin%v@qa.team", currUUID),
 		Password: password,
 		Role:     int(models.RoleIdentity.User),
 	}
 
-	db.Create(&regularUser)
+	db.DB().Create(&regularUser)
 
 	setup := func() (*gin.Engine, *auth.Controller) {
 		router, contactController := SetupContactTestRouter()
@@ -52,6 +51,7 @@ func TestAddToContactUs(t *testing.T) {
 		token := tests.GetLoginToken(t, router, *authController, loginData)
 
 		contactData := models.ContactUs{
+			ID:      currUUID,
 			Name:    "John Doe",
 			Email:   "johndoe@example.com",
 			Message: "I would like to know more about your services3.",
@@ -70,7 +70,7 @@ func TestAddToContactUs(t *testing.T) {
 		tests.AssertResponseMessage(t, response["message"].(string), "Message sent successfully")
 
 		var createdContact models.ContactUs
-		db.Last(&createdContact)
+		db.DB().Last(&createdContact)
 		if createdContact.Email != contactData.Email {
 			t.Errorf("Expected contact email %s, but got %s", contactData.Email, createdContact.Email)
 		}

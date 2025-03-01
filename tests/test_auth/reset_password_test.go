@@ -28,7 +28,7 @@ func TestResetPassword(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Create(&adminData)
+	db.DB().Create(&adminData)
 
 	t.Run("Successful reset Password Request", func(t *testing.T) {
 		forgotPasswordRequest := models.ForgotPasswordRequestModel{
@@ -93,7 +93,7 @@ func TestVerifyResetPassword(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Create(&adminData)
+	db.DB().Create(&adminData)
 
 	resetToken := utility.GenerateUUID()
 	expirationTime := time.Now().Add(30 * time.Minute)
@@ -103,7 +103,7 @@ func TestVerifyResetPassword(t *testing.T) {
 		Token:     resetToken,
 		ExpiresAt: expirationTime,
 	}
-	db.Create(&passwordResetData)
+	db.DB().Create(&passwordResetData)
 
 	t.Run("Successful Password Reset", func(t *testing.T) {
 		resetPasswordRequest := models.ResetPasswordRequestModel{

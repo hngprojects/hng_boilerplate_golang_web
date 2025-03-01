@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 )
 
 type Product struct {
@@ -44,8 +44,8 @@ type FilterProduct struct {
 	Category string  `json:"category"`
 }
 
-func (u *Product) CreateProduct(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &u)
+func (u *Product) CreateProduct(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&u)
 	if err != nil {
 		return err
 	}
@@ -53,17 +53,17 @@ func (u *Product) CreateProduct(db *gorm.DB) error {
 	return nil
 }
 
-func (p *Product) AddProductToCategory(db *gorm.DB, categories []interface{}) error {
+func (p *Product) AddProductToCategory(db database.DatabaseManager, categories []interface{}) error {
 	// Add product to categories
-	err := db.Model(p).Association("Categories").Append(categories...)
+	err := db.DB().Model(p).Association("Categories").Append(categories...)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (p *Product) DeleteProduct(db *gorm.DB) error {
-	err := postgresql.DeleteRecordFromDb(db, p)
+func (p *Product) DeleteProduct(db database.DatabaseManager) error {
+	err := db.DeleteRecordFromDb(p)
 	if err != nil {
 		return err
 	}

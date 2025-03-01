@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 	"gorm.io/gorm"
 )
@@ -31,8 +31,8 @@ func (d *DataPrivacySettings) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (d *DataPrivacySettings) CreateDataPrivacySettings(db *gorm.DB) error {
-	err := postgresql.CreateOneRecord(db, &d)
+func (d *DataPrivacySettings) CreateDataPrivacySettings(db database.DatabaseManager) error {
+	err := db.CreateOneRecord(&d)
 
 	if err != nil {
 		return err
@@ -41,15 +41,15 @@ func (d *DataPrivacySettings) CreateDataPrivacySettings(db *gorm.DB) error {
 	return nil
 }
 
-func (d *DataPrivacySettings) UpdateDataPrivacySettings(db *gorm.DB) error {
-	_, err := postgresql.SaveAllFields(db, &d)
+func (d *DataPrivacySettings) UpdateDataPrivacySettings(db database.DatabaseManager) error {
+	_, err := db.SaveAllFields(&d)
 	return err
 }
 
-func (d *DataPrivacySettings) GetUserDataPrivacySettingsByID(db *gorm.DB, userID string) (DataPrivacySettings, error) {
+func (d *DataPrivacySettings) GetUserDataPrivacySettingsByID(db database.DatabaseManager, userID string) (DataPrivacySettings, error) {
 	var user DataPrivacySettings
 
-	query := db.Where("user_id = ?", userID)
+	query := db.DB().Where("user_id = ?", userID)
 	if err := query.First(&user).Error; err != nil {
 		return user, err
 	}

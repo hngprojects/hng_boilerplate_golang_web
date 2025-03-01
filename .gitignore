@@ -30,11 +30,14 @@ tmp/
 .idea/
 
 dump.rdb
-app.env 
+app.env
 
 development_app
 staging_app
 production_app
 .DS_Store
+<<<<<<< HEAD
 
 .idx/
+=======
+>>>>>>> a24ffcf1331fd53db4a75aed1711ebb53b5b5129

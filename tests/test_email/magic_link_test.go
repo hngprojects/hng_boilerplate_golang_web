@@ -28,7 +28,7 @@ func TestRequestMagicLink(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Postgresql.Create(&adminData)
+	db.Postgresql.DB().Create(&adminData)
 
 	t.Run("Successful Magic Link Request Email Sent", func(t *testing.T) {
 		requestMagicLink := models.MagicLinkRequest{

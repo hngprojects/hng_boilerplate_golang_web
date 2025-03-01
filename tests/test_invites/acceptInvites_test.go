@@ -31,7 +31,7 @@ func TestAcceptInvite(t *testing.T) {
 		ExpiresAt:      time.Now().Add(24 * time.Hour),
 	}
 
-	setup.DB.Postgresql.Create(&invitation)
+	setup.DB.Postgresql.DB().Create(&invitation)
 
 	tests := []struct {
 		Name         string
@@ -40,7 +40,7 @@ func TestAcceptInvite(t *testing.T) {
 		RequestBody  interface{}
 		ExpectedCode int
 		// Message      string
-		Headers      map[string]string
+		Headers map[string]string
 	}{
 		{
 			Name:         "Successful Invitation Acceptance (POST)",
@@ -82,8 +82,8 @@ func TestAcceptInvite(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			r := gin.Default()
 
-			r.POST("/api/v1/invite/accept", middleware.Authorize(setup.DB.Postgresql), setup.InviteController.PostAcceptInvite)
-			r.GET("/api/v1/invite/accept/:t", middleware.Authorize(setup.DB.Postgresql), setup.InviteController.GetAcceptInvite)
+			r.POST("/api/v1/invite/accept", middleware.Authorize(setup.DB.Postgresql.DB()), setup.InviteController.PostAcceptInvite)
+			r.GET("/api/v1/invite/accept/:t", middleware.Authorize(setup.DB.Postgresql.DB()), setup.InviteController.GetAcceptInvite)
 
 			var req *http.Request
 			var err error

@@ -17,7 +17,7 @@ func Profile(r *gin.Engine, ApiVersion string, validator *validator.Validate, db
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	product := profile.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	profileUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
+	profileUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		profileUrl.PATCH("/profile", product.UpdateProfile)
 	}

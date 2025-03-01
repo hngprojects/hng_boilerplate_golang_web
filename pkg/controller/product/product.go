@@ -43,7 +43,7 @@ func (base *Controller) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.CreateProduct(req, base.Db.Postgresql, c)
+	respData, code, err := product.CreateProduct(req, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -75,7 +75,7 @@ func (base *Controller) DeleteProductController(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.DeleteProduct(req, base.Db.Postgresql, ctx)
+	respData, code, err := product.DeleteProduct(req, base.Db.Postgresql.DB(), ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		ctx.JSON(http.StatusBadRequest, rd)
@@ -104,7 +104,7 @@ func (base *Controller) GetProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.GetProduct(productId, base.Db.Postgresql)
+	respData, code, err := product.GetProduct(productId, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Product not found", nil)
 		c.JSON(code, rd)
@@ -136,7 +136,7 @@ func (base *Controller) UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.UpdateProduct(req, base.Db.Postgresql, c)
+	respData, code, err := product.UpdateProduct(req, base.Db.Postgresql.DB(), c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -158,7 +158,7 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.GetProductsInCategory(category, base.Db.Postgresql, ctx)
+	respData, code, err := product.GetProductsInCategory(category, base.Db.Postgresql.DB(), ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -172,7 +172,7 @@ func (base *Controller) GetProductsInCategory(ctx *gin.Context) {
 }
 
 func (base *Controller) GetAllProducts(ctx *gin.Context) {
-	respData, code, err := product.GetAllProducts(base.Db.Postgresql, ctx)
+	respData, code, err := product.GetAllProducts(base.Db.Postgresql.DB(), ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -203,7 +203,7 @@ func (base *Controller) FilterProducts(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.FilterProducts(price, category, base.Db.Postgresql, ctx)
+	respData, code, err := product.FilterProducts(price, category, base.Db.Postgresql.DB(), ctx)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), "Products not found", nil)
 		ctx.JSON(code, rd)
@@ -226,7 +226,7 @@ func (base *Controller) UploadImage(ctx *gin.Context) {
 		return
 	}
 
-	respData, code, err := product.UploadImage(productId, image, base.Db.Postgresql)
+	respData, code, err := product.UploadImage(productId, image, base.Db.Postgresql.DB())
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		ctx.JSON(http.StatusBadRequest, rd)

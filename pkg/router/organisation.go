@@ -18,7 +18,7 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	organisation := organisation.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
+	organisationUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	{
 		organisationUrl.POST("/organisations", organisation.CreateOrganisation)
 		organisationUrl.GET("/organisations/:org_id", organisation.GetOrganisation)
@@ -33,7 +33,7 @@ func Organisation(r *gin.Engine, ApiVersion string, validator *validator.Validat
 		organisationUrl.PATCH("/organisations/:org_id/roles/:role_id/permissions", organisation.UpdateOrgPermissions)
 	}
 
-	organisationUrlSec := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
+	organisationUrlSec := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 
 	{
 		organisationUrlSec.POST("/organisations/:org_id/users", organisation.AddUserToOrganisation)

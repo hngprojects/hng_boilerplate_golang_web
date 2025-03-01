@@ -6,16 +6,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hngprojects/hng_boilerplate_golang_web/inst"
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
-	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/database"
 	"gorm.io/gorm"
 )
 
-func GetNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *postgresql.PaginationResponse, int, error) {
+func GetNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *database.PaginationResponse, int, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 
 	var newsletter models.NewsLetter
 
-	newsLetters, paginationResponse, err := newsletter.FetchAllNewsLetter(db, c)
+	newsLetters, paginationResponse, err := newsletter.FetchAllNewsLetter(pdb, c)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -29,11 +32,13 @@ func GetNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *postgres
 
 }
 
-func GetDeletedNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *postgresql.PaginationResponse, int, error) {
+func GetDeletedNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *database.PaginationResponse, int, error) {
 
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var newsletter models.NewsLetter
 
-	delNewsLetters, paginationResponse, err := newsletter.FetchAllDeletedNewsLetter(db, c)
+	delNewsLetters, paginationResponse, err := newsletter.FetchAllDeletedNewsLetter(pdb, c)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -49,13 +54,15 @@ func GetDeletedNewsletters(c *gin.Context, db *gorm.DB) ([]models.NewsLetter, *p
 
 func NewsLetterSubscribe(newsletter *models.NewsLetter, db *gorm.DB) error {
 
-	if postgresql.CheckExists(db, newsletter, "email = ?", newsletter.Email) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
+	if pdb.CheckExists(newsletter, "email = ?", newsletter.Email) {
 		return models.ErrEmailAlreadySubscribed
 	}
 
 	newsletter.Email = strings.ToLower(newsletter.Email)
 
-	if err := newsletter.CreateNewsLetter(db); err != nil {
+	if err := newsletter.CreateNewsLetter(pdb); err != nil {
 		return err
 	}
 
@@ -66,13 +73,15 @@ func DeleteNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, error) {
 	var (
 		newsLetter models.NewsLetter
 	)
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 
-	newsLetter, err := newsLetter.GetNewsLetterById(db, ID)
+	newsLetter, err := newsLetter.GetNewsLetterById(pdb, ID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 
-	if err := newsLetter.DeleteNewsLetter(db); err != nil {
+	if err := newsLetter.DeleteNewsLetter(pdb); err != nil {
 		return http.StatusBadRequest, err
 	}
 
@@ -80,11 +89,13 @@ func DeleteNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, error) {
 }
 
 func RestoreDeletedNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, error) {
+	// instance of Postgresql db
+	pdb := inst.InitDB(db)
 	var (
 		newsLetter models.NewsLetter
 	)
 
-	newsLetter, err := newsLetter.GetDeletedNewsLetterById(db, ID)
+	newsLetter, err := newsLetter.GetDeletedNewsLetterById(pdb, ID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -94,7 +105,7 @@ func RestoreDeletedNewsLetter(ID string, db *gorm.DB, c *gin.Context) (int, erro
 	}
 	newsLetter.DeletedAt = gorm.DeletedAt{}
 
-	if err := newsLetter.UpdateNewsLetter(db); err != nil {
+	if err := newsLetter.UpdateNewsLetter(pdb); err != nil {
 		return http.StatusBadRequest, err
 	}
 

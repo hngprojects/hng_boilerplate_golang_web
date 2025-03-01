@@ -1,13 +1,11 @@
 package postgresql
 
-import "gorm.io/gorm"
-
-func DeleteRecordFromDb(db *gorm.DB, record interface{}) error {
-	tx := db.Delete(record)
+func (p *Postgresql) DeleteRecordFromDb(record interface{}) error {
+	tx := p.Db.Delete(record)
 	return tx.Error
 }
 
-func HardDeleteRecordFromDb(db *gorm.DB, record interface{}) error {
-	tx := db.Unscoped().Delete(record)
+func (p *Postgresql) HardDeleteRecordFromDb(record interface{}) error {
+	tx := p.Db.Unscoped().Delete(record)
 	return tx.Error
 }

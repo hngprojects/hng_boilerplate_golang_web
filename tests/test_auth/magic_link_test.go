@@ -28,7 +28,7 @@ func TestRequestMagicLink(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Create(&adminData)
+	db.DB().Create(&adminData)
 
 	t.Run("Successful Magic Link Request", func(t *testing.T) {
 		requestMagicLink := models.MagicLinkRequest{
@@ -93,7 +93,7 @@ func TestVerifyMagicLink(t *testing.T) {
 		Password: password,
 		Role:     int(theRole),
 	}
-	db.Create(&adminData)
+	db.DB().Create(&adminData)
 
 	magicToken := utility.GenerateUUID()
 	expirationTime := time.Now().Add(10 * time.Minute)
@@ -103,7 +103,7 @@ func TestVerifyMagicLink(t *testing.T) {
 		Token:     magicToken,
 		ExpiresAt: expirationTime,
 	}
-	db.Create(&magicLinkData)
+	db.DB().Create(&magicLinkData)
 
 	t.Run("Successful Magic Link Verification", func(t *testing.T) {
 		verifyMagicLink := models.VerifyMagicLinkRequest{

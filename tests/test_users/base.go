@@ -35,32 +35,32 @@ func SetupUsersTestRouter() (*gin.Engine, *user.Controller) {
 
 func SetupUsersRoutes(r *gin.Engine, userController *user.Controller) {
 	r.PUT("/api/v1/users/:user_id/roles/:role_id",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		userController.AssignRoleToUser)
-	r.GET("/api/v1/users", middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.GET("/api/v1/users", middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		userController.GetAllUsers)
 	r.GET("/api/v1/users/:user_id",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.GetAUser)
 	r.DELETE("/api/v1/users/:user_id",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.DeleteAUser)
 	r.PUT("/api/v1/users/:user_id",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.UpdateAUser)
 	r.GET("/api/v1/organisations",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.GetAUserOrganisation)
 	r.PUT("/api/v1/users/:user_id/regions",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		userController.UpdateUserRegion)
 	r.GET("/api/v1/users/:user_id/regions",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.GetUserRegion)
 	r.GET("/api/v1/users/:user_id/data-privacy-settings",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.GetUserDataPrivacySettings)
 	r.PUT("/api/v1/users/:user_id/data-privacy-settings",
-		middleware.Authorize(userController.Db.Postgresql, models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
+		middleware.Authorize(userController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User),
 		userController.UpdateUserDataPrivacySettings)
 }

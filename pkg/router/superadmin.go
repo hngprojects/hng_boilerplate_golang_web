@@ -17,8 +17,8 @@ func SuperAdmin(r *gin.Engine, ApiVersion string, validator *validator.Validate,
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
 	superAdmin := superadmin.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
 
-	superadminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql, models.RoleIdentity.SuperAdmin))
-	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql))
+	superadminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
+	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
 	{
 		superadminUrl.POST("/regions", superAdmin.AddToRegion)
 		superadminUrl.POST("/timezones", superAdmin.AddToTimeZone)

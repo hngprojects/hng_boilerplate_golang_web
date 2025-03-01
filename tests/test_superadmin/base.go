@@ -29,18 +29,18 @@ func SetupSATestRouter() (*gin.Engine, *superadmin.Controller) {
 }
 
 func SetupSARoutes(r *gin.Engine, saController *superadmin.Controller) {
-	r.POST("/api/v1/regions", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.POST("/api/v1/regions", middleware.Authorize(saController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		saController.AddToRegion)
-	r.POST("/api/v1/timezones", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.POST("/api/v1/timezones", middleware.Authorize(saController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		saController.AddToTimeZone)
-	r.POST("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.POST("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		saController.AddToLanguage)
-	r.GET("/api/v1/regions", middleware.Authorize(saController.Db.Postgresql),
+	r.GET("/api/v1/regions", middleware.Authorize(saController.Db.Postgresql.DB()),
 		saController.GetRegion)
-	r.GET("/api/v1/timezones", middleware.Authorize(saController.Db.Postgresql),
+	r.GET("/api/v1/timezones", middleware.Authorize(saController.Db.Postgresql.DB()),
 		saController.GetTimeZone)
-	r.GET("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql),
+	r.GET("/api/v1/languages", middleware.Authorize(saController.Db.Postgresql.DB()),
 		saController.GetLanguage)
-	r.PATCH("/api/v1/timezones/:id", middleware.Authorize(saController.Db.Postgresql, models.RoleIdentity.SuperAdmin),
+	r.PATCH("/api/v1/timezones/:id", middleware.Authorize(saController.Db.Postgresql.DB(), models.RoleIdentity.SuperAdmin),
 		saController.UpdateTimeZone)
 }

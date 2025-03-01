@@ -17,7 +17,7 @@ import (
 
 func TestCreateTestimonial(t *testing.T) {
 	_, testimonialController := SetupTestimonialTestRouter()
-	db := testimonialController.Db.Postgresql
+	db := testimonialController.Db.Postgresql.DB()
 	currUUID := utility.GenerateUUID()
 	password, _ := utility.HashPassword("password")
 
