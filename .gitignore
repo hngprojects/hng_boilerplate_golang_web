@@ -36,3 +36,5 @@ development_app
 staging_app
 production_app
 .DS_Store
+
+.idx/
