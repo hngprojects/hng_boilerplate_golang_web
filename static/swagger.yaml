@@ -13,8 +13,8 @@ info:
   version: 1.0.0
 servers:
   # Added by API Auto Mocking Plugin
-  - url: https://staging.api-golang.boilerplate.hng.tech/api/v1
-  - url: https://deployment.api-golang.boilerplate.hng.tech/api/v1
+  - url: https://api.golang.boilerplate.hng.tech/api/v1
+  - url: https://api.golang.boilerplate.hng.tech/api/v1
 
 tags:
   - name: auth

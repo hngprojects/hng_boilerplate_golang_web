@@ -69,10 +69,9 @@ func Setup(logger *utility.Logger, validator *validator.Validate, db *storage.Da
 	})
 
 	r.StaticFile("/swagger.yaml", "static/swagger.yaml")
-	url := ginSwagger.URL("/swagger.yaml")
 	r.GET("/api/docs/*any", func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-2TOI2ugkuROHHfKZr6kdGv+XxhrVUI8uHycXqXUIR4g='; img-src 'self' data:;")
-		ginSwagger.WrapHandler(swaggerFiles.Handler, url)(c)
+		ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/swagger.yaml"))(c)
 	})
 
 	r.NoRoute(func(c *gin.Context) {
