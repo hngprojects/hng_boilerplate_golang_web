@@ -7,6 +7,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/testimonial"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	testimonialService "github.com/hngprojects/hng_boilerplate_golang_web/services/testimonial"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -17,10 +18,12 @@ func SetupTestimonialTestRouter() (*gin.Engine, *testimonial.Controller) {
 	db := storage.Connection()
 	validator := validator.New()
 
+	testimonialService := testimonialService.NewTestimonialService(db.Postgresql.DB())
 	testimonialController := &testimonial.Controller{
-		Db:        db,
-		Validator: validator,
-		Logger:    logger,
+		Db:                 db,
+		Validator:          validator,
+		Logger:             logger,
+		TestimonialService: testimonialService,
 	}
 
 	r := gin.Default()

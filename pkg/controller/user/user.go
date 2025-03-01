@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,20 +11,23 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage/postgresql"
 	service "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Validator *validator.Validate
-	Logger    *utility.Logger
-	ExtReq    request.ExternalRequest
+	Db          *storage.Database
+	Validator   *validator.Validate
+	Logger      *utility.Logger
+	ExtReq      request.ExternalRequest
+	UserService service.UserService
 }
 
 func (base *Controller) GetAllUsers(c *gin.Context) {
 
-	usersData, paginationResponse, code, err := service.GetAllUsers(c, base.Db.Postgresql.DB())
+	pagination := postgresql.GetPagination(c)
+	usersData, paginationResponse, code, err := base.UserService.GetAllUsers(pagination)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -34,6 +38,19 @@ func (base *Controller) GetAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, rd)
 
 }
+func authHelper(c *gin.Context, db storage.Database) (string, error) {
+	userIDFromClaims, err := middleware.GetUserClaims(c, db.Postgresql.DB(), "user_id")
+	if err != nil {
+		return "", err
+	}
+
+	requesterID, ok := userIDFromClaims.(string)
+	if !ok {
+		return "", errors.New("invalid user ID in token")
+	}
+
+	return requesterID, nil
+}
 
 func (base *Controller) GetAUser(c *gin.Context) {
 
@@ -41,7 +58,14 @@ func (base *Controller) GetAUser(c *gin.Context) {
 		userID = c.Param("user_id")
 	)
 
-	userData, code, err := service.GetAUser(userID, base.Db.Postgresql.DB(), c)
+	requesterID, err := authHelper(c, *base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
+		return
+	}
+
+	userData, code, err := base.UserService.GetAUser(userID, requesterID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -54,20 +78,17 @@ func (base *Controller) GetAUser(c *gin.Context) {
 
 func (base *Controller) GetAUserOrganisation(c *gin.Context) {
 
-	userId, err := middleware.GetUserClaims(c, base.Db.Postgresql.DB(), "user_id")
+	requesterID, err := authHelper(c, *base.Db)
 	if err != nil {
-		if err.Error() == "user claims not found" {
-			rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), "failed to retrieve organisations", nil)
-			c.JSON(http.StatusNotFound, rd)
-			return
-		}
-		rd := utility.BuildErrorResponse(http.StatusInternalServerError, "error", err.Error(), "failed to retrieve organisations", nil)
-		c.JSON(http.StatusInternalServerError, rd)
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
 		return
 	}
-	userID := userId.(string)
 
-	userData, code, err := service.GetAUserOrganisation(userID, base.Db.Postgresql.DB(), c)
+	userIDStr := c.Param("userID")
+
+	userData, code, err := base.UserService.GetAUserOrganisation(userIDStr, requesterID)
+
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -83,8 +104,14 @@ func (base *Controller) DeleteAUser(c *gin.Context) {
 	var (
 		userID = c.Param("user_id")
 	)
+	requesterID, err := authHelper(c, *base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
+		return
+	}
 
-	code, err := service.DeleteAUser(userID, base.Db.Postgresql.DB(), c)
+	code, err := base.UserService.DeleteAUser(userID, requesterID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), nil, nil)
 		c.JSON(code, rd)
@@ -101,7 +128,14 @@ func (base *Controller) UpdateAUser(c *gin.Context) {
 		req    = models.UpdateUserRequestModel{}
 	)
 
-	err := c.ShouldBind(&req)
+	requesterID, err := authHelper(c, *base.Db)
+	if err != nil {
+		rd := utility.BuildErrorResponse(http.StatusUnauthorized, "error", err.Error(), nil, nil)
+		c.JSON(http.StatusUnauthorized, rd)
+		return
+	}
+
+	err = c.ShouldBind(&req)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", "Failed to parse request body", err, nil)
 		c.JSON(http.StatusBadRequest, rd)
@@ -116,7 +150,7 @@ func (base *Controller) UpdateAUser(c *gin.Context) {
 		return
 	}
 
-	respData, code, err := service.UpdateAUser(req, userID, base.Db.Postgresql.DB(), c)
+	respData, code, err := base.UserService.UpdateAUser(req, userID, requesterID)
 	if err != nil {
 		rd := utility.BuildErrorResponse(code, "error", err.Error(), err, nil)
 		c.JSON(code, rd)

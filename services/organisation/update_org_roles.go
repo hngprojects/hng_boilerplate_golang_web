@@ -31,7 +31,8 @@ func UpdateOrgRoles(req models.OrgRole, orgID, roleID string, db *gorm.DB, c *gi
 		return nil, http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
 
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return nil, code, err
 	}
@@ -95,7 +96,8 @@ func UpdateOrgPermissions(req models.Permission, orgID, roleID string, db *gorm.
 		return http.StatusBadRequest, errors.New("user_id is not of type string")
 	}
 
-	currentUser, code, err := user.GetUser(currentUserID, db)
+	userService := user.NewUserService(db)
+	currentUser, code, err := userService.GetUser(currentUserID)
 	if err != nil {
 		return code, err
 	}

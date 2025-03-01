@@ -7,13 +7,25 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/internal/models"
 )
 
-func GetUser(userIDStr string, db *gorm.DB) ([]models.User, error) {
+type SeedService interface {
+	GetUser(userIDStr string) ([]models.User, error)
+}
+
+type seedService struct {
+	db *gorm.DB
+}
+
+func NewSeedService(db *gorm.DB) SeedService {
+	return &seedService{db: db}
+}
+
+func (s *seedService) GetUser(userIDStr string) ([]models.User, error) {
 	var (
 		user     models.User
 		userResp []models.User
 	)
 
-	pdb := inst.InitDB(db)
+	pdb := inst.InitDB(s.db)
 
 	userResp, err := user.GetSeedUsers(pdb)
 	if err != nil {

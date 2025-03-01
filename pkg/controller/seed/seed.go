@@ -13,17 +13,18 @@ import (
 )
 
 type Controller struct {
-	Db        *storage.Database
-	Validator *validator.Validate
-	Logger    *utility.Logger
-	ExtReq    request.ExternalRequest
+	Db          *storage.Database
+	Validator   *validator.Validate
+	Logger      *utility.Logger
+	ExtReq      request.ExternalRequest
+	SeedService seed.SeedService
 }
 
 func (base *Controller) GetUser(c *gin.Context) {
 	//get the user_id from the URL
 	userIDStr := c.Param("user_id")
 
-	user, err := seed.GetUser(userIDStr, base.Db.Postgresql.DB())
+	user, err := base.SeedService.GetUser(userIDStr)
 
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", err.Error(), err, nil)

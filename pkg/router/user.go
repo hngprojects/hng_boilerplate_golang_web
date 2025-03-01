@@ -11,12 +11,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	userService "github.com/hngprojects/hng_boilerplate_golang_web/services/user"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func User(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
-	user := user.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+	userService := userService.NewUserService(db.Postgresql.DB())
+	user := user.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq, UserService: userService}
 
 	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin, models.RoleIdentity.User))
 	adminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))

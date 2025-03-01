@@ -7,6 +7,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/waitlist"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	WaitlistService "github.com/hngprojects/hng_boilerplate_golang_web/services/waitlist"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -17,10 +18,12 @@ func SetupWLTestRouter() (*gin.Engine, *waitlist.Controller) {
 	db := storage.Connection()
 	validator := validator.New()
 
+	waitlistService := WaitlistService.NewWaitlistService(db.Postgresql.DB())
 	wlController := &waitlist.Controller{
-		DB:        db,
-		Validator: validator,
-		Logger:    logger,
+		DB:              db,
+		Validator:       validator,
+		Logger:          logger,
+		WaitlistService: waitlistService,
 	}
 
 	r := gin.Default()
