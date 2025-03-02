@@ -9,12 +9,14 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/external/request"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/billing"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	billingServices "github.com/hngprojects/hng_boilerplate_golang_web/services/billing"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func Billing(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
-	billing := billing.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq, BillingService: billingService}
 
 	billingUrl := r.Group(fmt.Sprintf("%v", ApiVersion))
 

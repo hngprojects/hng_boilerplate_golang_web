@@ -12,27 +12,43 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
-func CreateBilling(req models.CreateBillingRequest, db *gorm.DB, userId string) (models.BillingResponse, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+// BillingService defines the interface for billing operations.
+type BillingService interface {
+	CreateBilling(req models.CreateBillingRequest, userId string) (models.BillingResponse, error)
+	DeleteBilling(BillingId string, userId string) error
+	GetBillings(c *gin.Context) (int, database.PaginationResponse, error)
+	GetBillingById(BillingId string) (models.Billing, error)
+	UpdateBillingById(BillingId string, userId string, req models.UpdateBillingRequest) (models.Billing, error)
+}
+
+// BillingServiceImpl implements BillingService using GORM.
+type BillingServiceImpl struct {
+	db database.DatabaseManager
+}
+
+// NewBillingService creates a new instance of BillingService.
+func NewBillingService(db *gorm.DB) BillingService {
+	return &BillingServiceImpl{db: inst.InitDB(db)}
+}
+
+// CreateBilling creates a new billing record.
+func (s *BillingServiceImpl) CreateBilling(req models.CreateBillingRequest, userId string) (models.BillingResponse, error) {
 	var (
 		user        models.User
 		billingResp models.BillingResponse
 	)
+
 	Billing := models.Billing{
 		ID:    utility.GenerateUUID(),
 		Name:  req.Name,
 		Price: req.Price,
 	}
 
-	err := Billing.Create(pdb)
-
-	if err != nil {
+	if err := Billing.Create(s.db); err != nil {
 		return billingResp, err
 	}
 
-	user, err = user.GetUserByID(pdb, userId)
-
+	user, err := user.GetUserByID(s.db, userId)
 	if err != nil {
 		return billingResp, err
 	}
@@ -42,75 +58,54 @@ func CreateBilling(req models.CreateBillingRequest, db *gorm.DB, userId string) 
 		Name:      Billing.Name,
 		Price:     Billing.Price,
 		CreatedAt: Billing.CreatedAt,
-		UpdatedAt: billingResp.UpdatedAt,
+		UpdatedAt: Billing.UpdatedAt,
 	}
 
 	return response, nil
 }
 
-func DeleteBilling(BillingId string, userId string, db *gorm.DB) error {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
-
+// DeleteBilling deletes a billing record by ID.
+func (s *BillingServiceImpl) DeleteBilling(BillingId string, userId string) error {
 	var Billing models.Billing
 
-	Billing, err := Billing.CheckBillingExists(BillingId, pdb)
-
+	Billing, err := Billing.CheckBillingExists(BillingId, s.db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("Billing not found")
+			return errors.New("billing not found")
 		}
 		return err
 	}
 
-	return Billing.Delete(pdb)
+	return Billing.Delete(s.db)
 }
 
-func GetBillings(db *gorm.DB, c *gin.Context) (int, database.PaginationResponse, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
-
-	var (
-		Billing models.Billing
-	)
-	Billings, paginationResponse, err := Billing.GetAllBillings(pdb, c)
-
+// GetBillings retrieves paginated billing records.
+func (s *BillingServiceImpl) GetBillings(c *gin.Context) (int, database.PaginationResponse, error) {
+	var Billing models.Billing
+	Billings, paginationResponse, err := Billing.GetAllBillings(s.db, c)
 	if err != nil {
 		return 0, paginationResponse, err
 	}
 
-	total_billings := len(Billings)
-
-	return total_billings, paginationResponse, nil
+	totalBillings := len(Billings)
+	return totalBillings, paginationResponse, nil
 }
 
-func GetBillingById(BillingId string, db *gorm.DB) (models.Billing, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
-
-	var (
-		resp models.Billing
-	)
-
-	resp, err := resp.GetBillingById(pdb, BillingId)
-
+// GetBillingById fetches a billing record by ID.
+func (s *BillingServiceImpl) GetBillingById(BillingId string) (models.Billing, error) {
+	var resp models.Billing
+	resp, err := resp.GetBillingById(s.db, BillingId)
 	if err != nil {
 		return resp, err
 	}
-
 	return resp, nil
 }
 
-func UpdateBillingById(BillingId string, userId string, req models.UpdateBillingRequest, db *gorm.DB) (models.Billing, error) {
-	// instance of Postgresql db
-	pdb := inst.InitDB(db)
+// UpdateBillingById updates a billing record by ID.
+func (s *BillingServiceImpl) UpdateBillingById(BillingId string, userId string, req models.UpdateBillingRequest) (models.Billing, error) {
+	var resp models.Billing
 
-	var (
-		resp models.Billing
-	)
-
-	resp, err := resp.CheckBillingExists(BillingId, pdb)
-
+	resp, err := resp.CheckBillingExists(BillingId, s.db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp, errors.New("billing not found")
@@ -118,8 +113,7 @@ func UpdateBillingById(BillingId string, userId string, req models.UpdateBilling
 		return resp, err
 	}
 
-	_, err = resp.UpdateBillingById(pdb, req, BillingId)
-
+	_, err = resp.UpdateBillingById(s.db, req, BillingId)
 	if err != nil {
 		return resp, err
 	}

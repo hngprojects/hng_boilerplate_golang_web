@@ -16,6 +16,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/billing"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	billingServices "github.com/hngprojects/hng_boilerplate_golang_web/services/billing"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -28,7 +29,8 @@ func TestBillingCreate(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger, BillingService: billingService}
 	r := gin.Default()
 
 	_, token := Initialise(currUUID, t, r, db, user, billing, true)
@@ -133,7 +135,8 @@ func TestBillingDelete(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger, BillingService: billingService }
 	r := gin.Default()
 
 	billingId, token := Initialise(currUUID, t, r, db, user, billing, true)
@@ -242,7 +245,8 @@ func TestGetbillingById(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger, BillingService: billingService}
 	r := gin.Default()
 
 	billingId, _ := Initialise(currUUID, t, r, db, user, billing, true)
@@ -333,7 +337,8 @@ func TestGetbillingplans(t *testing.T) {
 
 	validatorRef := validator.New()
 	db := storage.Connection()
-	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger, BillingService: billingService}
 
 	tests := []struct {
 		Name         string
@@ -403,7 +408,8 @@ func TestEditbilling(t *testing.T) {
 	db := storage.Connection()
 	currUUID := utility.GenerateUUID()
 	user := auth.Controller{Db: db, Validator: validatorRef, Logger: logger}
-	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	billingService := billingServices.NewBillingService(db.Postgresql.DB())
+	billing := billing.Controller{Db: db, Validator: validatorRef, Logger: logger, BillingService: billingService}
 	r := gin.Default()
 	billingId, token := Initialise(currUUID, t, r, db, user, billing, true)
 
