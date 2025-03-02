@@ -16,6 +16,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/category"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	categoryServices "github.com/hngprojects/hng_boilerplate_golang_web/services/category"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -45,7 +46,8 @@ func TestGetCategoryNames(t *testing.T) {
 	tst.SignupUser(t, r, auth, userSignUpData, false)
 
 	token := tst.GetLoginToken(t, r, auth, loginData)
-	category := category.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	categoryService := categoryServices.NewCategoryService(db.Postgresql.DB())
+	category := category.Controller{Db: db, Validator: validatorRef, Logger: logger, CategoryService: categoryService}
 
 	r = gin.Default()
 

@@ -16,11 +16,12 @@ type Controller struct {
 	Validator *validator.Validate
 	Logger    *utility.Logger
 	ExtReq    request.ExternalRequest
+	CategoryService category.CategoryService
 }
 
 func (base *Controller) GetCategoryNames(c *gin.Context) {
-	categoryService := category.NewCategoryService(base.Db.Postgresql.DB())
-	categories, code, err := categoryService.GetCategoryNames(c)
+	
+	categories, code, err := base.CategoryService.GetCategoryNames(c)
 	if err != nil {
 		rd := utility.BuildErrorResponse(http.StatusBadRequest, "error", err.Error(), err, nil)
 		c.JSON(http.StatusBadRequest, rd)
