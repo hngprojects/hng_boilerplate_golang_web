@@ -7,6 +7,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/superadmin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/superadmin"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 )
 
@@ -17,10 +18,12 @@ func SetupSATestRouter() (*gin.Engine, *superadmin.Controller) {
 	db := storage.Connection()
 	validator := validator.New()
 
+	superAdminService := service.NewSuperAdminService(db.Postgresql.DB())
 	saController := &superadmin.Controller{
 		Db:        db,
 		Validator: validator,
 		Logger:    logger,
+		SuperAdminService: superAdminService,
 	}
 
 	r := gin.Default()
