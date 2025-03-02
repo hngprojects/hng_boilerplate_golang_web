@@ -18,6 +18,7 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/jobpost"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	jobPostServices "github.com/hngprojects/hng_boilerplate_golang_web/services/jobpost"
 	tst "github.com/hngprojects/hng_boilerplate_golang_web/tests"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
@@ -125,7 +126,8 @@ func TestJobPostCreate(t *testing.T) {
 		},
 	}
 
-	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	jobPostService := jobPostServices.NewJobPostService(db.Postgresql.DB())
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger, JobPostService: jobPostService}
 
 	for _, test := range tests {
 		r := gin.Default()
@@ -184,7 +186,8 @@ func TestFetchAllJobPost(t *testing.T) {
 	db := storage.Connection()
 	requestURI := "/api/v1/jobs"
 
-	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	jobPostService := jobPostServices.NewJobPostService(db.Postgresql.DB())
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger, JobPostService: jobPostService}
 
 	r := gin.Default()
 	jobUrl := r.Group("/api/v1")
@@ -265,7 +268,8 @@ func TestFetchJobPostById(t *testing.T) {
 		Qualifications:      "Ability to work solo, Bachelor degree",
 	}
 
-	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	jobPostService := jobPostServices.NewJobPostService(db.Postgresql.DB())
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger, JobPostService: jobPostService}
 
 	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
 
@@ -371,7 +375,8 @@ func TestUpdateJobPostById(t *testing.T) {
 		Qualifications:      "Ability to work solo, Bachelor degree",
 	}
 
-	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	jobPostService := jobPostServices.NewJobPostService(db.Postgresql.DB())
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger, JobPostService: jobPostService}
 
 	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
 	var b bytes.Buffer
@@ -489,7 +494,8 @@ func TestDeleteJobPostById(t *testing.T) {
 		Qualifications:      "Ability to work solo, Bachelor degree",
 	}
 
-	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger}
+	jobPostService := jobPostServices.NewJobPostService(db.Postgresql.DB())
+	jobPostController := jobpost.Controller{Db: db, Validator: validatorRef, Logger: logger, JobPostService: jobPostService}
 
 	r.POST("/api/v1/jobs", jobPostController.CreateJobPost)
 	var b bytes.Buffer
