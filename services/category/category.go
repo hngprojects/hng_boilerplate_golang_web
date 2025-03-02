@@ -21,10 +21,26 @@ type PaginatedResponse struct {
 	PageSize   int        `json:"pageSize"`
 }
 
-func GetCategoryNames(db *gorm.DB, ctx *gin.Context) (*PaginatedResponse, int, error) {
+// CategoryService defines the interface for category operations
+type CategoryService interface {
+	GetCategoryNames(ctx *gin.Context) (*PaginatedResponse, int, error)
+}
+
+// categoryService implements CategoryService
+type categoryService struct {
+	db *gorm.DB
+}
+
+// NewCategoryService initializes a new CategoryService instance
+func NewCategoryService(db *gorm.DB) CategoryService {
+	return &categoryService{db: db}
+}
+
+// GetCategoryNames fetches paginated category names
+func (s *categoryService) GetCategoryNames(ctx *gin.Context) (*PaginatedResponse, int, error) {
 	ownerID, _ := middleware.GetIdFromToken(ctx)
 	if ownerID == "" {
-		return nil, http.StatusUnauthorized, errors.New("Unauthorized access")
+		return nil, http.StatusUnauthorized, errors.New("unauthorized access")
 	}
 
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
@@ -40,7 +56,7 @@ func GetCategoryNames(db *gorm.DB, ctx *gin.Context) (*PaginatedResponse, int, e
 	var categories []Category
 	var totalCount int64
 
-	tx := db.Begin()
+	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
