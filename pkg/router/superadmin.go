@@ -10,12 +10,15 @@ import (
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/controller/superadmin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/middleware"
 	"github.com/hngprojects/hng_boilerplate_golang_web/pkg/repository/storage"
+	service "github.com/hngprojects/hng_boilerplate_golang_web/services/superadmin"
 	"github.com/hngprojects/hng_boilerplate_golang_web/utility"
 )
 
 func SuperAdmin(r *gin.Engine, ApiVersion string, validator *validator.Validate, db *storage.Database, logger *utility.Logger) *gin.Engine {
 	extReq := request.ExternalRequest{Logger: logger, Test: false}
-	superAdmin := superadmin.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq}
+
+	superAdminService := service.NewSuperAdminService(db.Postgresql.DB())
+	superAdmin := superadmin.Controller{Db: db, Validator: validator, Logger: logger, ExtReq: extReq, SuperAdminService: superAdminService}
 
 	superadminUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB(), models.RoleIdentity.SuperAdmin))
 	userUrl := r.Group(fmt.Sprintf("%v", ApiVersion), middleware.Authorize(db.Postgresql.DB()))
